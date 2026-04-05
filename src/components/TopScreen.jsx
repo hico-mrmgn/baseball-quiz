@@ -25,8 +25,8 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
   const wrongCount = getWrongAnswers().length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-4 py-6">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-3 lg:px-6 py-6">
+      <div className="max-w-2xl lg:max-w-5xl mx-auto">
 
         {/* Zone 1: ヘッダー */}
         <div className="flex items-center gap-3 mb-4">

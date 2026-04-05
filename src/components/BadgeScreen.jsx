@@ -5,8 +5,8 @@ export default function BadgeScreen({ onBack }) {
   const unlockedCount = badges.filter((b) => b.unlocked).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-4 py-6">
-      <div className="max-w-md w-full mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-3 lg:px-6 py-6">
+      <div className="max-w-md lg:max-w-5xl w-full mx-auto">
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
@@ -34,7 +34,7 @@ export default function BadgeScreen({ onBack }) {
         </div>
 
         {/* Badge grid */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 lg:grid-cols-5 gap-3">
           {badges.map((badge) => (
             <div
               key={badge.id}

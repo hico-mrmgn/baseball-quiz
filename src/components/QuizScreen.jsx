@@ -11,7 +11,6 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
   const [maxCombo, setMaxCombo] = useState(0);
-  const [showExplanationDetail, setShowExplanationDetail] = useState(false);
   const [confettiTrigger, setConfettiTrigger] = useState(0);
   const [comboBreak, setComboBreak] = useState(false);
   const [wrongIds] = useState([]);
@@ -64,7 +63,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
       setCurrentIndex((i) => i + 1);
       setPendingAnswer(null);
       setConfirmedAnswer(null);
-      setShowExplanationDetail(false);
+
       setComboBreak(false);
     }
   }
@@ -94,16 +93,10 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
 
   const isCorrect = confirmedAnswer === current.correct;
 
-  // 解説を短縮表示用に分割
-  const explanationShort = current.explanation.length > 60
-    ? current.explanation.slice(0, 60) + '…'
-    : current.explanation;
-  const hasLongExplanation = current.explanation.length > 60;
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-4 py-4">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-3 lg:px-6 py-4">
       <Confetti trigger={confettiTrigger} />
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl lg:max-w-5xl mx-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
@@ -134,7 +127,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
         {/* Difficulty + Field diagram + Situation+Question を横並び */}
         <div className="flex gap-3 mb-3">
           {/* 左: フィールド図 */}
-          <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-2 flex-shrink-0 w-36 md:w-44">
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-2 flex-shrink-0 w-36 md:w-44 lg:w-64">
             <FieldDiagram situation={current.situation} theme={current.theme} />
           </div>
 
@@ -158,7 +151,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
         </div>
 
         {/* Choices */}
-        <div className="grid gap-2 mb-3">
+        <div className="grid lg:grid-cols-2 gap-2 mb-3">
           {current.choices.map((choice, index) => {
             let style;
             if (confirmedAnswer !== null) {
@@ -194,20 +187,18 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
         </div>
 
         {/* 解答するボタン（選択後・確定前） */}
-        {pendingAnswer !== null && confirmedAnswer === null && (
+        {confirmedAnswer === null && (
           <button
             onClick={handleConfirm}
-            className="w-full p-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-base shadow-lg active:scale-[0.98] transition-all cursor-pointer mb-3"
+            disabled={pendingAnswer === null}
+            className={`w-full p-3 rounded-xl font-bold text-base transition-all mb-3 ${
+              pendingAnswer !== null
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg active:scale-[0.98] cursor-pointer'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
           >
             解答する ✅
           </button>
-        )}
-
-        {/* 選択前のヒント */}
-        {pendingAnswer === null && confirmedAnswer === null && (
-          <div className="text-center text-xs text-gray-400 mb-3">
-            答えを選んでから「解答する」を押してね
-          </div>
         )}
 
         {/* コンボバナー */}
@@ -230,19 +221,9 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
             <div className="text-xs font-bold text-blue-600 mb-1">
               {isCorrect ? '🎉 正解！' : '💡 解説'}
             </div>
-            <div className="text-sm text-blue-900">
-              {hasLongExplanation && !showExplanationDetail
-                ? explanationShort
-                : current.explanation}
+            <div className="text-sm text-blue-900 leading-relaxed">
+              {current.explanation}
             </div>
-            {hasLongExplanation && !showExplanationDetail && (
-              <button
-                onClick={() => setShowExplanationDetail(true)}
-                className="mt-1.5 text-xs font-bold text-blue-500 underline cursor-pointer"
-              >
-                もっとくわしく →
-              </button>
-            )}
           </div>
         )}
 

@@ -26,8 +26,8 @@ export default function HistoryScreen({ onBack }) {
   const avgScore = totalGames > 0 ? Math.round(history.reduce((s, h) => s + h.percentage, 0) / totalGames) : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-4 py-6">
-      <div className="max-w-md w-full mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-3 lg:px-6 py-6">
+      <div className="max-w-md lg:max-w-5xl w-full mx-auto">
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
@@ -72,7 +72,7 @@ export default function HistoryScreen({ onBack }) {
             </div>
 
             {/* 履歴リスト */}
-            <div className="grid gap-3 mb-4">
+            <div className="grid lg:grid-cols-2 gap-3 mb-4">
               {history.map((entry) => {
                 const themeInfo = getThemeInfo(entry.theme);
                 return (
