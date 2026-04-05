@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { themes } from '../data/questions';
-import { getHistory, clearHistory } from '../utils/history';
+import { getHistory, clearAllData } from '../utils/history';
 
 function getThemeInfo(theme) {
   if (theme === 'random') return { name: 'ランダム', icon: '🎲' };
@@ -14,7 +14,7 @@ export default function HistoryScreen({ onBack }) {
   const [confirmClear, setConfirmClear] = useState(false);
 
   function handleClear() {
-    clearHistory();
+    clearAllData();
     setHistory([]);
     setConfirmClear(false);
   }
@@ -101,7 +101,8 @@ export default function HistoryScreen({ onBack }) {
             {/* クリアボタン */}
             {confirmClear ? (
               <div className="bg-white rounded-2xl shadow p-4 text-center">
-                <div className="text-sm font-bold text-gray-600 mb-3">戦績を全部消しますか？</div>
+                <div className="text-sm font-bold text-red-600 mb-1">⚠️ すべてのデータをリセットしますか？</div>
+                <div className="text-xs text-gray-500 mb-3">戦績・レベル・バッジ・にがて問題がすべて消えます</div>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setConfirmClear(false)}
@@ -122,7 +123,7 @@ export default function HistoryScreen({ onBack }) {
                 onClick={() => setConfirmClear(true)}
                 className="w-full p-3 rounded-xl border-2 border-red-200 text-red-400 font-bold text-sm active:scale-95 transition-all cursor-pointer"
               >
-                🗑️ 戦績をリセット
+                🗑️ すべてリセット
               </button>
             )}
           </>

@@ -23,3 +23,11 @@ export function getHistory() {
 export function clearHistory() {
   localStorage.removeItem(KEY);
 }
+
+export function clearAllData() {
+  localStorage.removeItem(KEY);
+  localStorage.removeItem('baseball-quiz-badges');
+  localStorage.removeItem('baseball-quiz-level');
+  localStorage.removeItem('baseball-quiz-daily');
+  localStorage.removeItem('baseball-quiz-wrong-answers');
+}
