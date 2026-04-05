@@ -143,7 +143,8 @@ export default function App() {
       setQuizMode('normal');
       return;
     }
-    handleFinish(score, maxCombo, wrongAnswerIds, correctAnswerIds, answeredCount);
+    // 途中退出時は元の問題数をtotalとして使う（未回答は不正解扱い）
+    handleFinish(score, maxCombo, wrongAnswerIds, correctAnswerIds);
   }, [handleFinish]);
 
   const handleRetry = useCallback(() => {
