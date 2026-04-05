@@ -77,10 +77,10 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
   const diff = difficultyLabel[current.difficulty];
 
   const comboMessage =
-    combo >= 10 ? { text: `🔥🔥 ${combo}連続！神がかり！！`, bg: 'bg-red-500' } :
-    combo >= 7  ? { text: `🔥 ${combo}連続！天才すぎる！`,   bg: 'bg-orange-500' } :
-    combo >= 5  ? { text: `⚡ ${combo}連続！絶好調！`,        bg: 'bg-amber-500' } :
-    combo >= 3  ? { text: `✨ ${combo}連続正解！コンボ継続中！`, bg: 'bg-yellow-500' } :
+    combo >= 10 ? { text: `🔥🔥 ${combo}連続！神がかり！！`, bg: 'bg-red-700' } :
+    combo >= 7  ? { text: `🔥 ${combo}連続！天才すぎる！`,   bg: 'bg-red-600' } :
+    combo >= 5  ? { text: `⚡ ${combo}連続！絶好調！`,        bg: 'bg-red-500' } :
+    combo >= 3  ? { text: `✨ ${combo}連続正解！コンボ継続中！`, bg: 'bg-rose-500' } :
     null;
 
   const comboBreakMessages = [
@@ -94,7 +94,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
   const isCorrect = confirmedAnswer === current.correct;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-3 lg:px-6 py-4">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 px-3 lg:px-6 py-4">
       <Confetti trigger={confettiTrigger} />
       <div className="max-w-2xl lg:max-w-5xl mx-auto">
 
@@ -102,7 +102,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
             <span className="text-lg md:text-xl">{themeInfo.icon}</span>
-            <span className="font-bold text-green-800 text-sm md:text-base">{themeInfo.name}</span>
+            <span className="font-bold text-white text-sm md:text-base">{themeInfo.name}</span>
           </div>
           <div className="flex items-center gap-2">
             {combo >= 2 && (
@@ -110,16 +110,16 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
                 🔥 {combo}連続
               </div>
             )}
-            <div className="text-sm md:text-base font-bold text-green-700">
+            <div className="text-sm md:text-base font-bold text-slate-300">
               {currentIndex + 1} / {total}
             </div>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="w-full h-1.5 bg-green-200 rounded-full mb-3 overflow-hidden">
+        <div className="w-full h-1.5 bg-slate-700 rounded-full mb-3 overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-500"
+            className="h-full bg-gradient-to-r from-red-400 to-red-600 rounded-full transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -127,7 +127,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
         {/* Difficulty + Field diagram + Situation+Question を横並び */}
         <div className="flex gap-3 mb-3">
           {/* 左: フィールド図 */}
-          <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-2 flex-shrink-0 w-36 md:w-44 lg:w-64">
+          <div className="bg-slate-700 border border-slate-600 rounded-xl p-2 flex-shrink-0 w-36 md:w-44 lg:w-64">
             <FieldDiagram situation={current.situation} theme={current.theme} />
           </div>
 
@@ -163,9 +163,9 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
                 style = 'bg-gray-50 border-2 border-gray-200 text-gray-400';
               }
             } else if (pendingAnswer === index) {
-              style = 'bg-blue-50 border-2 border-blue-400 text-blue-800 ring-2 ring-blue-300';
+              style = 'bg-red-900/40 border-2 border-red-400 text-white ring-2 ring-red-500/50';
             } else {
-              style = 'bg-white border-2 border-gray-200 text-gray-800 hover:border-green-400 hover:bg-green-50';
+              style = 'bg-slate-700 border border-slate-500 text-slate-100 hover:border-red-400 hover:bg-slate-600';
             }
 
             return (
@@ -193,8 +193,8 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
             disabled={pendingAnswer === null}
             className={`w-full p-3 rounded-xl font-bold text-base transition-all mb-3 ${
               pendingAnswer !== null
-                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg active:scale-[0.98] cursor-pointer'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg active:scale-[0.98] cursor-pointer'
+                : 'bg-slate-700 text-slate-500 cursor-not-allowed'
             }`}
           >
             解答する ✅
@@ -231,7 +231,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
         {confirmedAnswer !== null && (
           <button
             onClick={handleNext}
-            className="w-full p-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-base shadow-lg active:scale-[0.98] transition-all cursor-pointer"
+            className="w-full p-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 text-white font-bold text-base shadow-lg active:scale-[0.98] transition-all cursor-pointer"
           >
             {currentIndex + 1 >= total ? '結果を見る 🏆' : '次の問題へ ➡️'}
           </button>

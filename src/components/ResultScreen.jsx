@@ -109,20 +109,20 @@ export default function ResultScreen({ score, total, maxCombo, theme, onRetry, o
             <div className="grid gap-3">
               <button
                 onClick={onRetry}
-                className="w-full p-4 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer"
+                className="w-full p-4 rounded-xl bg-gradient-to-r from-red-600 to-red-700 text-white font-bold text-xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer"
               >
                 🔄 もう一度チャレンジ
               </button>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={onHistory}
-                  className="w-full p-4 rounded-xl bg-white border-2 border-amber-300 text-amber-700 font-bold text-lg shadow hover:shadow-md active:scale-[0.98] transition-all cursor-pointer"
+                  className="w-full p-4 rounded-xl bg-white border-2 border-red-300 text-red-700 font-bold text-lg shadow hover:shadow-md active:scale-[0.98] transition-all cursor-pointer"
                 >
                   📊 戦績を見る
                 </button>
                 <button
                   onClick={onHome}
-                  className="w-full p-4 rounded-xl bg-white border-2 border-green-300 text-green-700 font-bold text-lg shadow hover:shadow-md active:scale-[0.98] transition-all cursor-pointer"
+                  className="w-full p-4 rounded-xl bg-white border-2 border-red-200 text-red-600 font-bold text-lg shadow hover:shadow-md active:scale-[0.98] transition-all cursor-pointer"
                 >
                   🏠 トップへ
                 </button>

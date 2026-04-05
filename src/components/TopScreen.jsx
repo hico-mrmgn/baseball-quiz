@@ -25,21 +25,21 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
   const wrongCount = getWrongAnswers().length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-3 lg:px-6 py-6">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 px-3 lg:px-6 py-6">
       <div className="max-w-2xl lg:max-w-5xl mx-auto">
 
         {/* Zone 1: ヘッダー */}
         <div className="flex items-center gap-3 mb-4">
           <div className="flex-shrink-0">
-            <h1 className="text-2xl font-black text-green-800">⚾ つぎ、どうする？</h1>
-            <p className="text-xs text-green-600">野球の状況判断クイズ</p>
+            <h1 className="text-2xl font-black text-white">⚾ つぎ、どうする？</h1>
+            <p className="text-xs text-slate-400">野球の状況判断クイズ</p>
           </div>
-          <div className="flex-1 bg-white rounded-xl shadow-sm p-2.5">
+          <div className="flex-1 bg-slate-700 rounded-xl shadow-sm p-2.5">
             <div className="flex items-center gap-2">
               <span className="text-xl">{levelInfo.emoji}</span>
               <div className="flex-1">
-                <div className="text-xs font-black text-gray-700">Lv.{levelInfo.level} {levelInfo.title}</div>
-                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mt-0.5">
+                <div className="text-xs font-black text-white">Lv.{levelInfo.level} {levelInfo.title}</div>
+                <div className="w-full h-1.5 bg-slate-600 rounded-full overflow-hidden mt-0.5">
                   <div
                     className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full"
                     style={{ width: `${levelInfo.progressPercent}%` }}
@@ -52,23 +52,23 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
 
         {/* Zone 2: 今日やること */}
         <div className="mb-5">
-          <div className="text-xs font-bold text-gray-400 tracking-wider mb-2">今日やること</div>
+          <div className="text-xs font-bold text-slate-400 tracking-wider mb-2">今日やること</div>
           <div className="grid gap-2">
             <button
               onClick={onDailyChallenge}
               disabled={dailyDone}
               className={`flex items-center gap-3 w-full p-4 rounded-2xl shadow active:scale-[0.98] transition-all cursor-pointer ${
                 dailyDone
-                  ? 'bg-gray-100 border-2 border-gray-200 opacity-60'
-                  : 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white hover:shadow-lg'
+                  ? 'bg-slate-700 border-2 border-slate-600 opacity-60'
+                  : 'bg-gradient-to-r from-red-500 to-rose-600 text-white hover:shadow-lg'
               }`}
             >
               <span className="text-3xl">{dailyDone ? '✅' : '📅'}</span>
               <div className="text-left">
-                <div className={`text-base font-bold ${dailyDone ? 'text-gray-500' : 'text-white'}`}>
+                <div className={`text-base font-bold ${dailyDone ? 'text-slate-300' : 'text-white'}`}>
                   {dailyDone ? 'きょうのチャレンジ クリア！' : 'きょうのチャレンジ'}
                 </div>
-                <div className={`text-xs ${dailyDone ? 'text-gray-400' : 'text-white/90'}`}>
+                <div className={`text-xs ${dailyDone ? 'text-slate-400' : 'text-white/90'}`}>
                   {dailyDone
                     ? `${dailyStreak}日連続チャレンジ中 🔥`
                     : `毎日5もん！${dailyStreak > 0 ? `${dailyStreak}日連続中 🔥` : 'きょうもがんばろう！'}`}
@@ -79,7 +79,7 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
             {wrongCount > 0 && (
               <button
                 onClick={onWeaknessQuiz}
-                className="flex items-center gap-3 w-full p-4 rounded-2xl bg-gradient-to-r from-rose-400 to-pink-500 text-white shadow hover:shadow-lg active:scale-[0.98] transition-all cursor-pointer"
+                className="flex items-center gap-3 w-full p-4 rounded-2xl bg-gradient-to-r from-red-700 to-red-800 text-white shadow hover:shadow-lg active:scale-[0.98] transition-all cursor-pointer"
               >
                 <span className="text-3xl">📝</span>
                 <div className="text-left">
@@ -93,11 +93,11 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
 
         {/* Zone 3: テーマを選ぶ */}
         <div className="mb-5">
-          <div className="text-xs font-bold text-gray-400 tracking-wider mb-3">テーマを選ぶ</div>
+          <div className="text-xs font-bold text-slate-400 tracking-wider mb-3">テーマを選ぶ</div>
           <div className="grid gap-4">
             {themeGroups.map((group) => (
               <div key={group.label}>
-                <div className="text-xs font-bold text-gray-500 mb-2">{group.label}</div>
+                <div className="text-xs font-bold text-slate-400 mb-2">{group.label}</div>
                 <div className="grid grid-cols-2 gap-2">
                   {group.keys.map((key) => {
                     const theme = themes[key];
@@ -121,10 +121,10 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
 
         {/* Zone 4: もっとやるなら */}
         <div className="mb-4">
-          <div className="text-xs font-bold text-gray-400 tracking-wider mb-2">もっとやるなら</div>
+          <div className="text-xs font-bold text-slate-400 tracking-wider mb-2">もっとやるなら</div>
           <button
             onClick={() => onSelectTheme('random')}
-            className="flex items-center gap-3 w-full p-4 rounded-2xl bg-gradient-to-r from-gray-700 to-gray-900 text-white shadow hover:shadow-lg active:scale-[0.98] transition-all cursor-pointer"
+            className="flex items-center gap-3 w-full p-4 rounded-2xl bg-gradient-to-r from-red-900 to-zinc-800 text-white shadow hover:shadow-lg active:scale-[0.98] transition-all cursor-pointer"
           >
             <span className="text-3xl">🎲</span>
             <div className="text-left">
@@ -138,13 +138,13 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={onHistory}
-            className="w-full p-3 rounded-xl border-2 border-amber-300 bg-amber-50 text-amber-700 font-bold text-sm active:scale-[0.98] transition-all cursor-pointer"
+            className="w-full p-3 rounded-xl border border-slate-600 bg-slate-700 text-slate-200 font-bold text-sm active:scale-[0.98] transition-all cursor-pointer"
           >
             📊 戦績を見る
           </button>
           <button
             onClick={onBadges}
-            className="w-full p-3 rounded-xl border-2 border-purple-300 bg-purple-50 text-purple-700 font-bold text-sm active:scale-[0.98] transition-all cursor-pointer"
+            className="w-full p-3 rounded-xl border border-slate-600 bg-slate-700 text-slate-200 font-bold text-sm active:scale-[0.98] transition-all cursor-pointer"
           >
             🏅 バッジ
           </button>
