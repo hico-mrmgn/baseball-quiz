@@ -3,136 +3,153 @@ import { getLevelData, getLevelInfo } from '../utils/level';
 import { isDailyCompleted, getDailyStreak } from '../utils/daily';
 import { getWrongAnswers } from '../utils/weakness';
 
+const themeGroups = [
+  {
+    label: '守備ポジション',
+    keys: ['third', 'second', 'short', 'pitcher', 'first', 'outfield'],
+  },
+  {
+    label: '攻撃・走塁',
+    keys: ['baserun', 'coach'],
+  },
+  {
+    label: 'ルール知識',
+    keys: ['rules'],
+  },
+];
+
 export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyChallenge, onWeaknessQuiz }) {
-  const themeKeys = Object.keys(themes);
   const levelInfo = getLevelInfo(getLevelData().xp);
   const dailyDone = isDailyCompleted();
   const dailyStreak = getDailyStreak();
   const wrongCount = getWrongAnswers().length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-4 py-6">
       <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-6">
-          <h1 className="text-4xl md:text-5xl font-black text-green-800 mb-2">
-            ⚾ つぎ、どうする？
-          </h1>
-          <p className="text-lg text-green-700">
-            野球の状況判断クイズ
-          </p>
-        </div>
 
-        {/* レベル表示 */}
-        <div className="bg-white rounded-2xl shadow p-4 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="text-3xl">{levelInfo.emoji}</div>
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-black text-gray-800 text-lg">Lv.{levelInfo.level} {levelInfo.title}</span>
-              </div>
-              <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full transition-all"
-                  style={{ width: `${levelInfo.progressPercent}%` }}
-                />
-              </div>
-              <div className="text-xs text-gray-400 mt-0.5 text-right">
-                {levelInfo.isMaxLevel ? 'MAX' : `${levelInfo.xpInLevel} / ${levelInfo.xpForNextLevel} XP`}
+        {/* Zone 1: ヘッダー */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-shrink-0">
+            <h1 className="text-2xl font-black text-green-800">⚾ つぎ、どうする？</h1>
+            <p className="text-xs text-green-600">野球の状況判断クイズ</p>
+          </div>
+          <div className="flex-1 bg-white rounded-xl shadow-sm p-2.5">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">{levelInfo.emoji}</span>
+              <div className="flex-1">
+                <div className="text-xs font-black text-gray-700">Lv.{levelInfo.level} {levelInfo.title}</div>
+                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mt-0.5">
+                  <div
+                    className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full"
+                    style={{ width: `${levelInfo.progressPercent}%` }}
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* デイリーチャレンジ */}
-        <button
-          onClick={onDailyChallenge}
-          disabled={dailyDone}
-          className={`flex items-center gap-4 w-full p-5 rounded-2xl shadow-lg active:scale-[0.98] transition-all cursor-pointer mb-4 ${
-            dailyDone
-              ? 'bg-gray-100 border-2 border-gray-200 opacity-60'
-              : 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white hover:shadow-xl'
-          }`}
-        >
-          <span className="text-4xl">{dailyDone ? '✅' : '📅'}</span>
-          <div className="text-left">
-            <div className={`text-xl font-bold ${dailyDone ? 'text-gray-500' : 'text-white'}`}>
-              {dailyDone ? 'きょうのチャレンジ クリア！' : 'きょうのチャレンジ'}
-            </div>
-            <div className={`text-sm ${dailyDone ? 'text-gray-400' : 'text-white/90'}`}>
-              {dailyDone
-                ? `${dailyStreak}日連続チャレンジ中 🔥`
-                : `毎日5もん！${dailyStreak > 0 ? `${dailyStreak}日連続中 🔥` : 'きょうもがんばろう！'}`}
-            </div>
-          </div>
-        </button>
-
-        {/* にがてこくふくモード */}
-        {wrongCount > 0 && (
-          <button
-            onClick={onWeaknessQuiz}
-            className="flex items-center gap-4 w-full p-5 rounded-2xl bg-gradient-to-r from-rose-400 to-pink-500 text-white shadow-lg hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer mb-4"
-          >
-            <span className="text-4xl">📝</span>
-            <div className="text-left">
-              <div className="text-xl font-bold">にがてこくふく</div>
-              <div className="text-sm opacity-90">
-                まちがえた問題にリベンジ！（{wrongCount}問）
+        {/* Zone 2: 今日やること */}
+        <div className="mb-5">
+          <div className="text-xs font-bold text-gray-400 tracking-wider mb-2">今日やること</div>
+          <div className="grid gap-2">
+            <button
+              onClick={onDailyChallenge}
+              disabled={dailyDone}
+              className={`flex items-center gap-3 w-full p-4 rounded-2xl shadow active:scale-[0.98] transition-all cursor-pointer ${
+                dailyDone
+                  ? 'bg-gray-100 border-2 border-gray-200 opacity-60'
+                  : 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white hover:shadow-lg'
+              }`}
+            >
+              <span className="text-3xl">{dailyDone ? '✅' : '📅'}</span>
+              <div className="text-left">
+                <div className={`text-base font-bold ${dailyDone ? 'text-gray-500' : 'text-white'}`}>
+                  {dailyDone ? 'きょうのチャレンジ クリア！' : 'きょうのチャレンジ'}
+                </div>
+                <div className={`text-xs ${dailyDone ? 'text-gray-400' : 'text-white/90'}`}>
+                  {dailyDone
+                    ? `${dailyStreak}日連続チャレンジ中 🔥`
+                    : `毎日5もん！${dailyStreak > 0 ? `${dailyStreak}日連続中 🔥` : 'きょうもがんばろう！'}`}
+                </div>
               </div>
-            </div>
-          </button>
-        )}
+            </button>
 
-        {/* テーマ選択 */}
-        <div className="grid gap-4">
-          {themeKeys.map((key) => {
-            const theme = themes[key];
-            const count = questions.filter((q) => q.theme === key).length;
-            return (
+            {wrongCount > 0 && (
               <button
-                key={key}
-                onClick={() => onSelectTheme(key)}
-                className={`flex items-center gap-4 w-full p-5 rounded-2xl bg-gradient-to-r ${theme.color} text-white shadow-lg hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer`}
+                onClick={onWeaknessQuiz}
+                className="flex items-center gap-3 w-full p-4 rounded-2xl bg-gradient-to-r from-rose-400 to-pink-500 text-white shadow hover:shadow-lg active:scale-[0.98] transition-all cursor-pointer"
               >
-                <span className="text-4xl">{theme.icon}</span>
+                <span className="text-3xl">📝</span>
                 <div className="text-left">
-                  <div className="text-xl font-bold">{theme.name}</div>
-                  <div className="text-sm opacity-90">
-                    {theme.description} ・ {count}問
-                  </div>
+                  <div className="text-base font-bold">にがてこくふく</div>
+                  <div className="text-xs opacity-90">まちがえた問題にリベンジ！（{wrongCount}問）</div>
                 </div>
               </button>
-            );
-          })}
+            )}
+          </div>
+        </div>
 
+        {/* Zone 3: テーマを選ぶ */}
+        <div className="mb-5">
+          <div className="text-xs font-bold text-gray-400 tracking-wider mb-3">テーマを選ぶ</div>
+          <div className="grid gap-4">
+            {themeGroups.map((group) => (
+              <div key={group.label}>
+                <div className="text-xs font-bold text-gray-500 mb-2">{group.label}</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {group.keys.map((key) => {
+                    const theme = themes[key];
+                    if (!theme) return null;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => onSelectTheme(key)}
+                        className={`flex items-center gap-2 w-full p-3 rounded-xl bg-gradient-to-r ${theme.color} text-white shadow active:scale-[0.98] transition-all cursor-pointer`}
+                      >
+                        <span className="text-2xl">{theme.icon}</span>
+                        <span className="font-bold text-sm">{theme.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Zone 4: もっとやるなら */}
+        <div className="mb-4">
+          <div className="text-xs font-bold text-gray-400 tracking-wider mb-2">もっとやるなら</div>
           <button
             onClick={() => onSelectTheme('random')}
-            className="flex items-center gap-4 w-full p-5 rounded-2xl bg-gradient-to-r from-gray-700 to-gray-900 text-white shadow-lg hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer mt-2"
+            className="flex items-center gap-3 w-full p-4 rounded-2xl bg-gradient-to-r from-gray-700 to-gray-900 text-white shadow hover:shadow-lg active:scale-[0.98] transition-all cursor-pointer"
           >
-            <span className="text-4xl">🎲</span>
+            <span className="text-3xl">🎲</span>
             <div className="text-left">
-              <div className="text-xl font-bold">全テーマランダム</div>
-              <div className="text-sm opacity-90">
-                すべての編からランダムに15問
-              </div>
+              <div className="text-base font-bold">全テーマランダム</div>
+              <div className="text-xs opacity-90">すべての編からランダムに15問</div>
             </div>
           </button>
         </div>
 
-        {/* フッターボタン */}
-        <div className="grid grid-cols-2 gap-3 mt-4">
+        {/* Zone 5: フッター */}
+        <div className="grid grid-cols-2 gap-3">
           <button
             onClick={onHistory}
-            className="w-full p-3 rounded-xl border-2 border-amber-300 bg-amber-50 text-amber-700 font-bold text-base active:scale-[0.98] transition-all cursor-pointer"
+            className="w-full p-3 rounded-xl border-2 border-amber-300 bg-amber-50 text-amber-700 font-bold text-sm active:scale-[0.98] transition-all cursor-pointer"
           >
             📊 戦績を見る
           </button>
           <button
             onClick={onBadges}
-            className="w-full p-3 rounded-xl border-2 border-purple-300 bg-purple-50 text-purple-700 font-bold text-base active:scale-[0.98] transition-all cursor-pointer"
+            className="w-full p-3 rounded-xl border-2 border-purple-300 bg-purple-50 text-purple-700 font-bold text-sm active:scale-[0.98] transition-all cursor-pointer"
           >
             🏅 バッジ
           </button>
         </div>
+
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ export default function LevelUpNotification({ levelInfo, onClose }) {
         <div className="text-5xl font-black text-white mb-1">Lv.{levelInfo.level}</div>
         <h3 className="text-2xl font-black text-white mb-4">{levelInfo.title}</h3>
         <button
-          onClick={onClose}
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
           className="px-6 py-2 rounded-xl bg-white text-orange-600 font-bold text-lg shadow active:scale-95 transition-all cursor-pointer"
         >
           よっしゃ！

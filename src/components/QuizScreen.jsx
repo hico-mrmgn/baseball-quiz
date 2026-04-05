@@ -101,64 +101,64 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
   const hasLongExplanation = current.explanation.length > 60;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-4 py-4">
       <Confetti trigger={confettiTrigger} />
       <div className="max-w-2xl mx-auto">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">{themeInfo.icon}</span>
-            <span className="font-bold text-green-800 text-lg">{themeInfo.name}</span>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <span className="text-lg md:text-xl">{themeInfo.icon}</span>
+            <span className="font-bold text-green-800 text-sm md:text-base">{themeInfo.name}</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {combo >= 2 && (
-              <div className="text-orange-500 font-black text-base animate-pulse">
+              <div className="text-orange-500 font-black text-sm md:text-base animate-pulse">
                 🔥 {combo}連続
               </div>
             )}
-            <div className="text-base font-bold text-green-700">
+            <div className="text-sm md:text-base font-bold text-green-700">
               {currentIndex + 1} / {total}
             </div>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="w-full h-3 bg-green-200 rounded-full mb-4 overflow-hidden">
+        <div className="w-full h-1.5 bg-green-200 rounded-full mb-3 overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-500"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-        {/* Difficulty */}
-        <div className="mb-3">
-          <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${diff.color}`}>
-            {diff.text}
-          </span>
-        </div>
-
-        {/* Field diagram */}
-        <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-3 mb-3">
-          <FieldDiagram situation={current.situation} theme={current.theme} />
-        </div>
-
-        {/* Situation + Question combined */}
-        <div className="bg-white rounded-xl p-4 mb-4 shadow-sm border border-green-200">
-          <div className="text-sm font-bold text-amber-600 mb-1">🎯 状況</div>
-          <div className="text-base font-bold text-amber-900 mb-3">
-            {current.situation}
+        {/* Difficulty + Field diagram + Situation+Question を横並び */}
+        <div className="flex gap-3 mb-3">
+          {/* 左: フィールド図 */}
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-2 flex-shrink-0 w-36 md:w-44">
+            <FieldDiagram situation={current.situation} theme={current.theme} />
           </div>
-          <div className="border-t border-gray-100 pt-3">
-            <div className="text-sm font-bold text-green-600 mb-1">❓ 問題</div>
-            <div className="text-xl font-bold text-gray-800">
-              {current.question}
+
+          {/* 右: 難易度 + 状況 + 問題 */}
+          <div className="flex-1 bg-white rounded-xl p-3 shadow-sm border border-green-200 flex flex-col justify-between">
+            <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-bold mb-2 ${diff.color}`}>
+              {diff.text}
+            </span>
+            <div>
+              <div className="text-xs md:text-sm font-bold text-amber-600 mb-0.5">状況</div>
+              <div className="text-xs md:text-sm text-amber-900 mb-2 leading-snug">
+                {current.situation}
+              </div>
+              <div className="border-t border-gray-100 pt-2">
+                <div className="text-base md:text-lg font-bold text-gray-800 leading-snug">
+                  {current.question}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Choices */}
-        <div className="grid gap-3 mb-4">
+        <div className="grid gap-2 mb-3">
           {current.choices.map((choice, index) => {
             let style;
             if (confirmedAnswer !== null) {
@@ -180,9 +180,9 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
                 key={index}
                 onClick={() => handleSelect(index)}
                 disabled={confirmedAnswer !== null}
-                className={`w-full min-h-[64px] p-4 rounded-xl text-left font-bold text-lg transition-all ${style} ${confirmedAnswer === null ? 'active:scale-[0.98] cursor-pointer' : ''}`}
+                className={`w-full p-3 md:p-4 rounded-xl text-left font-bold text-sm md:text-base transition-all ${style} ${confirmedAnswer === null ? 'active:scale-[0.98] cursor-pointer' : ''}`}
               >
-                <span className="mr-2 inline-block w-8 text-center">
+                <span className="mr-1.5 inline-block w-6 text-center">
                   {confirmedAnswer !== null && index === current.correct ? '⭕' :
                    confirmedAnswer === index && index !== current.correct ? '❌' :
                    `${String.fromCharCode(65 + index)}.`}
@@ -197,7 +197,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
         {pendingAnswer !== null && confirmedAnswer === null && (
           <button
             onClick={handleConfirm}
-            className="w-full p-4 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-xl shadow-lg active:scale-[0.98] transition-all cursor-pointer mb-4"
+            className="w-full p-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-base shadow-lg active:scale-[0.98] transition-all cursor-pointer mb-3"
           >
             解答する ✅
           </button>
@@ -205,32 +205,32 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
 
         {/* 選択前のヒント */}
         {pendingAnswer === null && confirmedAnswer === null && (
-          <div className="text-center text-base text-gray-400 mb-4">
+          <div className="text-center text-xs text-gray-400 mb-3">
             答えを選んでから「解答する」を押してね
           </div>
         )}
 
         {/* コンボバナー */}
         {confirmedAnswer !== null && isCorrect && comboMessage && (
-          <div className={`${comboMessage.bg} text-white rounded-xl p-3 mb-4 text-center font-black text-xl`}>
+          <div className={`${comboMessage.bg} text-white rounded-xl p-2.5 mb-3 text-center font-black text-base`}>
             {comboMessage.text}
           </div>
         )}
 
         {/* コンボ途切れメッセージ */}
         {confirmedAnswer !== null && !isCorrect && comboBreak && (
-          <div className="combo-break-msg text-center text-base font-bold text-amber-600 mb-4 bg-amber-50 rounded-xl p-3 border border-amber-200">
+          <div className="combo-break-msg text-center text-sm font-bold text-amber-600 mb-3 bg-amber-50 rounded-xl p-2.5 border border-amber-200">
             {comboBreakMsg}
           </div>
         )}
 
         {/* Explanation */}
         {confirmedAnswer !== null && (
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
-            <div className="text-sm font-bold text-blue-600 mb-1">
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-3 mb-3">
+            <div className="text-xs font-bold text-blue-600 mb-1">
               {isCorrect ? '🎉 正解！' : '💡 解説'}
             </div>
-            <div className="text-base text-blue-900">
+            <div className="text-sm text-blue-900">
               {hasLongExplanation && !showExplanationDetail
                 ? explanationShort
                 : current.explanation}
@@ -238,7 +238,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
             {hasLongExplanation && !showExplanationDetail && (
               <button
                 onClick={() => setShowExplanationDetail(true)}
-                className="mt-2 text-sm font-bold text-blue-500 underline cursor-pointer"
+                className="mt-1.5 text-xs font-bold text-blue-500 underline cursor-pointer"
               >
                 もっとくわしく →
               </button>
@@ -250,7 +250,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
         {confirmedAnswer !== null && (
           <button
             onClick={handleNext}
-            className="w-full p-4 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-xl shadow-lg active:scale-[0.98] transition-all cursor-pointer"
+            className="w-full p-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-base shadow-lg active:scale-[0.98] transition-all cursor-pointer"
           >
             {currentIndex + 1 >= total ? '結果を見る 🏆' : '次の問題へ ➡️'}
           </button>
