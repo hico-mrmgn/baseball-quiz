@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { themes } from '../data/questions';
+import FieldDiagram from './FieldDiagram';
 
 export default function QuizScreen({ questions: quizQuestions, theme, onFinish }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -36,9 +37,10 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
   }
 
   const difficultyLabel = {
-    easy: { text: 'かんたん', color: 'bg-green-100 text-green-700' },
-    normal: { text: 'ふつう', color: 'bg-yellow-100 text-yellow-700' },
-    hard: { text: 'むずかしい', color: 'bg-red-100 text-red-700' },
+    easy: { text: '⭐ 初級', color: 'bg-green-100 text-green-700' },
+    normal: { text: '⭐⭐ 中級', color: 'bg-blue-100 text-blue-700' },
+    hard: { text: '⭐⭐⭐ 上級', color: 'bg-orange-100 text-orange-700' },
+    expert: { text: '🔥 プロ級', color: 'bg-red-100 text-red-700' },
   };
 
   const diff = difficultyLabel[current.difficulty];
@@ -78,6 +80,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
           <div className="text-base font-bold text-amber-900">
             {current.situation}
           </div>
+          <FieldDiagram situation={current.situation} theme={current.theme} />
         </div>
 
         {/* Question */}

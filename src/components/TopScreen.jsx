@@ -8,10 +8,10 @@ export default function TopScreen({ onSelectTheme }) {
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-black text-green-800 mb-2">
-            &#9918; 野球脳クイズ
+            &#9918; つぎ、どうする？
           </h1>
           <p className="text-lg text-green-700">
-            状況判断力をきたえよう！
+            野球の状況判断クイズ
           </p>
         </div>
 
