@@ -172,7 +172,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish, 
           )}
 
           {/* 右: 難易度 + 状況 + 問題 */}
-          <div className="flex-1 bg-white rounded-xl p-3 shadow-sm border border-green-200 flex flex-col justify-between">
+          <div className="flex-1 bg-white rounded-xl p-3 shadow-sm border border-green-200 flex flex-col gap-2">
             <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-bold mb-2 ${diff.color}`}>
               {diff.text}
             </span>
