@@ -8,7 +8,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "コーチャーは打球が飛ぶ前からレフトの肩の強さを把握しておき、打球が飛んだ瞬間から判断を始める。弱肩なら突入、強肩なら状況次第で止める。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-002",
     theme: "coach",
@@ -18,7 +18,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "2アウトは走者も全力で走っているため、コーチャーが遅れて判断すると手遅れになる。打球を見ながら早めに判断して、ランナーへのサインも早く出す。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-003",
     theme: "coach",
@@ -28,7 +28,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "浅いレフトフライのタッチアップでホームを狙うのはリスクが高い。学童野球では相手の肩が弱いことも多いが、浅いフライからのホームタッチアップは間に合わないことが多い。まず3塁に進ませて得点チャンスを広げるのが安全策。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-004",
     theme: "coach",
@@ -38,7 +38,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "コーチャーの判断は複数の要素を総合的に判断する。センターの肩の強さ、ランナーの走力、打球の深さ・速さをすべて考慮して素早く決断する。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-005",
     theme: "coach",
@@ -48,7 +48,7 @@ export const coachQuestions = [
     correct: 0,
     explanation: "2アウトでレフト前ヒットなら、3塁ランナーは余裕でホームイン。2アウトだからこそ積極的にホームを狙わせる。止める判断はアウトカウントが少ない時。2アウトは「迷ったら突入」が基本。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-006",
     theme: "coach",
@@ -58,7 +58,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ライトからホームへの送球は距離が長いためランナーに有利なことが多い。ただし強肩ライトや走力が遅いランナーなら止める判断も必要。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-007",
     theme: "coach",
@@ -68,7 +68,7 @@ export const coachQuestions = [
     correct: 2,
     explanation: "1塁・2塁の判断は1塁コーチャーや選手自身の判断。3塁コーチャーは3塁付近の状況を担当するため、2塁盗塁への指示は範囲外。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-008",
     theme: "coach",
@@ -78,7 +78,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ファースト方向への打球でランナーは背中を向けて走るため、コーチャーの判断が特に重要。打球の速さ・方向・外野手の位置を素早く判断して早めに指示を出す。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-009",
     theme: "coach",
@@ -88,7 +88,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "フェンス直撃でセンターの処理に時間がかかる場合は積極的にホームへ突入させる。センターがボールを処理する速さを見ながら腕を回し続ける。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-010",
     theme: "coach",
@@ -98,7 +98,7 @@ export const coachQuestions = [
     correct: 0,
     explanation: "内野フライでランナー2塁の場合、まず2塁ベースに戻す（タッチアップの準備をさせる）。内野手の捕球後に素早くタッチアップして3塁を狙える場合もある。学童野球では内野手から3塁への送球が弱いこともあり、積極的な判断が有効なことも。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-011",
     theme: "coach",
@@ -108,7 +108,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "コーチャーの仕事は「早めの判断と早めの指示」。打球が飛んだ瞬間から判断を始め、ランナーが3塁に近づく前に指示を出すことが重要。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-012",
     theme: "coach",
@@ -118,7 +118,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "サードゴロでランナー3塁の場合、サードがファーストに送球するのを確認してからホームへ突入の指示を出す。1塁送球なら突入のチャンス。ホームへ送球されるなら止める。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-013",
     theme: "coach",
@@ -128,7 +128,7 @@ export const coachQuestions = [
     correct: 2,
     explanation: "ショートゴロでランナー2塁の場合、ショートがどこに投げるかを瞬時に判断してコーチャーが指示を出す。1塁送球なら突入チャンス、ホームへ投げてきたら止める。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-014",
     theme: "coach",
@@ -138,7 +138,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ピッチャーゴロの場合、ピッチャーが近い位置から処理するためホームへの送球が簡単。1アウトなら無理に突入してアウトになるリスクを避けるべき。「止まれ」の指示で次のチャンスを待とう。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-015",
     theme: "coach",
@@ -148,7 +148,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "タッチアップのチャンスでは、捕球の瞬間にランナーへ合図を出すことが重要。コーチャーがタイミングを見て「タッチ！走れ！」と指示することでランナーが迷わず動ける。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-016",
     theme: "coach",
@@ -158,7 +158,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "1・3塁での1塁ランナー盗塁時、3塁コーチャーは3塁ランナーを管理する。キャッチャーが2塁に送球したら3塁ランナーがホームを狙えるが、キャッチャーがホームに送球するなら止める。",
     difficulty: "expert"
-  },,
+  },
   {
     id: "coach-017",
     theme: "coach",
@@ -168,7 +168,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "2アウトなので得点チャンスを積極的に狙いたいが、アウトになれば攻撃終了。レフトの肩の強さと打球の深さをしっかり見て判断する。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-018",
     theme: "coach",
@@ -178,7 +178,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ショートゴロで1アウトランナー3塁の場合、ショートが1塁に投げればホームへ突入のチャンス。ホームに投げてくれば止める。コーチャーはショートの動きを見て瞬時に判断。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-019",
     theme: "coach",
@@ -188,7 +188,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ライトからホームへのタッチアップは距離が長く難しい。浅いフライなら特にリスクが高い。ライトの肩の強さと距離を見て冷静に判断する。",
     difficulty: "expert"
-  },,
+  },
   {
     id: "coach-020",
     theme: "coach",
@@ -198,7 +198,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "パスボールで2アウトの場合、全力で進塁を狙う。3塁ランナーはホームへ突入し、1塁ランナーも進塁する。コーチャーは3塁ランナーにホームへの指示を出す。",
     difficulty: "expert"
-  },,
+  },
   {
     id: "coach-021",
     theme: "coach",
@@ -208,7 +208,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "レフト前ヒットで外野手が素早く処理している場合、ノーアウトなら3塁でストップさせるのが基本。アウトになるリスクを避け、得点圏にランナーを置いてチャンスを広げる。腕を水平に広げて「ストップ！」とはっきり声をかける。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-022",
     theme: "coach",
@@ -218,7 +218,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "2アウトではランナーはヒットと同時に全力で走り始める。レフト深い当たりは時間がかかるので、コーチャーは積極的にホームへ回す判断をする。2アウトでアウトになっても3アウトと同じなので、積極的に突入させる。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-023",
     theme: "coach",
@@ -228,7 +228,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ライト前の浅いヒットでは、ライトからホームへの距離が短く送球が速い。1アウトでアウトになるとチャンスが消えてしまうため、3塁でストップが基本。コーチャーは早めに「ストップ！」と声をかけて腕を広げる。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-024",
     theme: "coach",
@@ -238,7 +238,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "センターの頭を越える当たりはランナーが一気に生還できるチャンス。コーチャーは打球がセンターを越えたのを確認したら、大きく腕を回してホームへ突入を指示する。ランナーは3塁ベースを確認しながら全力疾走する。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-025",
     theme: "coach",
@@ -248,7 +248,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "浅いレフトフライでのタッチアップは、外野手の肩の強さを事前に確認しておくことが大切。コーチャーは試合前から相手外野手の肩を確認し、弱いと判断したらタッチアップを指示。強肩なら無理せず止める。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-026",
     theme: "coach",
@@ -258,7 +258,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ライトからの送球距離は長いが、肩の強さによって判断が変わる。弱肩の選手ならタッチアップのチャンス。コーチャーはイニング前から外野手の肩を確認しておき、タッチアップ可能かを判断する準備をしておく。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-027",
     theme: "coach",
@@ -268,7 +268,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "2アウトでランナー3塁、内野ゴロではランナーは打球と同時に走る。ショートが1塁に投げる間にホームへ生還できる。コーチャーは内野の守備を確認しながら「行け！」と大きく腕を回す。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-028",
     theme: "coach",
@@ -278,7 +278,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "外野手が後ろ向きで追いかけている打球は、ヒットになる可能性が高い。コーチャーは打球の行方を確認しながら、捕球されなければ積極的にホームへ回す準備をする。「行くぞ！」と声かけしながら待機する。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-029",
     theme: "coach",
@@ -288,7 +288,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "セーフティースクイズでバントがミスされた場合、ランナーはスタートを切っているはず。コーチャーはすぐに「戻れ！」と大声で指示し、3塁に帰塁させる。タイミングが合えばアウトを回避できる。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-030",
     theme: "coach",
@@ -298,7 +298,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "内野フライでインフィールドフライでない場合、故意落球の可能性がある。ランナーはベースに戻り、捕球（または落球）を確認してから判断する。コーチャーは「戻れ！」と指示し、落球した場合は素早く走るよう伝える。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-031",
     theme: "coach",
@@ -308,7 +308,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ワイルドピッチでは3塁ランナーのホーム突入が最優先。キャッチャーが素早く追いかけた場合、1塁ランナーの進塁は送球状況を見て判断する。まず3塁ランナーをホームへ送り、余裕があれば1塁ランナーも進める。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-032",
     theme: "coach",
@@ -318,7 +318,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "フライが捕球されたのに走り続けると帰塁できずにアウトになる。コーチャーはすぐに「戻れ！」と大声で叫び、3塁に帰塁させる。2アウトでも無駄なアウトは避けるべき。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-033",
     theme: "coach",
@@ -328,7 +328,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ライトが前進してキャッチした場合は送球が速い。コーチャーは「戻れ！」と指示して、無理に進塁させないのが賢明。タッチアップで3塁を狙える場合もあるが、前進キャッチは距離が近く難しい。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-034",
     theme: "coach",
@@ -338,7 +338,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "3塁ランナーのタッチアップを優先しつつ、2塁ランナーも3塁へのタッチアップを狙う。センターの捕球後の送球先を見て、ホームへ投げるなら2塁ランナーが3塁に進める。コーチャーは両方のランナーを同時に誘導する。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-035",
     theme: "coach",
@@ -348,7 +348,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "3塁ランナーがホームへ突入した後、センターがホームに送球すれば1塁ランナーは2塁・3塁を狙える。コーチャーは3塁ランナーをホームへ送りながら、センターの動きを見て1塁ランナーへの指示を出す。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-036",
     theme: "coach",
@@ -358,7 +358,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "送球がそれたのを確認したら、コーチャーはすぐにホームへ突入を指示する。しかし確認せずに突入させると、カットマンがカバーして刺される場合もある。まず送球のそれを目で確認してから大きく腕を回す。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-037",
     theme: "coach",
@@ -368,7 +368,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "センターからホームは距離があるが、前進キャッチなら送球は速い。タッチアップの判断はセンターの肩の強さが重要。試合前に各外野手の肩を確認しておき、その情報を元にコーチャーが判断する。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-038",
     theme: "coach",
@@ -378,7 +378,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "コーチャーはランナーとのコミュニケーションが大切。チェンジ後もランナーに声をかけて士気を高め、次の守備に向けて切り替えを促す。「ナイスラン！」「次のチャンスで決めよう！」などポジティブな声がけが重要。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-039",
     theme: "coach",
@@ -388,7 +388,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "サードがファーストへ投げる間、3塁ランナーはホームへ突入できる。コーチャーはサードが1塁に投げた瞬間に「行け！」と指示する。1アウトで得点できるチャンスを逃さない。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-040",
     theme: "coach",
@@ -398,7 +398,7 @@ export const coachQuestions = [
     correct: 0,
     explanation: "2アウトだからこそ積極的にホームを狙う。センターが前に出て捕球した分、ホームへの送球には時間がかかる。2塁ランナーは打球と同時にスタートを切っているので、ホーム突入が間に合うことが多い。2アウトでは「迷ったらGo」が基本。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-041",
     theme: "coach",
@@ -408,7 +408,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "フェンス直撃の当たりはランナーにとって絶好のチャンス。2塁ランナーはホームまで生還できる。コーチャーはランナーが3塁を回る前に「回れ！回れ！」と大きく腕を回してホームへ突入させる。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-042",
     theme: "coach",
@@ -418,7 +418,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "サードゴロでサードがファーストへ投げる場合、2塁ランナーは3塁へ進めることが多い。ただしサードがランナーを見てから1塁に投げる場合もあるので、コーチャーはサードの動きを確認してから指示する。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-043",
     theme: "coach",
@@ -428,7 +428,7 @@ export const coachQuestions = [
     correct: 0,
     explanation: "パスボールでボールが大きく転がれば、3塁ランナーはホームへ突入できる。コーチャーはすぐに「行け！」と指示する。ただしボールがキャッチャーの近くなら止める判断も必要。ボールの位置を確認しながら素早く指示を出す。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-044",
     theme: "coach",
@@ -438,7 +438,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "タッチアップは外野手が捕球した瞬間にスタートするのが基本。コーチャーは外野手の捕球位置・肩の強さ・送球角度を確認して、「行け！」か「止まれ！」を瞬時に判断して指示する。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-045",
     theme: "coach",
@@ -448,7 +448,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "1・3塁での盗塁時、キャッチャーが2塁に投げた隙にホームを狙う作戦。コーチャーはキャッチャーの動きを見て、2塁送球したと確認したらすぐ「行け！」と指示する。これは事前にサインで確認しておく必要がある。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-046",
     theme: "coach",
@@ -458,7 +458,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ライトが深い位置（フェンス際等）で捕球した場合、送球距離が長くなるためタッチアップのチャンス。コーチャーはライトの捕球位置を確認し、深ければ積極的にタッチアップを指示する。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-047",
     theme: "coach",
@@ -468,7 +468,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "フェア・ファウルが微妙な打球では、まず審判の判定を確認する。フェアなら即座に突入、ファウルなら止める。コーチャーが間違えてフェアと判断して突入させ、ファウルだった場合はランナーが戻れずアウトになる恐れがある。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-048",
     theme: "coach",
@@ -478,7 +478,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ライナーがダイレクトキャッチされた場合、ランナーは走り始めているかもしれない。すぐに「戻れ！」と大声で叫び、帰塁させる。ダブルプレーを防ぐために素早い判断と声がけが必要。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-049",
     theme: "coach",
@@ -488,7 +488,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "サードが処理に手間取っている場合、ランナーにとってチャンス。コーチャーはサードの動きを見て、送球が遅れるなら「行け！」とホームへ突入させる。ただしノーアウトなのでアウトになるリスクも考慮する。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-050",
     theme: "coach",
@@ -498,7 +498,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ショートが横っ飛びで好捕した場合でも、体勢を崩しており1塁送球が遅れる可能性がある。しかし確実にアウトになるリスクを考えると3塁でストップが基本。コーチャーはショートの体勢を見て素早く判断する。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-051",
     theme: "coach",
@@ -508,7 +508,7 @@ export const coachQuestions = [
     correct: 0,
     explanation: "セカンドが2塁へ投げてアウトになった後、セカンドは2塁→1塁とダブルプレーを狙う。その隙に3塁ランナーはホームへ突入できる。コーチャーはセカンドの送球先を見て、2塁に投げたらすぐ「行け！」と指示。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-052",
     theme: "coach",
@@ -518,7 +518,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "スクイズではバッターがバントをした瞬間にランナーはスタートを切る。コーチャーはバントが成功したのを確認したら「行け！」と大きく指示。内野のどこに転がったかを確認し、確実に生還できると判断したら突入させる。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-053",
     theme: "coach",
@@ -528,7 +528,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "外野手がエラーや転倒で処理が遅れた場合、コーチャーはすかさず積極的な判断をする。レフトが転んだのを確認したら大きく腕を回してホームへ突入させる。このような状況でのチャンスを確実に生かす。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-054",
     theme: "coach",
@@ -538,7 +538,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ライトが深い守備位置にいる場合、前への打球に対して距離が長くなる。2アウトでランナーが走っており、ライトの位置が深ければ積極的にホームを狙える。コーチャーは相手の守備位置を常に把握しておく。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-055",
     theme: "coach",
@@ -548,7 +548,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "振り逃げでキャッチャーがボールを後逸した場合、3塁ランナーはホームを狙える。ボールがどこに転がったかを確認してから指示を出す。近くに転がっていればアウトになるリスクがあるので止める判断も必要。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-056",
     theme: "coach",
@@ -558,7 +558,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "3塁ランナーのタッチアップを優先しつつ、2塁ランナーも3塁へのタッチアップを狙う。センターの捕球後の送球先を見て、ホームへ投げるなら2塁ランナーが3塁に進める。コーチャーは両方のランナーを同時に誘導する。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-057",
     theme: "coach",
@@ -568,7 +568,7 @@ export const coachQuestions = [
     correct: 0,
     explanation: "2アウトでランナーは打球と同時にスタートしている。カットマンが中継に入ってもタイミング次第で生還できる。コーチャーは2塁ランナーをホームへ送りながら、1塁ランナーの進塁も指示する。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-058",
     theme: "coach",
@@ -578,7 +578,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "フェンスに当たりながらの捕球は、外野手の体勢が崩れている可能性が高く送球が遅れる。コーチャーは外野手が確実に捕球したことを確認したら、積極的にタッチアップを指示する。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-059",
     theme: "coach",
@@ -588,7 +588,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ボーク宣告ではランナーは1つ進塁できる。3塁ランナーがいる場合、ボーク宣告の後にランナーはホームへ進塁できる（得点になる）。コーチャーは審判のボーク宣告を確認してから、ランナーに進塁を指示する。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-060",
     theme: "coach",
@@ -598,7 +598,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "内野エラーが起きた場合、コーチャーはすかさず積極的に動く。エラーでボールがどこに転がったかを見て、3塁へ進塁させる。さらにボールが遠くに転がれば、ホームも狙う。エラーで生まれたチャンスを確実に生かす。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-061",
     theme: "coach",
@@ -608,7 +608,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "最終回1点差で負けている状況では、1点を取ることが最優先。サードゴロならサードがファーストへ投げる間にホームへ突入できる。コーチャーはサードが1塁へ投げた瞬間に「行け！」と大きく腕を回す。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-062",
     theme: "coach",
@@ -618,7 +618,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "大差リードの場面では、無駄なアウトを避けることが大切。微妙なタッチアップでアウトになるリスクより、ランナーを温存して無失点で守り切ることを考える。安全な場面でのみタッチアップを指示する。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-063",
     theme: "coach",
@@ -628,7 +628,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ランナーの走力はコーチャーが判断の材料にする重要な要素。足が遅い選手の場合、外野手が普通に処理したヒットでのホーム突入はリスクが高い。3塁でストップさせ、次の打席でのチャンスを待つ。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-064",
     theme: "coach",
@@ -638,7 +638,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "走力があるランナーなら浅いライトヒットでも積極的な判断ができる。コーチャーはランナーの走力とライトの肩の強さを比較し、勝ちそうならホームへ突入させる。通常ならストップでも、足の速い選手なら突入が正解になることがある。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-065",
     theme: "coach",
@@ -648,7 +648,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "試合前の練習で相手の外野手の肩の強さを確認するのはコーチャーの重要な準備。強肩と分かっている場合は慎重になり、無理な突入を避ける。3塁でストップさせてノーアウトや少ないアウトでチャンスを作る。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-066",
     theme: "coach",
@@ -658,7 +658,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "弱肩の外野手への打球は、コーチャーにとって積極的に攻めるチャンス。事前調査で弱肩と分かっていれば、2アウトでも迷わずホームへ突入させる。コーチャーの事前準備が得点に直結する。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-067",
     theme: "coach",
@@ -668,7 +668,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "1・3塁でサードゴロの場合、3塁ランナーにフォースアウトはかからない（後ろに1塁ランナーがいても、3塁ランナーは元々3塁にいるので強制進塁ではない）。サードが3塁ベースを踏んでも、それは1塁ランナーの進塁に対するフォースアウト。3塁ランナーはタッチされない限りアウトにならないので、ホームへ突入できる！",
     difficulty: "expert"
-  },,
+  },
   {
     id: "coach-068",
     theme: "coach",
@@ -678,7 +678,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "インフィールドフライでは打者は自動的にアウト。ランナーは走らなくてもよく、タッグプレーになる。コーチャーはランナーに「落球しても走らなくていい、タッチアップは可能」と素早く伝える。学童野球ではこのルールを知らない選手も多いので重要。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-069",
     theme: "coach",
@@ -688,7 +688,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ファーストゴロで1塁アウト後、ランナーは3塁へ進塁できることが多い。ファーストがベースを踏んだ後にホームへ投げてくれば止まり、投げなければ3塁へ走る。コーチャーはファーストの動きを見て指示する。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-070",
     theme: "coach",
@@ -698,7 +698,7 @@ export const coachQuestions = [
     correct: 0,
     explanation: "2アウトではランナーは打球と同時にスタートする。センターがフェンス際で捕球した場合は送球距離が長いため、ランナーはすでに走っておりホームへ生還できる可能性が高い。コーチャーは「行け！」と腕を回す。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-071",
     theme: "coach",
@@ -708,7 +708,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "高いバウンドのゴロで内野手が捕球に手間取った場合、ランナーに時間ができる。コーチャーはサードの捕球タイミングを見て、遅れていれば「行け！」とホームへ突入させる。判断は素早く行う。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-072",
     theme: "coach",
@@ -718,7 +718,7 @@ export const coachQuestions = [
     correct: 2,
     explanation: "センターへの長打で打球が転がり続けているなら、1塁ランナーはホームまで生還できる可能性が高い。コーチャーはランナーが3塁を回る前に大きく腕を回して「回れ！」と指示する。長打では積極的に突入させる。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-073",
     theme: "coach",
@@ -728,7 +728,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "セカンドゴロでセカンドが1塁へ送球する際、ランナーは3塁へ進塁できることがある。コーチャーはセカンドの動き（ランナーを見るか・1塁へ投げるか）を確認してから指示を出す。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-074",
     theme: "coach",
@@ -738,7 +738,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "四球で3塁ランナーは動かない（満塁にならない限り）。コーチャーは状況を整理し、次のプレーへの準備をする。バッターが変わるので、新しいランナーへの声がけや次の打者のサインを確認する。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-075",
     theme: "coach",
@@ -748,7 +748,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "満塁でのタッチアップでは、3塁ランナーはホームへのタッチアップが基本。2塁・1塁ランナーも次塁へのタッチアップを準備する。コーチャーは3塁ランナーを主に見ながら、他のランナーにも声がけをする。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-076",
     theme: "coach",
@@ -758,7 +758,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "バントでファーストが1塁を踏んだ後、ランナーは3塁を狙える。コーチャーはファーストが2塁へ送球するかどうかを確認し、送球がなければ3塁へ進塁させる。ノーアウト3塁は大きなチャンス。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-077",
     theme: "coach",
@@ -768,7 +768,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "コーチャーは相手選手が交代したら、新しい選手の肩の強さや動きをすぐに確認する。これは次のタッチアップや突入判断に直接影響する。ウォーミングアップの送球を見たり、試合中のプレーで肩の強さを把握しておく。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-078",
     theme: "coach",
@@ -778,7 +778,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "コーチャーはランナーのリードの大きさを常に確認し、危ないと思ったら「リードを縮めろ」と声をかける役割もある。牽制でアウトになりそうな場面を事前に防ぐことがコーチャーの重要な仕事の一つ。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-079",
     theme: "coach",
@@ -788,7 +788,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "キャッチャーが確実に捕球した三振では、3塁ランナーはホームへ突入できない（タッグアウトになる）。コーチャーはキャッチャーの捕球を確認して「止まれ！」と大声で指示する。無駄なアウトを防ぐのも重要な役割。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-080",
     theme: "coach",
@@ -798,7 +798,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "レフトが前進してキャッチした場合、3塁への送球距離が長くなる。コーチャーはレフトの捕球位置を確認し、前進しているなら積極的に3塁を狙わせる。2アウトなので1つでも多く進塁させてチャンスを広げる。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-081",
     theme: "coach",
@@ -808,7 +808,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ダイビングキャッチは捕球か落球か判断しにくい。コーチャーは落ち着いて捕球か否かを確認してから指示を出す。捕球なら帰塁、落球なら積極的に走る。慌てて判断を誤るとアウトになるリスクがある。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-082",
     theme: "coach",
@@ -818,7 +818,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "バッターが2塁方向への内野安打でキャッチャーが1塁へ送球する場合、3塁ランナーはホームへ突入できる可能性がある。コーチャーはキャッチャーの動きを見て「1塁へ投げた！行け！」とすぐに指示する。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-083",
     theme: "coach",
@@ -828,7 +828,7 @@ export const coachQuestions = [
     correct: 0,
     explanation: "2アウトではランナーは打球と同時に走り出している。エラーが起きれば当然そのまま走り続けてホームへ突入する。コーチャーはランナーの背中を押す声がけをしながら、スライディングの指示も出す。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-084",
     theme: "coach",
@@ -838,7 +838,7 @@ export const coachQuestions = [
     correct: 0,
     explanation: "ショートが2塁へ送球した隙に3塁ランナーはホームを狙える。コーチャーはショートの送球先を確認し、2塁へ投げたら即座に「行け！」と指示する。このような連携プレーの判断が得点につながる。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-085",
     theme: "coach",
@@ -848,7 +848,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "サードを抜けてレフトまで転がる長打は、ランナーがホームへ生還できるチャンス。コーチャーはランナーが3塁を回る前に「回れ！」と大きく腕を回す。打球の行方を素早く確認して積極的に指示する。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-086",
     theme: "coach",
@@ -858,7 +858,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "四球後のランナー確認と次への準備がコーチャーの役割。3塁ランナーは動かないが、コーチャーは次の打者の傾向やピッチャーの癖、相手外野手の守備位置を確認する。次のプレーに向けた準備が大切。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-087",
     theme: "coach",
@@ -868,7 +868,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "カットマンが入った場合、そのままホームへ突入させると送球が速くなる。コーチャーはカットマンがボールを処理するかどうかを確認してから判断する。カットせずに通過すれば3塁ストップ、カットのタイミングで突入するかを判断。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-088",
     theme: "coach",
@@ -878,7 +878,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ライト線を転がる打球は走者に有利。ライトが追いかけている間、ランナーはホームへ突入できる時間がある。コーチャーはボールの行方を確認しながら「回れ！回れ！」と大きく腕を回す。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-089",
     theme: "coach",
@@ -888,7 +888,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "最終回同点の場面では1点を取れば試合終了（サヨナラ）。ピッチャーゴロで1塁へ投げる間、3塁ランナーはホームへ突入できる。コーチャーはピッチャーが1塁へ投げた瞬間に「行け！サヨナラだ！」と大きく指示する。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-090",
     theme: "coach",
@@ -898,7 +898,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "微妙な打球の判断がコーチャーの腕の見せ所。捕球か否かを素早く見極めてから指示を出す。捕球なら帰塁（タッチアップも判断）、落球なら積極的に走る。コーチャーは打球を最後まで見届けることが大切。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-091",
     theme: "coach",
@@ -908,7 +908,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "セーフティースクイズでバントが浮いてフライになった場合、ランナーはスタートを切っているはず。コーチャーはすぐに「戻れ！」と叫び、3塁に帰塁させる。判断が遅れると帰塁できずにアウトになる。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-092",
     theme: "coach",
@@ -918,7 +918,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "野球のルールでは、コーチャーはコーチャーボックス内で指導しなければならない。ボックスを大きく外れると審判から注意・警告を受ける場合がある。ただし、学童野球では比較的緩やかに運用されることもあるが、正しいルールを守る姿勢が大切。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-093",
     theme: "coach",
@@ -928,7 +928,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "コーチャーはランナーのホーム突入時にスライディングが必要かを判断して指示する。キャッチャーが送球を待っている場合は「スライディング！」、間に合う場合は「立ったまま！」と指示することで、ランナーを安全かつ確実に生還させる。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-094",
     theme: "coach",
@@ -938,7 +938,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "テキサスヒットで打球が落ちた場合、2アウトのランナーはすでに走り出している。コーチャーは打球が落ちたことを確認してから「行け！」と突入を指示する。外野手との距離感を見て判断する。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-095",
     theme: "coach",
@@ -948,7 +948,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "ファーストがベースを踏まずにランナーをタッチしにいく場面は、ランナーにとって隙が生まれる。コーチャーはファーストの動きをよく見て、ベースから離れているなら「行け！」とホームへ突入させる。",
     difficulty: "expert"
-  },,
+  },
   {
     id: "coach-096",
     theme: "coach",
@@ -958,7 +958,7 @@ export const coachQuestions = [
     correct: 0,
     explanation: "ダブルプレーで2アウトになった場合、3塁へ進んでいても得点にはなるが無駄なリスクはとらない。コーチャーはアウトカウントの変化を素早く把握し、ランナーに現在の状況を伝える。3塁ストップで次の打者に任せる。",
     difficulty: "hard"
-  },,
+  },
   {
     id: "coach-097",
     theme: "coach",
@@ -968,7 +968,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "セカンドゴロで1塁アウトを取りにいく場合、3塁ランナーはホームへ突入できる。コーチャーはセカンドが1塁へ投げたことを確認してから「行け！」と大きく指示する。",
     difficulty: "normal"
-  },,
+  },
   {
     id: "coach-098",
     theme: "coach",
@@ -978,7 +978,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "コーチャーの判断力が勝敗を左右する場面。ランナーのスピードと送球のタイミングを瞬時に判断して指示を出す。「行けるか行けないか」の判断は0.5秒以内。迷ったら止めるのも判断の一つ。",
     difficulty: "expert"
-  },,
+  },
   {
     id: "coach-099",
     theme: "coach",
@@ -988,7 +988,7 @@ export const coachQuestions = [
     correct: 1,
     explanation: "コーチャーとランナーの意思疎通は事前の練習が重要。「腕を回す→突入」「両手を広げる→ストップ」「スライディング！と叫ぶ→スライディング」などを練習で確認しておく。試合中の迷いはアウトに直結するので、事前準備が大切。",
     difficulty: "easy"
-  },,
+  },
   {
     id: "coach-100",
     theme: "coach",
