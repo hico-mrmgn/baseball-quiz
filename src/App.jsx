@@ -2,7 +2,10 @@ import { useState, useCallback } from 'react';
 import TopScreen from './components/TopScreen';
 import QuizScreen from './components/QuizScreen';
 import ResultScreen from './components/ResultScreen';
+import HistoryScreen from './components/HistoryScreen';
 import { questions } from './data/questions';
+import { getCareerTier } from './utils/career';
+import { saveResult } from './utils/history';
 
 function shuffle(array) {
   const arr = [...array];
@@ -23,9 +26,9 @@ export default function App() {
   const startQuiz = useCallback((theme) => {
     let selected;
     if (theme === 'random') {
-      selected = shuffle(questions).slice(0, 20);
+      selected = shuffle(questions).slice(0, 10);
     } else {
-      selected = shuffle(questions.filter((q) => q.theme === theme));
+      selected = shuffle(questions.filter((q) => q.theme === theme)).slice(0, 10);
     }
     setCurrentTheme(theme);
     setQuizQuestions(selected);
@@ -33,10 +36,20 @@ export default function App() {
   }, []);
 
   const handleFinish = useCallback((score, maxCombo) => {
+    const percentage = Math.round((score / quizQuestions.length) * 100);
+    const tier = getCareerTier(percentage);
+    saveResult({
+      theme: currentTheme,
+      score,
+      total: quizQuestions.length,
+      maxCombo,
+      careerTitle: tier.title,
+      careerEmoji: tier.emoji,
+    });
     setFinalScore(score);
     setFinalMaxCombo(maxCombo);
     setScreen('result');
-  }, []);
+  }, [currentTheme, quizQuestions.length]);
 
   const handleRetry = useCallback(() => {
     startQuiz(currentTheme);
@@ -67,9 +80,14 @@ export default function App() {
         theme={currentTheme}
         onRetry={handleRetry}
         onHome={handleHome}
+        onHistory={() => setScreen('history')}
       />
     );
   }
 
-  return <TopScreen onSelectTheme={startQuiz} />;
+  if (screen === 'history') {
+    return <HistoryScreen onBack={() => setScreen(currentTheme ? 'result' : 'top')} />;
+  }
+
+  return <TopScreen onSelectTheme={startQuiz} onHistory={() => setScreen('history')} />;
 }

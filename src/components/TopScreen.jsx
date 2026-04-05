@@ -1,6 +1,6 @@
 import { themes, questions } from '../data/questions';
 
-export default function TopScreen({ onSelectTheme }) {
+export default function TopScreen({ onSelectTheme, onHistory }) {
   const themeKeys = Object.keys(themes);
 
   return (
@@ -50,7 +50,14 @@ export default function TopScreen({ onSelectTheme }) {
           </button>
         </div>
 
-        <p className="text-center text-sm text-green-600 mt-8">
+        <button
+          onClick={onHistory}
+          className="w-full mt-4 p-3 rounded-xl border-2 border-amber-300 bg-amber-50 text-amber-700 font-bold text-sm active:scale-[0.98] transition-all cursor-pointer"
+        >
+          📊 戦績を見る
+        </button>
+
+        <p className="text-center text-sm text-green-600 mt-6">
           依知くん、がんばれ！ 💪
         </p>
       </div>
