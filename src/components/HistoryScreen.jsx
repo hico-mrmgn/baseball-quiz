@@ -3,7 +3,10 @@ import { themes } from '../data/questions';
 import { getHistory, clearHistory } from '../utils/history';
 
 function getThemeInfo(theme) {
-  return theme === 'random' ? { name: 'ランダム', icon: '🎲' } : themes[theme];
+  if (theme === 'random') return { name: 'ランダム', icon: '🎲' };
+  if (theme === 'daily') return { name: 'デイリー', icon: '📅' };
+  if (theme === 'weakness') return { name: 'にがて', icon: '📝' };
+  return themes[theme];
 }
 
 export default function HistoryScreen({ onBack }) {
@@ -30,9 +33,9 @@ export default function HistoryScreen({ onBack }) {
         <div className="flex items-center gap-3 mb-6">
           <button
             onClick={onBack}
-            className="w-10 h-10 rounded-full bg-white shadow flex items-center justify-center text-green-700 font-bold text-lg active:scale-95 transition-all cursor-pointer"
+            className="px-4 h-10 rounded-full bg-white shadow flex items-center justify-center text-green-700 font-bold text-base active:scale-95 transition-all cursor-pointer gap-1"
           >
-            ←
+            ← もどる
           </button>
           <h1 className="text-2xl font-black text-green-800">📊 戦績</h1>
         </div>

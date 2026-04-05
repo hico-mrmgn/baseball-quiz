@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { themes } from '../data/questions';
 import FieldDiagram from './FieldDiagram';
+import Confetti from './Confetti';
+import { playCorrect, playWrong, playCombo } from '../utils/sound';
 
 export default function QuizScreen({ questions: quizQuestions, theme, onFinish }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -9,6 +11,12 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
   const [maxCombo, setMaxCombo] = useState(0);
+  const [showExplanationDetail, setShowExplanationDetail] = useState(false);
+  const [confettiTrigger, setConfettiTrigger] = useState(0);
+  const [comboBreak, setComboBreak] = useState(false);
+  const [wrongIds] = useState([]);
+  const [correctIds] = useState([]);
+  const prevComboRef = useRef(0);
 
   const current = quizQuestions[currentIndex];
   const total = quizQuestions.length;
@@ -26,23 +34,38 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
   function handleConfirm() {
     if (pendingAnswer === null) return;
     setConfirmedAnswer(pendingAnswer);
+    setComboBreak(false);
+
     if (pendingAnswer === current.correct) {
       setScore((s) => s + 1);
+      correctIds.push(current.id);
       const newCombo = combo + 1;
       setCombo(newCombo);
       setMaxCombo((m) => Math.max(m, newCombo));
+      setConfettiTrigger((t) => t + 1);
+      playCorrect();
+      if (newCombo >= 3) {
+        playCombo();
+      }
     } else {
+      wrongIds.push(current.id);
+      if (combo >= 2) {
+        setComboBreak(true);
+      }
       setCombo(0);
+      playWrong();
     }
   }
 
   function handleNext() {
     if (currentIndex + 1 >= total) {
-      onFinish(score, maxCombo);
+      onFinish(score, maxCombo, wrongIds, correctIds);
     } else {
       setCurrentIndex((i) => i + 1);
       setPendingAnswer(null);
       setConfirmedAnswer(null);
+      setShowExplanationDetail(false);
+      setComboBreak(false);
     }
   }
 
@@ -61,25 +84,40 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
     combo >= 3  ? { text: `✨ ${combo}連続正解！コンボ継続中！`, bg: 'bg-yellow-500' } :
     null;
 
+  const comboBreakMessages = [
+    'おしい！でもここからまた連続正解をめざそう💪',
+    'ドンマイ！切りかえていこう⚡',
+    'まだまだこれから！次は正解だ🔥',
+    'ナイスチャレンジ！次いってみよう✨',
+  ];
+  const comboBreakMsg = comboBreakMessages[currentIndex % comboBreakMessages.length];
+
   const isCorrect = confirmedAnswer === current.correct;
+
+  // 解説を短縮表示用に分割
+  const explanationShort = current.explanation.length > 60
+    ? current.explanation.slice(0, 60) + '…'
+    : current.explanation;
+  const hasLongExplanation = current.explanation.length > 60;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-4 py-6">
+      <Confetti trigger={confettiTrigger} />
       <div className="max-w-2xl mx-auto">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <span className="text-2xl">{themeInfo.icon}</span>
-            <span className="font-bold text-green-800">{themeInfo.name}</span>
+            <span className="font-bold text-green-800 text-lg">{themeInfo.name}</span>
           </div>
           <div className="flex items-center gap-3">
             {combo >= 2 && (
-              <div className="text-orange-500 font-black text-sm animate-pulse">
+              <div className="text-orange-500 font-black text-base animate-pulse">
                 🔥 {combo}連続
               </div>
             )}
-            <div className="text-sm font-bold text-green-700">
+            <div className="text-base font-bold text-green-700">
               {currentIndex + 1} / {total}
             </div>
           </div>
@@ -95,7 +133,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
 
         {/* Difficulty */}
         <div className="mb-3">
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${diff.color}`}>
+          <span className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${diff.color}`}>
             {diff.text}
           </span>
         </div>
@@ -107,13 +145,13 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
 
         {/* Situation + Question combined */}
         <div className="bg-white rounded-xl p-4 mb-4 shadow-sm border border-green-200">
-          <div className="text-xs font-bold text-amber-600 mb-1">🎯 状況</div>
-          <div className="text-sm font-bold text-amber-900 mb-3">
+          <div className="text-sm font-bold text-amber-600 mb-1">🎯 状況</div>
+          <div className="text-base font-bold text-amber-900 mb-3">
             {current.situation}
           </div>
           <div className="border-t border-gray-100 pt-3">
-            <div className="text-xs font-bold text-green-600 mb-1">❓ 問題</div>
-            <div className="text-lg font-bold text-gray-800">
+            <div className="text-sm font-bold text-green-600 mb-1">❓ 問題</div>
+            <div className="text-xl font-bold text-gray-800">
               {current.question}
             </div>
           </div>
@@ -124,7 +162,6 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
           {current.choices.map((choice, index) => {
             let style;
             if (confirmedAnswer !== null) {
-              // 確定後
               if (index === current.correct) {
                 style = 'bg-green-100 border-2 border-green-500 text-green-800';
               } else if (index === confirmedAnswer && index !== current.correct) {
@@ -133,10 +170,8 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
                 style = 'bg-gray-50 border-2 border-gray-200 text-gray-400';
               }
             } else if (pendingAnswer === index) {
-              // 選択中（未確定）
               style = 'bg-blue-50 border-2 border-blue-400 text-blue-800 ring-2 ring-blue-300';
             } else {
-              // 未選択
               style = 'bg-white border-2 border-gray-200 text-gray-800 hover:border-green-400 hover:bg-green-50';
             }
 
@@ -145,9 +180,9 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
                 key={index}
                 onClick={() => handleSelect(index)}
                 disabled={confirmedAnswer !== null}
-                className={`w-full min-h-[56px] p-4 rounded-xl text-left font-bold transition-all ${style} ${confirmedAnswer === null ? 'active:scale-[0.98] cursor-pointer' : ''}`}
+                className={`w-full min-h-[64px] p-4 rounded-xl text-left font-bold text-lg transition-all ${style} ${confirmedAnswer === null ? 'active:scale-[0.98] cursor-pointer' : ''}`}
               >
-                <span className="mr-2 inline-block w-7 text-center">
+                <span className="mr-2 inline-block w-8 text-center">
                   {confirmedAnswer !== null && index === current.correct ? '⭕' :
                    confirmedAnswer === index && index !== current.correct ? '❌' :
                    `${String.fromCharCode(65 + index)}.`}
@@ -162,7 +197,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
         {pendingAnswer !== null && confirmedAnswer === null && (
           <button
             onClick={handleConfirm}
-            className="w-full p-4 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-lg shadow-lg active:scale-[0.98] transition-all cursor-pointer mb-4"
+            className="w-full p-4 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-xl shadow-lg active:scale-[0.98] transition-all cursor-pointer mb-4"
           >
             解答する ✅
           </button>
@@ -170,27 +205,44 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
 
         {/* 選択前のヒント */}
         {pendingAnswer === null && confirmedAnswer === null && (
-          <div className="text-center text-sm text-gray-400 mb-4">
+          <div className="text-center text-base text-gray-400 mb-4">
             答えを選んでから「解答する」を押してね
           </div>
         )}
 
         {/* コンボバナー */}
         {confirmedAnswer !== null && isCorrect && comboMessage && (
-          <div className={`${comboMessage.bg} text-white rounded-xl p-3 mb-4 text-center font-black text-lg`}>
+          <div className={`${comboMessage.bg} text-white rounded-xl p-3 mb-4 text-center font-black text-xl`}>
             {comboMessage.text}
+          </div>
+        )}
+
+        {/* コンボ途切れメッセージ */}
+        {confirmedAnswer !== null && !isCorrect && comboBreak && (
+          <div className="combo-break-msg text-center text-base font-bold text-amber-600 mb-4 bg-amber-50 rounded-xl p-3 border border-amber-200">
+            {comboBreakMsg}
           </div>
         )}
 
         {/* Explanation */}
         {confirmedAnswer !== null && (
           <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
-            <div className="text-xs font-bold text-blue-600 mb-1">
+            <div className="text-sm font-bold text-blue-600 mb-1">
               {isCorrect ? '🎉 正解！' : '💡 解説'}
             </div>
             <div className="text-base text-blue-900">
-              {current.explanation}
+              {hasLongExplanation && !showExplanationDetail
+                ? explanationShort
+                : current.explanation}
             </div>
+            {hasLongExplanation && !showExplanationDetail && (
+              <button
+                onClick={() => setShowExplanationDetail(true)}
+                className="mt-2 text-sm font-bold text-blue-500 underline cursor-pointer"
+              >
+                もっとくわしく →
+              </button>
+            )}
           </div>
         )}
 
@@ -198,7 +250,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
         {confirmedAnswer !== null && (
           <button
             onClick={handleNext}
-            className="w-full p-4 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-lg shadow-lg active:scale-[0.98] transition-all cursor-pointer"
+            className="w-full p-4 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-xl shadow-lg active:scale-[0.98] transition-all cursor-pointer"
           >
             {currentIndex + 1 >= total ? '結果を見る 🏆' : '次の問題へ ➡️'}
           </button>
