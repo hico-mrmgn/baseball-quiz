@@ -76,6 +76,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish, 
     expert: { text: '🔥 プロ級',    color: 'bg-red-100 text-red-700' },
   };
   const diff = difficultyLabel[current.difficulty];
+  const isSpecialTheme = ['fighters', 'npb2025'].includes(current.theme);
 
   const comboMessage =
     combo >= 10 ? { text: `🔥🔥 ${combo}連続！神がかり！！`, bg: 'bg-red-700' } :
@@ -163,10 +164,12 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish, 
 
         {/* Difficulty + Field diagram + Situation+Question を横並び */}
         <div className="flex gap-3 mb-3">
-          {/* 左: フィールド図 */}
-          <div className="bg-white border border-gray-200 rounded-xl p-2 flex-shrink-0 w-36 md:w-44 lg:w-64">
-            <FieldDiagram situation={current.situation} theme={current.theme} />
-          </div>
+          {/* 左: フィールド図（特別編では非表示） */}
+          {!isSpecialTheme && (
+            <div className="bg-white border border-gray-200 rounded-xl p-2 flex-shrink-0 w-36 md:w-44 lg:w-64">
+              <FieldDiagram situation={current.situation} theme={current.theme} />
+            </div>
+          )}
 
           {/* 右: 難易度 + 状況 + 問題 */}
           <div className="flex-1 bg-white rounded-xl p-3 shadow-sm border border-green-200 flex flex-col justify-between">
@@ -174,15 +177,30 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish, 
               {diff.text}
             </span>
             <div>
-              <div className="text-xs md:text-sm font-bold text-amber-600 mb-0.5">状況</div>
-              <div className="text-xs md:text-sm text-amber-900 mb-2 leading-snug">
-                {current.situation}
-              </div>
-              <div className="border-t border-gray-100 pt-2">
-                <div className="text-base md:text-lg font-bold text-gray-800 leading-snug">
-                  {current.question}
-                </div>
-              </div>
+              {isSpecialTheme ? (
+                <>
+                  <div className="text-xs md:text-sm text-gray-500 mb-2 leading-snug">
+                    {current.situation}
+                  </div>
+                  <div className="border-t border-gray-100 pt-2">
+                    <div className="text-base md:text-lg font-bold text-gray-800 leading-snug">
+                      {current.question}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-xs md:text-sm font-bold text-amber-600 mb-0.5">状況</div>
+                  <div className="text-xs md:text-sm text-amber-900 mb-2 leading-snug">
+                    {current.situation}
+                  </div>
+                  <div className="border-t border-gray-100 pt-2">
+                    <div className="text-base md:text-lg font-bold text-gray-800 leading-snug">
+                      {current.question}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
