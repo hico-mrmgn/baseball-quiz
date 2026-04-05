@@ -5,18 +5,18 @@ export default function BadgeScreen({ onBack }) {
   const unlockedCount = badges.filter((b) => b.unlocked).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-3 lg:px-6 py-6">
+    <div className="min-h-screen bg-gray-50 px-3 lg:px-6 py-6">
       <div className="max-w-md lg:max-w-5xl w-full mx-auto">
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <button
             onClick={onBack}
-            className="px-4 h-10 rounded-full bg-white shadow flex items-center justify-center text-green-700 font-bold text-base active:scale-95 transition-all cursor-pointer gap-1"
+            className="px-4 h-10 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-700 font-bold text-base active:scale-95 transition-all cursor-pointer gap-1"
           >
             ← もどる
           </button>
-          <h1 className="text-2xl font-black text-green-800">🏅 バッジ</h1>
+          <h1 className="text-2xl font-black text-gray-900">🏅 バッジ</h1>
         </div>
 
         {/* Progress */}

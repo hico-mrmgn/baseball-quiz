@@ -53,7 +53,7 @@ export default function ResultScreen({ score, total, maxCombo, theme, onRetry, o
   }, [score, total, percentage]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-3 lg:px-6 py-6 lg:py-8 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 px-3 lg:px-6 py-6 lg:py-8 flex items-center justify-center">
       <Confetti trigger={confettiTrigger} />
       <div className="max-w-md lg:max-w-5xl w-full mx-auto">
 
@@ -109,20 +109,20 @@ export default function ResultScreen({ score, total, maxCombo, theme, onRetry, o
             <div className="grid gap-3">
               <button
                 onClick={onRetry}
-                className="w-full p-4 rounded-xl bg-gradient-to-r from-red-600 to-red-700 text-white font-bold text-xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer"
+                className="w-full p-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer"
               >
                 🔄 もう一度チャレンジ
               </button>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={onHistory}
-                  className="w-full p-4 rounded-xl bg-white border-2 border-red-300 text-red-700 font-bold text-lg shadow hover:shadow-md active:scale-[0.98] transition-all cursor-pointer"
+                  className="w-full p-4 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold text-lg shadow-sm hover:border-blue-300 hover:text-blue-600 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   📊 戦績を見る
                 </button>
                 <button
                   onClick={onHome}
-                  className="w-full p-4 rounded-xl bg-white border-2 border-red-200 text-red-600 font-bold text-lg shadow hover:shadow-md active:scale-[0.98] transition-all cursor-pointer"
+                  className="w-full p-4 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold text-lg shadow-sm hover:border-blue-300 hover:text-blue-600 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   🏠 トップへ
                 </button>
