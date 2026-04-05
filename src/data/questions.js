@@ -34,6 +34,8 @@ export const themes = {
   baserun:  { name: "走塁編",       icon: "🏃", description: "走者としての状況判断",   color: "from-sky-600 to-blue-700" },
   first:    { name: "ファースト編", icon: "🧤", description: "ファーストの守備判断",   color: "from-blue-600 to-blue-700" },
   outfield:  { name: "外野編",         icon: "🌿", description: "外野手の守備判断",         color: "from-sky-500 to-sky-600" },
+  catcher:   { name: "キャッチャー編", icon: "🎯", description: "捕手の状況判断",           color: "from-blue-600 to-blue-700", comingSoon: true },
+  batting:   { name: "バッティング編", icon: "🏏", description: "打者の状況判断",           color: "from-blue-600 to-blue-700", comingSoon: true },
   fighters:  { name: "ファイターズ編", icon: "💎", description: "日ハムの知識クイズ",       color: "from-blue-600 to-blue-700" },
   npb2025:   { name: "プロ野球編",     icon: "⚾", description: "プロ野球の知識クイズ",     color: "from-sky-600 to-blue-700" },
 };
