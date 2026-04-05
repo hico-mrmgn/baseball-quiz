@@ -26,9 +26,9 @@ export default function App() {
   const startQuiz = useCallback((theme) => {
     let selected;
     if (theme === 'random') {
-      selected = shuffle(questions).slice(0, 10);
+      selected = shuffle(questions).slice(0, 15);
     } else {
-      selected = shuffle(questions.filter((q) => q.theme === theme)).slice(0, 10);
+      selected = shuffle(questions.filter((q) => q.theme === theme)).slice(0, 15);
     }
     setCurrentTheme(theme);
     setQuizQuestions(selected);

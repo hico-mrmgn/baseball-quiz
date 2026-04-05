@@ -1,16 +1,53 @@
-# React + Vite
+# 野球クイズ - 状況判断トレーニング
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+野球の試合状況を読み取り、最適なプレーを選択する判断力トレーニングアプリです。
 
-Currently, two official plugins are available:
+## 機能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **ポジション別クイズ** - サード・セカンド・ショート・ピッチャー・コーチ判断から選択、ランダムモードも対応
+- **4段階の難易度** - 初級 / 中級 / 上級 / プロ級
+- **コンボシステム** - 連続正解でコンボが加算、マイルストーンごとにメッセージ表示
+- **フィールド図** - SVGによる守備位置・走者位置・アウトカウントの可視化
+- **キャリアティア** - スコアに応じた11段階のランク判定（「卓球部に転部」〜「ドラフト1位指名！」）
+- **戦績管理** - LocalStorageによる履歴保存、通算成績・最高スコア・最高コンボの表示
 
-## React Compiler
+## 技術スタック
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19 + Vite
+- Tailwind CSS
+- LocalStorage（状態永続化）
 
-## Expanding the ESLint configuration
+## セットアップ
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev
+```
+
+## スクリプト
+
+| コマンド | 説明 |
+|---|---|
+| `npm run dev` | 開発サーバー起動 |
+| `npm run build` | プロダクションビルド |
+| `npm run preview` | ビルドのプレビュー |
+| `npm run lint` | ESLintによるコード検査 |
+
+## ディレクトリ構成
+
+```
+src/
+├── App.jsx                 # メイン画面遷移管理
+├── components/
+│   ├── TopScreen.jsx       # トップ画面（テーマ・難易度選択）
+│   ├── QuizScreen.jsx      # クイズ画面
+│   ├── ResultScreen.jsx    # 結果画面（スコア・キャリアティア）
+│   ├── HistoryScreen.jsx   # 戦績画面
+│   └── FieldDiagram.jsx    # 野球フィールド図（SVG）
+├── data/
+│   └── questions.js        # 問題データ・テーマ定義
+└── utils/
+    ├── career.js           # キャリアティア判定
+    ├── history.js          # 履歴のLocalStorage管理
+    └── parseSituation.js   # 状況テキスト → フィールドデータ変換
+```

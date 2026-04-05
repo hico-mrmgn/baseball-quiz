@@ -56,10 +56,6 @@ export default function TopScreen({ onSelectTheme, onHistory }) {
         >
           📊 戦績を見る
         </button>
-
-        <p className="text-center text-sm text-green-600 mt-6">
-          依知くん、がんばれ！ 💪
-        </p>
       </div>
     </div>
   );
