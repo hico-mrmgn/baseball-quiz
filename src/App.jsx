@@ -18,6 +18,7 @@ export default function App() {
   const [currentTheme, setCurrentTheme] = useState(null);
   const [quizQuestions, setQuizQuestions] = useState([]);
   const [finalScore, setFinalScore] = useState(0);
+  const [finalMaxCombo, setFinalMaxCombo] = useState(0);
 
   const startQuiz = useCallback((theme) => {
     let selected;
@@ -31,8 +32,9 @@ export default function App() {
     setScreen('quiz');
   }, []);
 
-  const handleFinish = useCallback((score) => {
+  const handleFinish = useCallback((score, maxCombo) => {
     setFinalScore(score);
+    setFinalMaxCombo(maxCombo);
     setScreen('result');
   }, []);
 
@@ -61,6 +63,7 @@ export default function App() {
       <ResultScreen
         score={finalScore}
         total={quizQuestions.length}
+        maxCombo={finalMaxCombo}
         theme={currentTheme}
         onRetry={handleRetry}
         onHome={handleHome}

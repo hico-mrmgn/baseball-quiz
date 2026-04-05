@@ -7,6 +7,8 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [score, setScore] = useState(0);
   const [showExplanation, setShowExplanation] = useState(false);
+  const [combo, setCombo] = useState(0);
+  const [maxCombo, setMaxCombo] = useState(0);
 
   const current = quizQuestions[currentIndex];
   const total = quizQuestions.length;
@@ -22,13 +24,17 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
     setShowExplanation(true);
     if (index === current.correct) {
       setScore((s) => s + 1);
+      const newCombo = combo + 1;
+      setCombo(newCombo);
+      setMaxCombo((m) => Math.max(m, newCombo));
+    } else {
+      setCombo(0);
     }
   }
 
   function handleNext() {
     if (currentIndex + 1 >= total) {
-      const finalScore = selectedAnswer === current.correct ? score : score;
-      onFinish(finalScore);
+      onFinish(score, maxCombo);
     } else {
       setCurrentIndex((i) => i + 1);
       setSelectedAnswer(null);
@@ -45,6 +51,13 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
 
   const diff = difficultyLabel[current.difficulty];
 
+  const comboMessage =
+    combo >= 10 ? { text: `🔥🔥 ${combo}連続！神がかり！！`, bg: 'bg-red-500' } :
+    combo >= 7  ? { text: `🔥 ${combo}連続！天才すぎる！`, bg: 'bg-orange-500' } :
+    combo >= 5  ? { text: `⚡ ${combo}連続！絶好調！`, bg: 'bg-amber-500' } :
+    combo >= 3  ? { text: `✨ ${combo}連続正解！コンボ継続中！`, bg: 'bg-yellow-500' } :
+    null;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-green-100 px-4 py-6">
       <div className="max-w-2xl mx-auto">
@@ -54,8 +67,15 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
             <span className="text-2xl">{themeInfo.icon}</span>
             <span className="font-bold text-green-800">{themeInfo.name}</span>
           </div>
-          <div className="text-sm font-bold text-green-700">
-            {currentIndex + 1} / {total}
+          <div className="flex items-center gap-3">
+            {combo >= 2 && (
+              <div className="text-orange-500 font-black text-sm animate-pulse">
+                🔥 {combo}連続
+              </div>
+            )}
+            <div className="text-sm font-bold text-green-700">
+              {currentIndex + 1} / {total}
+            </div>
           </div>
         </div>
 
@@ -76,7 +96,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
 
         {/* Situation */}
         <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 mb-4">
-          <div className="text-xs font-bold text-amber-600 mb-1">&#127919; 状況</div>
+          <div className="text-xs font-bold text-amber-600 mb-1">🎯 状況</div>
           <div className="text-base font-bold text-amber-900">
             {current.situation}
           </div>
@@ -85,7 +105,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
 
         {/* Question */}
         <div className="bg-white rounded-xl p-4 mb-6 shadow-sm border border-green-200">
-          <div className="text-xs font-bold text-green-600 mb-1">&#10067; 問題</div>
+          <div className="text-xs font-bold text-green-600 mb-1">❓ 問題</div>
           <div className="text-lg font-bold text-gray-800">
             {current.question}
           </div>
@@ -124,11 +144,18 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
           })}
         </div>
 
+        {/* Combo banner */}
+        {showExplanation && selectedAnswer === current.correct && comboMessage && (
+          <div className={`${comboMessage.bg} text-white rounded-xl p-3 mb-4 text-center font-black text-lg`}>
+            {comboMessage.text}
+          </div>
+        )}
+
         {/* Explanation */}
         {showExplanation && (
           <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
             <div className="text-xs font-bold text-blue-600 mb-1">
-              {selectedAnswer === current.correct ? '&#127881; 正解！' : '&#128161; 解説'}
+              {selectedAnswer === current.correct ? '🎉 正解！' : '💡 解説'}
             </div>
             <div className="text-base text-blue-900">
               {current.explanation}
@@ -142,7 +169,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
             onClick={handleNext}
             className="w-full p-4 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-lg shadow-lg hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer"
           >
-            {currentIndex + 1 >= total ? '結果を見る &#127942;' : '次の問題へ &#10145;&#65039;'}
+            {currentIndex + 1 >= total ? '結果を見る 🏆' : '次の問題へ ➡️'}
           </button>
         )}
       </div>

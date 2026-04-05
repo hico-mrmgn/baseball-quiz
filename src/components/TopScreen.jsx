@@ -8,7 +8,7 @@ export default function TopScreen({ onSelectTheme }) {
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-black text-green-800 mb-2">
-            &#9918; つぎ、どうする？
+            ⚾ つぎ、どうする？
           </h1>
           <p className="text-lg text-green-700">
             野球の状況判断クイズ
@@ -40,7 +40,7 @@ export default function TopScreen({ onSelectTheme }) {
             onClick={() => onSelectTheme('random')}
             className="flex items-center gap-4 w-full p-5 rounded-2xl bg-gradient-to-r from-gray-700 to-gray-900 text-white shadow-lg hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer mt-2"
           >
-            <span className="text-4xl">&#127922;</span>
+            <span className="text-4xl">🎲</span>
             <div className="text-left">
               <div className="text-xl font-bold">全テーマランダム</div>
               <div className="text-sm opacity-90">
@@ -51,7 +51,7 @@ export default function TopScreen({ onSelectTheme }) {
         </div>
 
         <p className="text-center text-sm text-green-600 mt-8">
-          依知くん、がんばれ！ &#128170;
+          依知くん、がんばれ！ 💪
         </p>
       </div>
     </div>
