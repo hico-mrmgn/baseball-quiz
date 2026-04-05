@@ -7,6 +7,8 @@ import { rulesQuestions } from './questions/rules';
 import { baserunQuestions } from './questions/baserun';
 import { firstQuestions } from './questions/first';
 import { outfieldQuestions } from './questions/outfield';
+import { fightersQuestions } from './questions/fighters';
+import { npb2025Questions } from './questions/npb2025';
 
 export const questions = [
   ...thirdQuestions,
@@ -18,6 +20,8 @@ export const questions = [
   ...baserunQuestions,
   ...firstQuestions,
   ...outfieldQuestions,
+  ...fightersQuestions,
+  ...npb2025Questions,
 ];
 
 export const themes = {
@@ -29,5 +33,7 @@ export const themes = {
   rules:    { name: "ルール編",     icon: "📖", description: "野球のルール知識",       color: "from-blue-800 to-blue-900" },
   baserun:  { name: "走塁編",       icon: "🏃", description: "走者としての状況判断",   color: "from-sky-600 to-blue-700" },
   first:    { name: "ファースト編", icon: "🧤", description: "ファーストの守備判断",   color: "from-blue-600 to-blue-700" },
-  outfield: { name: "外野編",       icon: "🌿", description: "外野手の守備判断",       color: "from-sky-500 to-sky-600" },
+  outfield:  { name: "外野編",         icon: "🌿", description: "外野手の守備判断",         color: "from-sky-500 to-sky-600" },
+  fighters:  { name: "ファイターズ編", icon: "💎", description: "日ハムの知識クイズ",       color: "from-blue-600 to-blue-700" },
+  npb2025:   { name: "プロ野球編",     icon: "⚾", description: "プロ野球の知識クイズ",     color: "from-sky-600 to-blue-700" },
 };

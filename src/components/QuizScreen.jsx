@@ -4,7 +4,7 @@ import FieldDiagram from './FieldDiagram';
 import Confetti from './Confetti';
 import { playCorrect, playWrong, playCombo } from '../utils/sound';
 
-export default function QuizScreen({ questions: quizQuestions, theme, onFinish }) {
+export default function QuizScreen({ questions: quizQuestions, theme, onFinish, onQuit }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [pendingAnswer, setPendingAnswer] = useState(null);   // 選択中（未確定）
   const [confirmedAnswer, setConfirmedAnswer] = useState(null); // 確定済み
@@ -15,6 +15,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
   const [comboBreak, setComboBreak] = useState(false);
   const [wrongIds] = useState([]);
   const [correctIds] = useState([]);
+  const [showQuitConfirm, setShowQuitConfirm] = useState(false);
   const prevComboRef = useRef(0);
 
   const current = quizQuestions[currentIndex];
@@ -113,8 +114,44 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish }
             <div className="text-sm md:text-base font-bold text-gray-500">
               {currentIndex + 1} / {total}
             </div>
+            <button
+              onClick={() => setShowQuitConfirm(true)}
+              className="text-gray-400 hover:text-gray-600 text-xl leading-none ml-1 cursor-pointer"
+              aria-label="やめる"
+            >
+              ✕
+            </button>
           </div>
         </div>
+
+        {/* やめる確認 */}
+        {showQuitConfirm && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+            <div className="bg-white rounded-2xl p-5 max-w-xs w-full shadow-xl text-center">
+              <div className="text-lg font-bold text-gray-800 mb-2">クイズをやめる？</div>
+              <div className="text-sm text-gray-500 mb-4">
+                ここまでの結果（{score}/{confirmedAnswer !== null ? currentIndex + 1 : currentIndex}問）で終了します
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowQuitConfirm(false)}
+                  className="flex-1 p-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold text-sm cursor-pointer"
+                >
+                  続ける
+                </button>
+                <button
+                  onClick={() => {
+                    const answered = confirmedAnswer !== null ? currentIndex + 1 : currentIndex;
+                    onQuit(score, maxCombo, wrongIds, correctIds, answered);
+                  }}
+                  className="flex-1 p-2.5 rounded-xl bg-red-500 text-white font-bold text-sm cursor-pointer"
+                >
+                  やめる
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Progress bar */}
         <div className="w-full h-1.5 bg-gray-200 rounded-full mb-3 overflow-hidden">

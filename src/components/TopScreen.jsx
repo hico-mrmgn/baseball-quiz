@@ -16,6 +16,10 @@ const themeGroups = [
     label: 'ルール知識',
     keys: ['rules'],
   },
+  {
+    label: '特別編',
+    keys: ['fighters', 'npb2025'],
+  },
 ];
 
 export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyChallenge, onWeaknessQuiz }) {

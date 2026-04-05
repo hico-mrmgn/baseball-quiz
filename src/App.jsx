@@ -79,8 +79,9 @@ export default function App() {
     setScreen('quiz');
   }, []);
 
-  const handleFinish = useCallback((score, maxCombo, wrongAnswerIds, correctAnswerIds) => {
-    const percentage = Math.round((score / quizQuestions.length) * 100);
+  const handleFinish = useCallback((score, maxCombo, wrongAnswerIds, correctAnswerIds, totalOverride) => {
+    const total = totalOverride || quizQuestions.length;
+    const percentage = Math.round((score / total) * 100);
     const tier = getCareerTier(percentage);
 
     // 間違えた問題を保存、正解した問題は苦手リストから除去
@@ -96,19 +97,19 @@ export default function App() {
     saveResult({
       theme: themeForSave,
       score,
-      total: quizQuestions.length,
+      total,
       maxCombo,
       careerTitle: tier.title,
       careerEmoji: tier.emoji,
     });
 
-    // デイリーチャレンジ完了
-    if (quizMode === 'daily') {
+    // デイリーチャレンジ完了（途中終了の場合は完了扱いにしない）
+    if (quizMode === 'daily' && !totalOverride) {
       completeDailyChallenge();
     }
 
     // レベルアップ
-    const xpResult = addXp(score, quizQuestions.length, maxCombo);
+    const xpResult = addXp(score, total, maxCombo);
     if (xpResult.levelUp) {
       setLevelUpInfo(xpResult.levelInfo);
     }
@@ -130,8 +131,20 @@ export default function App() {
 
     setFinalScore(score);
     setFinalMaxCombo(maxCombo);
+    setQuizQuestions((prev) => totalOverride ? prev.slice(0, totalOverride) : prev);
     setScreen('result');
   }, [currentTheme, quizQuestions.length, quizMode]);
+
+  const handleQuit = useCallback((score, maxCombo, wrongAnswerIds, correctAnswerIds, answeredCount) => {
+    if (answeredCount === 0) {
+      setScreen('top');
+      setCurrentTheme(null);
+      setQuizQuestions([]);
+      setQuizMode('normal');
+      return;
+    }
+    handleFinish(score, maxCombo, wrongAnswerIds, correctAnswerIds, answeredCount);
+  }, [handleFinish]);
 
   const handleRetry = useCallback(() => {
     if (quizMode === 'daily') {
@@ -156,6 +169,7 @@ export default function App() {
         questions={quizQuestions}
         theme={quizMode === 'daily' ? 'random' : quizMode === 'weakness' ? 'random' : currentTheme}
         onFinish={handleFinish}
+        onQuit={handleQuit}
       />
     );
   }
