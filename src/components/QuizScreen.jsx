@@ -291,6 +291,14 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish, 
             {currentIndex + 1 >= total ? '結果を見る 🏆' : '次の問題へ ➡️'}
           </button>
         )}
+
+        {/* やめるボタン（小さめ） */}
+        <button
+          onClick={() => setShowQuitConfirm(true)}
+          className="w-full mt-2 p-2 text-xs text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+        >
+          クイズをやめる
+        </button>
       </div>
     </div>
   );
