@@ -11,6 +11,7 @@ import { catcherQuestions } from './questions/catcher';
 import { battingQuestions } from './questions/batting';
 import { fightersQuestions } from './questions/fighters';
 import { npb2025Questions } from './questions/npb2025';
+import { umpireQuestions } from './questions/umpire';
 
 export const questions = [
   ...thirdQuestions,
@@ -26,6 +27,7 @@ export const questions = [
   ...battingQuestions,
   ...fightersQuestions,
   ...npb2025Questions,
+  ...umpireQuestions,
 ];
 
 export const themes = {
@@ -42,4 +44,5 @@ export const themes = {
   batting:   { name: "バッティング編", icon: "🏏", description: "打者の状況判断",           color: "from-blue-600 to-blue-700" },
   fighters:  { name: "ファイターズ編", icon: "💎", description: "日ハムの知識クイズ",       color: "from-blue-600 to-blue-700" },
   npb2025:   { name: "プロ野球編",     icon: "⚾", description: "プロ野球の知識クイズ",     color: "from-sky-600 to-blue-700" },
+  umpire:    { name: "審判編",       icon: "🙋", description: "お父さん審判の知識",       color: "from-gray-600 to-gray-700" },
 };
