@@ -14,7 +14,7 @@ const themeGroups = [
   },
   {
     label: 'ルール知識',
-    keys: ['rules'],
+    keys: ['rules', 'umpire'],
   },
   {
     label: '特別編',

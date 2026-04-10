@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(awk -F: '{total+=$2} END {print \"Total questions across all files: \" total}')"
+    ]
+  }
+}
