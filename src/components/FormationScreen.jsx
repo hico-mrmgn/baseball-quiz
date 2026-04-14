@@ -173,7 +173,7 @@ function FormationCard({ formation, onClick }) {
 
 /* ── メイン画面 ── */
 export default function FormationScreen({ onBack }) {
-  const [selectedCategoryId, setSelectedCategoryId] = useState('bunt');
+  const [selectedCategoryId, setSelectedCategoryId] = useState('no-runner');
   const [selectedFormation, setSelectedFormation] = useState(null);
 
   const categoryFormations = formations.filter(f => f.categoryId === selectedCategoryId);
@@ -250,12 +250,14 @@ export default function FormationScreen({ onBack }) {
         {(() => {
           const cat = formationCategories.find(c => c.id === selectedCategoryId);
           const catDescriptions = {
-            bunt: 'バントされた場面での守備の動き。状況によって誰がどこへ動くかが変わる。',
-            dp: '1塁にランナーがいる場面でダブルプレー（ゲッツー）を狙う守備。打球方向によって対応が違う。',
-            infield: '3塁走者がホームを狙う場面で、内野が前に出る守備隊形。点差や状況で使い分ける。',
-            relay: '外野からの打球をカットマンを通してホームや他の塁へ送球する中継プレー。',
-            steal: '走者が盗塁を試みた場合の内野手のカバーリングと送球対応。',
-            fly: '外野フライで走者がタッチアップしてくる場面での対応と送球。',
+            'no-runner': 'ランナーがいない場面での基本的な守備。ゴロやフライの処理、送球先の確認など基礎を固めよう。',
+            'runner-1': '1塁にランナーがいる場面。ゲッツー・バント・盗塁など多彩なプレーへの対応が求められる。',
+            'runner-2': '2塁にランナーがいる「得点圏」の場面。ヒットや送りバントへの対応が重要になる。',
+            'runner-3': '3塁にランナーがいる場面。スクイズや内野ゴロでの本塁送球など、1点を巡る攻防が繰り広げられる。',
+            'runner-12': '1・2塁にランナーがいる場面。ゲッツー・バント・中継など判断が複雑になる。',
+            'runner-13': '1・3塁にランナーがいる場面。ダブルスチール・バント・ゲッツーなど最も対応パターンが多い。',
+            'runner-23': '2・3塁にランナーがいる場面。得点を防ぐための前進守備や中継プレーがカギになる。',
+            'runner-123': '満塁の場面。フォースプレーが使えるため守備側に有利だが、四球や暴投に注意が必要。',
           };
           return (
             <div className="mb-4 p-3 bg-white rounded-xl border border-gray-200 shadow-sm">

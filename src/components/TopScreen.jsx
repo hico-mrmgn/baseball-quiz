@@ -124,7 +124,7 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
             <span className="text-2xl">📋</span>
             <div className="flex-1 text-left">
               <div className="text-sm font-black text-gray-900">守備フォーメーション解説</div>
-              <div className="text-xs text-gray-400">バント・ゲッツー・中継プレーなど20パターン</div>
+              <div className="text-xs text-gray-400">ランナー別に190パターンの守備を解説</div>
             </div>
             <span className="text-gray-300 font-bold">›</span>
           </button>
