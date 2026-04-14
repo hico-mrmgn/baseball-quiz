@@ -22,7 +22,7 @@ const themeGroups = [
   },
 ];
 
-export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyChallenge, onWeaknessQuiz }) {
+export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyChallenge, onWeaknessQuiz, onFormations }) {
   const levelInfo = getLevelInfo(getLevelData().xp);
   const dailyDone = isDailyCompleted();
   const dailyStreak = getDailyStreak();
@@ -113,6 +113,21 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
               <div className="text-xs text-gray-400">15問</div>
             </button>
           </div>
+        </div>
+
+        {/* Zone 2.5: 守備フォーメーション解説 */}
+        <div className="mb-3">
+          <button
+            onClick={onFormations}
+            className="w-full flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-200 shadow-sm hover:border-green-300 hover:bg-green-50 active:scale-[0.98] transition-all cursor-pointer"
+          >
+            <span className="text-2xl">📋</span>
+            <div className="flex-1 text-left">
+              <div className="text-sm font-black text-gray-900">守備フォーメーション解説</div>
+              <div className="text-xs text-gray-400">バント・ゲッツー・中継プレーなど20パターン</div>
+            </div>
+            <span className="text-gray-300 font-bold">›</span>
+          </button>
         </div>
 
         {/* Zone 3: テーマを選ぶ */}
