@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { themes, questions } from '../data/questions';
+import { formations, formationCategories } from '../data/formations';
 import { getLevelData, getLevelInfo } from '../utils/level';
 import { isDailyCompleted, getDailyStreak } from '../utils/daily';
 import { getWrongAnswers } from '../utils/weakness';
@@ -23,17 +25,21 @@ const themeGroups = [
 ];
 
 export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyChallenge, onWeaknessQuiz, onFormations }) {
+  const [openSection, setOpenSection] = useState(null); // null | 'quiz' | 'guide'
   const levelInfo = getLevelInfo(getLevelData().xp);
   const dailyDone = isDailyCompleted();
   const dailyStreak = getDailyStreak();
   const wrongCount = getWrongAnswers().length;
 
+  const totalQuestions = questions.length;
+  const totalFormations = formations.length;
+
   return (
     <div className="min-h-screen bg-gray-50 px-3 lg:px-6 py-6">
       <div className="max-w-2xl lg:max-w-5xl mx-auto">
 
-        {/* Zone 1: ヘッダー */}
-        <div className="flex items-center gap-2 mb-3">
+        {/* ヘッダー */}
+        <div className="flex items-center gap-2 mb-4">
           <div className="flex-shrink-0">
             <h1 className="text-2xl font-black text-gray-900">⚾ つぎ、どうする？</h1>
             <p className="text-xs text-gray-400">野球の状況判断クイズ</p>
@@ -68,8 +74,8 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
           </button>
         </div>
 
-        {/* Zone 2: 今日やること + ランダム 横並び */}
-        <div className="mb-3">
+        {/* 今日やること */}
+        <div className="mb-4">
           <div className="text-xs font-bold text-gray-400 tracking-wider mb-1.5">今日やること</div>
           <div className="flex gap-1.5">
             <button
@@ -115,57 +121,98 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
           </div>
         </div>
 
-        {/* Zone 2.5: 守備フォーメーション解説 */}
-        <div className="mb-3">
+        {/* ═══ 2枚の大カード ═══ */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+
+          {/* 解説編カード */}
           <button
-            onClick={onFormations}
-            className="w-full flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-200 shadow-sm hover:border-green-300 hover:bg-green-50 active:scale-[0.98] transition-all cursor-pointer"
+            onClick={() => setOpenSection(openSection === 'guide' ? null : 'guide')}
+            className={`relative flex flex-col items-center justify-center rounded-2xl border-2 p-6 aspect-square transition-all active:scale-[0.97] cursor-pointer ${
+              openSection === 'guide'
+                ? 'bg-green-50 border-green-400 shadow-lg'
+                : 'bg-white border-gray-200 shadow-sm hover:border-green-300 hover:shadow-md'
+            }`}
           >
-            <span className="text-2xl">📋</span>
-            <div className="flex-1 text-left">
-              <div className="text-sm font-black text-gray-900">守備フォーメーション解説</div>
-              <div className="text-xs text-gray-400">ランナー別に190パターンの守備を解説</div>
-            </div>
-            <span className="text-gray-300 font-bold">›</span>
+            <span className="text-5xl mb-3">📖</span>
+            <span className={`text-xl font-black ${openSection === 'guide' ? 'text-green-800' : 'text-gray-900'}`}>解説編</span>
+            <span className={`text-xs mt-1 ${openSection === 'guide' ? 'text-green-600' : 'text-gray-400'}`}>フォーメーションを学ぶ</span>
+            <span className={`absolute top-2.5 right-3 text-xs font-bold px-2 py-0.5 rounded-full ${
+              openSection === 'guide' ? 'bg-green-200 text-green-700' : 'bg-gray-100 text-gray-500'
+            }`}>{totalFormations}項目</span>
+          </button>
+
+          {/* 問題編カード */}
+          <button
+            onClick={() => setOpenSection(openSection === 'quiz' ? null : 'quiz')}
+            className={`relative flex flex-col items-center justify-center rounded-2xl border-2 p-6 aspect-square transition-all active:scale-[0.97] cursor-pointer ${
+              openSection === 'quiz'
+                ? 'bg-blue-50 border-blue-400 shadow-lg'
+                : 'bg-white border-gray-200 shadow-sm hover:border-blue-300 hover:shadow-md'
+            }`}
+          >
+            <span className="text-5xl mb-3">✏️</span>
+            <span className={`text-xl font-black ${openSection === 'quiz' ? 'text-blue-800' : 'text-gray-900'}`}>問題編</span>
+            <span className={`text-xs mt-1 ${openSection === 'quiz' ? 'text-blue-600' : 'text-gray-400'}`}>クイズに挑戦する</span>
+            <span className={`absolute top-2.5 right-3 text-xs font-bold px-2 py-0.5 rounded-full ${
+              openSection === 'quiz' ? 'bg-blue-200 text-blue-700' : 'bg-gray-100 text-gray-500'
+            }`}>{totalQuestions}問</span>
           </button>
         </div>
 
-        {/* Zone 3: テーマを選ぶ */}
-        <div className="mb-3">
-          <div className="text-xs font-bold text-gray-400 tracking-wider mb-1.5">テーマを選ぶ</div>
-          <div className="grid gap-2.5">
-            {themeGroups.map((group) => (
-              <div key={group.label}>
-                <div className="text-xs font-bold text-gray-400 mb-1">{group.label}</div>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {group.keys.map((key) => {
-                    const theme = themes[key];
-                    if (!theme) return null;
-                    const isComingSoon = theme.comingSoon;
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => !isComingSoon && onSelectTheme(key)}
-                        disabled={isComingSoon}
-                        className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border shadow-sm h-20 active:scale-[0.98] transition-all ${
-                          isComingSoon
-                            ? 'bg-gray-50 border-gray-100 text-gray-400 cursor-not-allowed opacity-50'
-                            : 'bg-white border-gray-200 text-gray-800 hover:border-blue-400 hover:bg-blue-50 cursor-pointer'
-                        }`}
-                      >
-                        <span className="text-2xl">{theme.icon}</span>
-                        <span className="font-bold text-xs text-center leading-tight">{theme.name}</span>
-                        {isComingSoon && <span className="text-xs text-gray-400">準備中</span>}
-                      </button>
-                    );
-                  })}
+        {/* ═══ 展開エリア：解説編 ═══ */}
+        {openSection === 'guide' && (
+          <div className="mb-4 animate-[fadeSlideIn_0.2s_ease-out]">
+            <div className="grid gap-2">
+              <button
+                onClick={onFormations}
+                className="w-full flex items-center gap-3 p-4 rounded-xl bg-white border border-gray-200 shadow-sm hover:border-green-300 hover:bg-green-50 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <span className="text-3xl">⚾</span>
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-black text-gray-900">守備フォーメーション</div>
+                  <div className="text-xs text-gray-400 mt-0.5">ランナー別に{totalFormations}パターンの守備を解説</div>
                 </div>
-              </div>
-            ))}
+                <span className="text-gray-300 font-bold text-xl">›</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
-
+        {/* ═══ 展開エリア：問題編 ═══ */}
+        {openSection === 'quiz' && (
+          <div className="mb-4 animate-[fadeSlideIn_0.2s_ease-out]">
+            <div className="grid gap-2.5">
+              {themeGroups.map((group) => (
+                <div key={group.label}>
+                  <div className="text-xs font-bold text-gray-400 mb-1">{group.label}</div>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {group.keys.map((key) => {
+                      const theme = themes[key];
+                      if (!theme) return null;
+                      const isComingSoon = theme.comingSoon;
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => !isComingSoon && onSelectTheme(key)}
+                          disabled={isComingSoon}
+                          className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border shadow-sm h-20 active:scale-[0.98] transition-all ${
+                            isComingSoon
+                              ? 'bg-gray-50 border-gray-100 text-gray-400 cursor-not-allowed opacity-50'
+                              : 'bg-white border-gray-200 text-gray-800 hover:border-blue-400 hover:bg-blue-50 cursor-pointer'
+                          }`}
+                        >
+                          <span className="text-2xl">{theme.icon}</span>
+                          <span className="font-bold text-xs text-center leading-tight">{theme.name}</span>
+                          {isComingSoon && <span className="text-xs text-gray-400">準備中</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
