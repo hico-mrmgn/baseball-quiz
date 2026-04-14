@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { themes, questions } from '../data/questions';
 import { formations, formationCategories } from '../data/formations';
 import { getLevelData, getLevelInfo } from '../utils/level';
@@ -63,6 +63,12 @@ function OutsBadge({ outs }) {
 /* ── 詳細モーダル ── */
 function FormationDetail({ formation, onClose, onPrev, onNext, hasPrev, hasNext }) {
   const cat = formationCategories.find(c => c.id === formation.categoryId);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-4"
