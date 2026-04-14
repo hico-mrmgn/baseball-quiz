@@ -23,137 +23,127 @@ function OutsBadge({ outs }) {
   );
 }
 
+const PLAYER_LABEL = { pitcher:'P', catcher:'C', first:'1B', second:'2B', short:'SS', third:'3B', left:'LF', center:'CF', right:'RF' };
+
 /* ── 詳細モーダル ── */
 function FormationDetail({ formation, onClose, onPrev, onNext, hasPrev, hasNext }) {
+  const cat = formationCategories.find(c => c.id === formation.categoryId);
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end lg:items-center justify-center"
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-4"
       onClick={onClose}
     >
       {/* オーバーレイ */}
-      <div className="absolute inset-0 bg-black/50" />
+      <div className="absolute inset-0 bg-black/55" />
 
-      {/* パネル */}
+      {/* パネル本体 */}
       <div
-        className="relative w-full max-w-2xl bg-white rounded-t-2xl lg:rounded-2xl shadow-2xl overflow-y-auto max-h-[92vh] lg:max-h-[85vh]"
+        className="relative w-full md:max-w-4xl bg-white rounded-t-2xl md:rounded-2xl shadow-2xl
+                   flex flex-col
+                   max-h-[94vh] md:h-[720px] md:max-h-[90vh] overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
-        {/* ヘッダー */}
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between z-10">
+
+        {/* ════ 全幅ヘッダー（上部固定） ════ */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white rounded-t-2xl md:rounded-t-2xl flex-shrink-0">
           <div>
-            <div className="text-xs text-gray-400 font-bold">
-              {formationCategories.find(c => c.id === formation.categoryId)?.icon}{' '}
-              {formationCategories.find(c => c.id === formation.categoryId)?.name}
-            </div>
+            <div className="text-xs text-gray-400 font-bold">{cat?.icon} {cat?.name}</div>
             <h2 className="text-base font-black text-gray-900">{formation.title}</h2>
-            <p className="text-sm text-gray-500">{formation.subtitle}</p>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <OutsBadge outs={formation.outs} />
+              <RunnerBadge runners={formation.runners} />
+            </div>
           </div>
           <button
             onClick={onClose}
             className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 text-gray-500 hover:bg-gray-200 active:scale-95 transition-all cursor-pointer flex-shrink-0"
-          >
-            ✕
-          </button>
+          >✕</button>
         </div>
 
-        <div className="px-4 pb-6 pt-3">
-          {/* バッジ行 */}
-          <div className="flex items-center gap-2 flex-wrap mb-3">
-            <OutsBadge outs={formation.outs} />
-            <RunnerBadge runners={formation.runners} />
+        {/* ════ 2カラムエリア（ヘッダーの下） ════ */}
+        <div className="flex flex-col md:flex-row flex-1 min-h-0">
+
+        {/* ── 左カラム: ダイアグラム ── */}
+        <div className="md:w-[46%] flex flex-col bg-gray-50 border-b md:border-b-0 md:border-r border-gray-200">
+
+          {/* 図 */}
+          <div className="flex items-start justify-center px-3 pt-3">
+            <div className="w-full">
+              <FormationDiagram formation={formation} />
+            </div>
           </div>
 
-          {/* ダイアグラム */}
-          <FormationDiagram formation={formation} />
-
-          {/* 凡例説明 */}
-          <div className="mt-3 flex items-center gap-4 text-xs text-gray-500 flex-wrap">
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-red-400 inline-block" />
-              前進・処理する選手
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-emerald-400 inline-block" />
-              ベースカバー
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-blue-400 inline-block" />
-              補助・バックアップ
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-4 border-t-2 border-dashed border-yellow-400 inline-block" />
-              送球ライン
-            </span>
-          </div>
-
-          {/* 解説 */}
-          <div className="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-100">
-            <div className="text-xs font-bold text-blue-800 mb-1.5">📖 解説</div>
-            <p className="text-sm text-blue-900 leading-relaxed">{formation.description}</p>
-          </div>
-
-          {/* ポイント */}
-          <div className="mt-3">
-            <div className="text-xs font-bold text-gray-500 mb-2">✅ ポイント</div>
-            <ul className="space-y-1.5">
-              {formation.keyPoints.map((pt, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-gray-800">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center mt-0.5">
-                    {i + 1}
-                  </span>
-                  {pt}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* 選手の動き一覧 */}
+          {/* 選手の動き（図の直下） */}
           {formation.moves.length > 0 && (
-            <div className="mt-3">
-              <div className="text-xs font-bold text-gray-500 mb-2">🏃 選手の動き</div>
-              <div className="grid grid-cols-2 gap-1.5">
+            <div className="px-3 pt-2">
+              <div className="text-xs font-bold text-gray-500 mb-1.5">🏃 選手の動き</div>
+              <div className="grid grid-cols-2 gap-1">
                 {formation.moves.map(m => (
-                  <div key={m.player} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 border border-gray-100">
-                    <span
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: m.color }}
-                    />
-                    <span className="text-xs font-bold text-gray-700">
-                      {({ pitcher:'P', catcher:'C', first:'1B', second:'2B', short:'SS', third:'3B', left:'LF', center:'CF', right:'RF' })[m.player]}
-                    </span>
-                    <span className="text-xs text-gray-500">{m.role}</span>
+                  <div key={m.player} className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-white border border-gray-200">
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: m.color }} />
+                    <span className="text-xs font-bold text-gray-700">{PLAYER_LABEL[m.player]}</span>
+                    <span className="text-xs text-gray-400 truncate">{m.role}</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
+
+          {/* 凡例 */}
+          <div className="px-3 py-2 mt-auto flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-400 border-t border-gray-200 mt-2">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400 inline-block" />前進・処理</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />カバー</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />補助</span>
+            <span className="flex items-center gap-1"><span className="w-4 border-t-2 border-dashed border-yellow-400 inline-block" />送球</span>
+          </div>
         </div>
 
-        {/* 前後ナビ */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-100 px-4 py-3 flex items-center gap-2">
-          <button
-            onClick={onPrev}
-            disabled={!hasPrev}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 ${
-              hasPrev
-                ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer'
-                : 'bg-gray-50 text-gray-300 cursor-not-allowed'
-            }`}
-          >
-            ← 前へ
-          </button>
-          <button
-            onClick={onNext}
-            disabled={!hasNext}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 ${
-              hasNext
-                ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
-                : 'bg-gray-50 text-gray-300 cursor-not-allowed'
-            }`}
-          >
-            次へ →
-          </button>
+        {/* ════ 右カラム: 解説テキスト ════ */}
+        <div className="md:w-[54%] flex flex-col min-h-0">
+          {/* スクロール可能エリア */}
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+            {/* 解説 */}
+            <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
+              <div className="text-xs font-bold text-blue-800 mb-1.5">📖 解説</div>
+              <p className="text-sm text-blue-900 leading-relaxed">{formation.description}</p>
+            </div>
+
+            {/* ポイント */}
+            <div>
+              <div className="text-xs font-bold text-gray-500 mb-2">✅ ポイント</div>
+              <ul className="space-y-1.5">
+                {formation.keyPoints.map((pt, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-gray-800">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 text-green-700 text-xs font-bold flex items-center justify-center mt-0.5">
+                      {i + 1}
+                    </span>
+                    {pt}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* 前後ナビ（右カラム下部に固定） */}
+          <div className="border-t border-gray-100 px-4 py-3 flex items-center gap-2 bg-white md:rounded-br-2xl">
+            <button
+              onClick={onPrev}
+              disabled={!hasPrev}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 ${
+                hasPrev ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer' : 'bg-gray-50 text-gray-300 cursor-not-allowed'
+              }`}
+            >← 前へ</button>
+            <button
+              onClick={onNext}
+              disabled={!hasNext}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 ${
+                hasNext ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer' : 'bg-gray-50 text-gray-300 cursor-not-allowed'
+              }`}
+            >次へ →</button>
+          </div>
         </div>
+
+        </div>{/* 2カラムエリア end */}
       </div>
     </div>
   );
