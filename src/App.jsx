@@ -4,7 +4,6 @@ import QuizScreen from './components/QuizScreen';
 import ResultScreen from './components/ResultScreen';
 import HistoryScreen from './components/HistoryScreen';
 import BadgeScreen from './components/BadgeScreen';
-import FormationScreen from './components/FormationScreen';
 import BadgeNotification from './components/BadgeNotification';
 import LevelUpNotification from './components/LevelUpNotification';
 import { questions } from './data/questions';
@@ -212,10 +211,6 @@ export default function App() {
     return <BadgeScreen onBack={() => setScreen('top')} />;
   }
 
-  if (screen === 'formations') {
-    return <FormationScreen onBack={() => setScreen('top')} />;
-  }
-
   return (
     <TopScreen
       onSelectTheme={startQuiz}
@@ -223,7 +218,6 @@ export default function App() {
       onBadges={() => setScreen('badges')}
       onDailyChallenge={startDailyChallenge}
       onWeaknessQuiz={startWeaknessQuiz}
-      onFormations={() => setScreen('formations')}
     />
   );
 }
