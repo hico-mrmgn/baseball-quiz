@@ -103,7 +103,7 @@ function FormationDetail({ formation, onClose, onPrev, onNext, hasPrev, hasNext 
           <div className="md:w-[46%] flex flex-col bg-gray-50 border-b md:border-b-0 md:border-r border-gray-200">
             <div className="flex items-start justify-center px-3 pt-3">
               <div className="w-full">
-                <FormationDiagram formation={formation} />
+                <FormationDiagram formation={formation} animated />
               </div>
             </div>
             {formation.moves.length > 0 && (
