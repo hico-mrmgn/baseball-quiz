@@ -9,21 +9,57 @@ import FormationDiagram from './FormationDiagram';
 const themeGroups = [
   {
     label: '守備ポジション',
+    emoji: '🧤',
+    color: 'blue',
     keys: ['pitcher', 'catcher', 'first', 'second', 'short', 'third', 'outfield'],
   },
   {
     label: '攻撃',
+    emoji: '🏏',
+    color: 'rose',
     keys: ['batting', 'baserun', 'coach'],
   },
   {
     label: 'ルール知識',
+    emoji: '📖',
+    color: 'amber',
     keys: ['rules', 'umpire'],
   },
   {
     label: '特別編',
+    emoji: '🌟',
+    color: 'violet',
     keys: ['fighters', 'npb2025'],
   },
 ];
+
+// Tailwindはクラス名を静的に検出するため、色ごとに完全なクラス文字列を持つ
+const groupStyles = {
+  blue: {
+    badge: 'bg-blue-100 text-blue-700',
+    iconBg: 'bg-blue-50',
+    hover: 'hover:border-blue-400 hover:bg-blue-50',
+    dot: 'bg-blue-500',
+  },
+  rose: {
+    badge: 'bg-rose-100 text-rose-700',
+    iconBg: 'bg-rose-50',
+    hover: 'hover:border-rose-400 hover:bg-rose-50',
+    dot: 'bg-rose-500',
+  },
+  amber: {
+    badge: 'bg-amber-100 text-amber-700',
+    iconBg: 'bg-amber-50',
+    hover: 'hover:border-amber-400 hover:bg-amber-50',
+    dot: 'bg-amber-500',
+  },
+  violet: {
+    badge: 'bg-violet-100 text-violet-700',
+    iconBg: 'bg-violet-50',
+    hover: 'hover:border-violet-400 hover:bg-violet-50',
+    dot: 'bg-violet-500',
+  },
+};
 
 const PLAYER_LABEL = { pitcher:'P', catcher:'C', first:'1B', second:'2B', short:'SS', third:'3B', left:'LF', center:'CF', right:'RF' };
 
@@ -228,63 +264,77 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-3 lg:px-6 py-6">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 via-gray-50 to-gray-50 px-3 lg:px-6 py-4 lg:py-6">
       <div className="max-w-2xl lg:max-w-5xl mx-auto">
 
-        {/* ヘッダー */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className="flex-shrink-0">
-            <h1 className="text-2xl font-black text-gray-900">⚾ つぎ、どうする？</h1>
-            <p className="text-xs text-gray-400">野球の状況判断クイズ</p>
+        {/* ヒーローヘッダー */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-green-600 to-green-700 shadow-lg mb-4 p-4">
+          {/* 背景の装飾（内野ダイヤモンド） */}
+          <div className="absolute -right-8 -top-10 w-44 h-44 rotate-45 rounded-3xl border-[10px] border-white/10 pointer-events-none" />
+          <div className="absolute -right-1 top-4 w-28 h-28 rotate-45 rounded-2xl border-[6px] border-white/10 pointer-events-none" />
+
+          <div className="relative flex items-center gap-2">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl lg:text-3xl font-black text-white drop-shadow-sm">⚾ つぎ、どうする？</h1>
+              <p className="text-xs text-green-100 mt-0.5">野球の状況判断クイズ</p>
+            </div>
+            <button
+              onClick={onHistory}
+              className="flex flex-col items-center justify-center gap-0.5 p-2 rounded-xl bg-white/15 text-white hover:bg-white/25 active:scale-95 transition-all cursor-pointer w-14 h-14 flex-shrink-0 backdrop-blur-sm"
+            >
+              <span className="text-xl">📊</span>
+              <span className="text-xs font-bold">戦績</span>
+            </button>
+            <button
+              onClick={onBadges}
+              className="flex flex-col items-center justify-center gap-0.5 p-2 rounded-xl bg-white/15 text-white hover:bg-white/25 active:scale-95 transition-all cursor-pointer w-14 h-14 flex-shrink-0 backdrop-blur-sm"
+            >
+              <span className="text-xl">🏅</span>
+              <span className="text-xs font-bold">バッジ</span>
+            </button>
           </div>
-          <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 p-2.5">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">{levelInfo.emoji}</span>
-              <div className="flex-1">
-                <div className="text-xs font-black text-gray-800">Lv.{levelInfo.level} {levelInfo.title}</div>
-                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mt-0.5">
+
+          {/* レベルバー */}
+          <div className="relative mt-3 bg-white/15 rounded-xl p-2.5 backdrop-blur-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">{levelInfo.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline justify-between gap-2">
+                  <div className="text-sm font-black text-white truncate">Lv.{levelInfo.level} {levelInfo.title}</div>
+                  <div className="text-xs font-bold text-green-100 flex-shrink-0">{levelInfo.progressPercent}%</div>
+                </div>
+                <div className="w-full h-2 bg-black/20 rounded-full overflow-hidden mt-1">
                   <div
-                    className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full"
+                    className="h-full bg-gradient-to-r from-amber-300 to-amber-400 rounded-full transition-all duration-500"
                     style={{ width: `${levelInfo.progressPercent}%` }}
                   />
                 </div>
               </div>
             </div>
           </div>
-          <button
-            onClick={onHistory}
-            className="flex flex-col items-center justify-center gap-0.5 p-2 rounded-xl border border-gray-200 bg-white shadow-sm text-gray-600 hover:border-blue-300 hover:text-blue-600 active:scale-95 transition-all cursor-pointer w-14 h-14 flex-shrink-0"
-          >
-            <span className="text-xl">📊</span>
-            <span className="text-xs font-bold">戦績</span>
-          </button>
-          <button
-            onClick={onBadges}
-            className="flex flex-col items-center justify-center gap-0.5 p-2 rounded-xl border border-gray-200 bg-white shadow-sm text-gray-600 hover:border-blue-300 hover:text-blue-600 active:scale-95 transition-all cursor-pointer w-14 h-14 flex-shrink-0"
-          >
-            <span className="text-xl">🏅</span>
-            <span className="text-xs font-bold">バッジ</span>
-          </button>
         </div>
 
         {/* 今日やること */}
-        <div className="mb-4">
-          <div className="text-xs font-bold text-gray-400 tracking-wider mb-1.5">今日やること</div>
-          <div className="flex gap-1.5">
+        <div className="mb-5">
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="text-sm">☀️</span>
+            <span className="text-sm font-black text-gray-700">今日やること</span>
+          </div>
+          <div className="flex gap-2">
             <button
               onClick={onDailyChallenge}
               disabled={dailyDone}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 p-3 rounded-xl shadow-sm active:scale-[0.98] transition-all cursor-pointer ${
+              className={`flex-1 flex flex-col items-center justify-center gap-1 p-3 rounded-2xl shadow-md active:scale-[0.97] transition-all cursor-pointer ${
                 dailyDone
-                  ? 'bg-gray-100 border border-gray-200 opacity-60'
-                  : 'bg-blue-50 border border-blue-200 hover:border-blue-300'
+                  ? 'bg-gray-100 border border-gray-200 opacity-60 shadow-none'
+                  : 'bg-gradient-to-br from-amber-400 to-orange-500 hover:shadow-lg'
               }`}
             >
-              <span className="text-2xl">{dailyDone ? '✅' : '📅'}</span>
-              <div className={`text-xs font-bold text-center ${dailyDone ? 'text-gray-400' : 'text-blue-800'}`}>
+              <span className="text-3xl drop-shadow-sm">{dailyDone ? '✅' : '📅'}</span>
+              <div className={`text-xs font-black text-center ${dailyDone ? 'text-gray-400' : 'text-white'}`}>
                 {dailyDone ? 'クリア済み' : 'きょうのチャレンジ'}
               </div>
-              <div className={`text-xs ${dailyDone ? 'text-gray-400' : 'text-blue-600'}`}>
+              <div className={`text-xs font-bold ${dailyDone ? 'text-gray-400' : 'text-amber-50'}`}>
                 {dailyStreak > 0 ? `${dailyStreak}日連続 🔥` : '毎日5もん！'}
               </div>
             </button>
@@ -292,56 +342,56 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
             <button
               onClick={wrongCount > 0 ? onWeaknessQuiz : undefined}
               disabled={wrongCount === 0}
-              className={`flex-1 flex flex-col items-center justify-center gap-1 p-3 rounded-xl border transition-all ${
+              className={`flex-1 flex flex-col items-center justify-center gap-1 p-3 rounded-2xl transition-all ${
                 wrongCount > 0
-                  ? 'bg-blue-100 border-blue-200 hover:border-blue-300 active:scale-[0.98] cursor-pointer'
-                  : 'bg-gray-50 border-gray-100 opacity-40 cursor-not-allowed'
+                  ? 'bg-gradient-to-br from-violet-500 to-purple-600 shadow-md hover:shadow-lg active:scale-[0.97] cursor-pointer'
+                  : 'bg-gray-50 border border-gray-100 opacity-40 cursor-not-allowed'
               }`}
             >
-              <span className="text-2xl">📝</span>
-              <div className={`text-xs font-bold text-center ${wrongCount > 0 ? 'text-blue-800' : 'text-gray-400'}`}>にがてこくふく</div>
-              <div className={`text-xs ${wrongCount > 0 ? 'text-blue-600' : 'text-gray-400'}`}>{wrongCount > 0 ? `${wrongCount}問` : 'まだなし'}</div>
+              <span className="text-3xl drop-shadow-sm">📝</span>
+              <div className={`text-xs font-black text-center ${wrongCount > 0 ? 'text-white' : 'text-gray-400'}`}>にがてこくふく</div>
+              <div className={`text-xs font-bold ${wrongCount > 0 ? 'text-violet-100' : 'text-gray-400'}`}>{wrongCount > 0 ? `${wrongCount}問` : 'まだなし'}</div>
             </button>
 
             <button
               onClick={() => onSelectTheme('random')}
-              className="flex-1 flex flex-col items-center justify-center gap-1 p-3 rounded-xl bg-white border border-gray-200 shadow-sm text-gray-700 hover:border-blue-300 hover:bg-blue-50 active:scale-[0.98] transition-all cursor-pointer"
+              className="flex-1 flex flex-col items-center justify-center gap-1 p-3 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 shadow-md hover:shadow-lg active:scale-[0.97] transition-all cursor-pointer"
             >
-              <span className="text-2xl">🎲</span>
-              <div className="text-xs font-bold text-center">全テーマランダム</div>
-              <div className="text-xs text-gray-400">15問</div>
+              <span className="text-3xl drop-shadow-sm">🎲</span>
+              <div className="text-xs font-black text-center text-white">全テーマランダム</div>
+              <div className="text-xs font-bold text-sky-100">15問</div>
             </button>
           </div>
         </div>
 
         {/* ═══ タブ切り替え ═══ */}
-        <div className="flex gap-0 bg-gray-200 rounded-xl p-1 mb-4">
+        <div className="flex gap-1 bg-gray-200/80 rounded-2xl p-1 mb-4">
           <button
             onClick={() => setActiveTab('quiz')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-black transition-all cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-black transition-all cursor-pointer ${
               activeTab === 'quiz'
-                ? 'bg-white text-gray-900 shadow-sm'
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             <span>✏️</span>
             <span>問題編</span>
             <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
-              activeTab === 'quiz' ? 'bg-blue-100 text-blue-600' : 'bg-gray-300 text-gray-500'
+              activeTab === 'quiz' ? 'bg-white/25 text-white' : 'bg-gray-300 text-gray-500'
             }`}>{totalQuestions}</span>
           </button>
           <button
             onClick={() => setActiveTab('guide')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-black transition-all cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-black transition-all cursor-pointer ${
               activeTab === 'guide'
-                ? 'bg-white text-gray-900 shadow-sm'
+                ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
             <span>📖</span>
             <span>解説編</span>
             <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${
-              activeTab === 'guide' ? 'bg-green-100 text-green-600' : 'bg-gray-300 text-gray-500'
+              activeTab === 'guide' ? 'bg-white/25 text-white' : 'bg-gray-300 text-gray-500'
             }`}>{totalFormations}</span>
           </button>
         </div>
@@ -349,35 +399,50 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
         {/* ═══ 問題編 ═══ */}
         {activeTab === 'quiz' && (
           <div className="mb-4">
-            <div className="grid gap-2.5">
-              {themeGroups.map((group) => (
-                <div key={group.label}>
-                  <div className="text-xs font-bold text-gray-400 mb-1">{group.label}</div>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {group.keys.map((key) => {
-                      const theme = themes[key];
-                      if (!theme) return null;
-                      const isComingSoon = theme.comingSoon;
-                      return (
-                        <button
-                          key={key}
-                          onClick={() => !isComingSoon && onSelectTheme(key)}
-                          disabled={isComingSoon}
-                          className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border shadow-sm h-20 active:scale-[0.98] transition-all ${
-                            isComingSoon
-                              ? 'bg-gray-50 border-gray-100 text-gray-400 cursor-not-allowed opacity-50'
-                              : 'bg-white border-gray-200 text-gray-800 hover:border-blue-400 hover:bg-blue-50 cursor-pointer'
-                          }`}
-                        >
-                          <span className="text-2xl">{theme.icon}</span>
-                          <span className="font-bold text-xs text-center leading-tight">{theme.name}</span>
-                          {isComingSoon && <span className="text-xs text-gray-400">準備中</span>}
-                        </button>
-                      );
-                    })}
+            <div className="grid gap-4">
+              {themeGroups.map((group) => {
+                const style = groupStyles[group.color];
+                return (
+                  <div key={group.label}>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <span className={`w-1 h-4 rounded-full ${style.dot}`} />
+                      <span className="text-sm font-black text-gray-700">{group.emoji} {group.label}</span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      {group.keys.map((key) => {
+                        const theme = themes[key];
+                        if (!theme) return null;
+                        const isComingSoon = theme.comingSoon;
+                        const count = questions.filter(q => q.theme === key).length;
+                        return (
+                          <button
+                            key={key}
+                            onClick={() => !isComingSoon && onSelectTheme(key)}
+                            disabled={isComingSoon}
+                            className={`relative flex flex-col items-center justify-center gap-1 p-2 pt-3 rounded-2xl border shadow-sm h-24 active:scale-[0.96] transition-all ${
+                              isComingSoon
+                                ? 'bg-gray-50 border-gray-100 text-gray-400 cursor-not-allowed opacity-50'
+                                : `bg-white border-gray-200 text-gray-800 hover:shadow-md cursor-pointer ${style.hover}`
+                            }`}
+                          >
+                            <span className={`flex items-center justify-center w-10 h-10 rounded-full text-2xl ${isComingSoon ? 'bg-gray-100' : style.iconBg}`}>
+                              {theme.icon}
+                            </span>
+                            <span className="font-bold text-xs text-center leading-tight">{theme.name}</span>
+                            {isComingSoon ? (
+                              <span className="text-xs text-gray-400">準備中</span>
+                            ) : (
+                              <span className={`absolute top-1 right-1 text-[10px] font-bold px-1.5 py-px rounded-full ${style.badge}`}>
+                                {count}問
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -396,13 +461,13 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
                     onClick={() => setSelectedCategoryId(cat.id)}
                     className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 cursor-pointer ${
                       isActive
-                        ? 'bg-blue-500 text-white shadow-sm'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-emerald-500 text-white shadow-sm'
+                        : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
                     }`}
                   >
                     <span>{cat.icon}</span>
                     <span>{cat.name}</span>
-                    <span className={`text-xs rounded-full w-4 h-4 flex items-center justify-center font-black ${isActive ? 'bg-blue-400 text-white' : 'bg-gray-200 text-gray-500'}`}>
+                    <span className={`text-xs rounded-full w-4 h-4 flex items-center justify-center font-black ${isActive ? 'bg-emerald-400 text-white' : 'bg-gray-100 text-gray-500'}`}>
                       {count}
                     </span>
                   </button>

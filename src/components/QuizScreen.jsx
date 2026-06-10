@@ -96,7 +96,7 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish, 
   const isCorrect = confirmedAnswer === current.correct;
 
   return (
-    <div className="min-h-screen bg-gray-50 px-3 lg:px-6 py-4">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 via-gray-50 to-gray-50 px-3 lg:px-6 py-4">
       <Confetti trigger={confettiTrigger} />
       <div className="max-w-2xl lg:max-w-5xl mx-auto">
 
@@ -208,19 +208,29 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish, 
         {/* Choices */}
         <div className="grid lg:grid-cols-2 gap-2 mb-3">
           {current.choices.map((choice, index) => {
-            let style;
+            let style, chipStyle, chipContent;
             if (confirmedAnswer !== null) {
               if (index === current.correct) {
-                style = 'bg-green-100 border-2 border-green-500 text-green-800';
+                style = 'bg-green-50 border-2 border-green-500 text-green-800 shadow-md';
+                chipStyle = 'bg-green-500 text-white';
+                chipContent = '⭕';
               } else if (index === confirmedAnswer && index !== current.correct) {
-                style = 'bg-red-100 border-2 border-red-400 text-red-800';
+                style = 'bg-red-50 border-2 border-red-400 text-red-800';
+                chipStyle = 'bg-red-400 text-white';
+                chipContent = '❌';
               } else {
                 style = 'bg-gray-50 border-2 border-gray-200 text-gray-400';
+                chipStyle = 'bg-gray-200 text-gray-400';
+                chipContent = String.fromCharCode(65 + index);
               }
             } else if (pendingAnswer === index) {
-              style = 'bg-blue-50 border-2 border-blue-500 text-blue-900 ring-2 ring-blue-200';
+              style = 'bg-blue-50 border-2 border-blue-500 text-blue-900 ring-2 ring-blue-200 shadow-md';
+              chipStyle = 'bg-blue-500 text-white';
+              chipContent = String.fromCharCode(65 + index);
             } else {
-              style = 'bg-white border border-gray-200 text-gray-800 hover:border-blue-400 hover:bg-blue-50';
+              style = 'bg-white border-2 border-gray-200 text-gray-800 hover:border-blue-400 hover:bg-blue-50';
+              chipStyle = 'bg-gray-100 text-gray-500';
+              chipContent = String.fromCharCode(65 + index);
             }
 
             return (
@@ -228,14 +238,12 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish, 
                 key={index}
                 onClick={() => handleSelect(index)}
                 disabled={confirmedAnswer !== null}
-                className={`w-full p-3 md:p-4 rounded-xl text-left font-bold text-sm md:text-base transition-all ${style} ${confirmedAnswer === null ? 'active:scale-[0.98] cursor-pointer' : ''}`}
+                className={`w-full flex items-center gap-2.5 p-3 md:p-3.5 rounded-2xl text-left font-bold text-sm md:text-base transition-all ${style} ${confirmedAnswer === null ? 'active:scale-[0.98] cursor-pointer' : ''}`}
               >
-                <span className="mr-1.5 inline-block w-6 text-center">
-                  {confirmedAnswer !== null && index === current.correct ? '⭕' :
-                   confirmedAnswer === index && index !== current.correct ? '❌' :
-                   `${String.fromCharCode(65 + index)}.`}
+                <span className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-black transition-all ${chipStyle}`}>
+                  {chipContent}
                 </span>
-                {choice}
+                <span className="flex-1">{choice}</span>
               </button>
             );
           })}
@@ -272,11 +280,16 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish, 
 
         {/* Explanation */}
         {confirmedAnswer !== null && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3">
-            <div className="text-xs font-bold text-blue-600 mb-1">
-              {isCorrect ? '🎉 正解！' : '💡 解説'}
+          <div className={`fade-slide-in rounded-2xl p-3.5 mb-3 border-2 ${
+            isCorrect
+              ? 'bg-green-50 border-green-200'
+              : 'bg-amber-50 border-amber-200'
+          }`}>
+            <div className={`flex items-center gap-1.5 text-sm font-black mb-1.5 ${isCorrect ? 'text-green-700' : 'text-amber-700'}`}>
+              <span className="text-lg">{isCorrect ? '🎉' : '💡'}</span>
+              {isCorrect ? '正解！ナイス判断！' : `ざんねん！正解は「${String.fromCharCode(65 + current.correct)}」`}
             </div>
-            <div className="text-sm text-blue-900 leading-relaxed">
+            <div className={`text-sm leading-relaxed ${isCorrect ? 'text-green-900' : 'text-amber-900'}`}>
               {current.explanation}
             </div>
           </div>
