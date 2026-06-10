@@ -53,7 +53,7 @@ export default function ResultScreen({ score, total, maxCombo, theme, onRetry, o
   }, [score, total, percentage]);
 
   return (
-    <div className="min-h-screen bg-gray-50 px-3 lg:px-6 py-6 lg:py-8 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 via-gray-50 to-gray-50 px-3 lg:px-6 py-6 lg:py-8 flex items-center justify-center">
       <Confetti trigger={confettiTrigger} />
       <div className="max-w-md lg:max-w-5xl w-full mx-auto">
 
