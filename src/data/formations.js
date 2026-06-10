@@ -22,9 +22,9 @@ export const DEFAULT_POSITIONS = {
   second:  { x: 138, y: 96,  label: '2B' },
   short:   { x: 80,  y: 96,  label: 'SS' },
   third:   { x: 40,  y: 138, label: '3B' },
-  left:    { x: 28,  y: 38,  label: 'LF' },
-  center:  { x: 110, y: 18,  label: 'CF' },
-  right:   { x: 192, y: 38,  label: 'RF' },
+  left:    { x: 36,  y: 44,  label: 'LF' },
+  center:  { x: 110, y: 24,  label: 'CF' },
+  right:   { x: 184, y: 44,  label: 'RF' },
 };
 
 export const formations = [
