@@ -7,7 +7,7 @@ export const CAREER_TIERS = [
   { min: 50,  emoji: '🔥', title: 'やる気マックスの努力家',    message: 'がんばる気持ちが一番大事！その調子で続けよう！',           bg: 'from-teal-300 to-teal-400',     text: 'text-white' },
   { min: 40,  emoji: '📖', title: 'ルールを勉強中！',          message: '知れば知るほど野球はおもしろい！どんどん覚えよう！',       bg: 'from-indigo-300 to-indigo-400', text: 'text-white' },
   { min: 30,  emoji: '🌱', title: 'のびしろいっぱいルーキー',  message: 'まだまだこれから！次はもっといい結果が出るよ！',           bg: 'from-lime-300 to-green-400',    text: 'text-white' },
-  { min: 20,  emoji: '⚡', title: 'チャレンジャー！',          message: 'むずかしい問題にもチャレンジするその気持ちがすごい！',     bg: 'from-purple-300 to-purple-400', text: 'text-white' },
+  { min: 20,  emoji: '⚡', title: 'チャレンジャー！',          message: '難しい問題にもチャレンジするその気持ちがすごい！',     bg: 'from-purple-300 to-purple-400', text: 'text-white' },
   { min: 1,   emoji: '🎯', title: 'はじめの一歩！',            message: '正解できた問題があるってすごいこと！自信を持とう！',       bg: 'from-pink-300 to-pink-400',     text: 'text-white' },
   { min: 0,   emoji: '🌈', title: 'スタートライン！',          message: 'ここからスタート！何回もやればどんどんわかるよ！',         bg: 'from-violet-400 to-purple-500', text: 'text-white' },
 ];

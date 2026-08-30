@@ -1,4 +1,6 @@
 import { summarize, tagBreakdown } from '../utils/scenario';
+import StatCard from './StatCard';
+import WeakTagList from './WeakTagList';
 
 /**
  * 実戦シナリオの結果。
@@ -19,24 +21,7 @@ function rankOf(percent) {
   return RANKS.find((r) => percent >= r.min) ?? RANKS[RANKS.length - 1];
 }
 
-function StatCard({ label, value, unit, tone }) {
-  const tones = {
-    good: 'bg-green-50 border-green-200 text-green-700',
-    bad:  'bg-red-50 border-red-200 text-red-700',
-    neutral: 'bg-gray-50 border-gray-200 text-gray-700',
-  };
-  return (
-    <div className={`flex-1 rounded-2xl border-2 p-3 text-center ${tones[tone]}`}>
-      <div className="text-xs font-black opacity-80 mb-0.5">{label}</div>
-      <div className="text-2xl font-black leading-none">
-        {value}
-        <span className="text-sm font-bold ml-0.5">{unit}</span>
-      </div>
-    </div>
-  );
-}
-
-export default function ScenarioResultScreen({ answers, onRetry, onHome }) {
+export default function ScenarioResultScreen({ answers, onRetry, onPracticeTag, onHome }) {
   const s = summarize(answers);
   const rank = rankOf(s.bestRate);
   const tags = tagBreakdown(answers);
@@ -66,7 +51,7 @@ export default function ScenarioResultScreen({ answers, onRetry, onHome }) {
             unit="%"
             tone={s.fatalRate > 0 ? 'bad' : 'good'}
           />
-          <StatCard label="はやい判断" value={s.inTimeRate} unit="%" tone="neutral" />
+          <StatCard label="速い判断" value={s.inTimeRate} unit="%" tone="neutral" />
         </div>
 
         {/* 判断の内訳 */}
@@ -115,30 +100,8 @@ export default function ScenarioResultScreen({ answers, onRetry, onHome }) {
           </div>
         )}
 
-        {/* タグ別の弱点。問題ID単位より「何を練習すべきか」が分かる */}
-        {weak.length > 0 && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 mb-4">
-            <div className="text-sm font-black text-gray-700 mb-2.5">きたえる判断</div>
-            <div className="space-y-2">
-              {weak.map((t) => (
-                <div key={t.tag} className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-gray-700 w-40 flex-shrink-0 truncate">
-                    {t.tag}
-                  </span>
-                  <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${
-                        t.percent >= 67 ? 'bg-sky-500' : t.percent >= 34 ? 'bg-amber-500' : 'bg-red-500'
-                      }`}
-                      style={{ width: `${t.percent}%` }}
-                    />
-                  </div>
-                  <span className="text-xs font-black text-gray-600 w-10 text-right">{t.percent}%</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* タグ別の弱点。見て終わりにせず、そのまま練習に入れるようにする */}
+        <WeakTagList tags={weak} title="きたえる判断" onPracticeTag={onPracticeTag} />
 
         {strong.length > 0 && (
           <div className="bg-green-50 rounded-2xl p-3.5 border border-green-200 mb-4">

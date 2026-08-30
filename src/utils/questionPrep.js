@@ -18,6 +18,21 @@ export function makeSeededRandom(seed) {
   };
 }
 
+/**
+ * 配列を混ぜる（元の配列は変えない）。
+ *
+ * `rand` を渡さなければ毎回ちがう並び、`makeSeededRandom()` を渡せば
+ * 同じシードから同じ並びが再現できる。
+ */
+export function shuffleArray(array, rand = Math.random) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 /** 1問の選択肢を混ぜ、correct を新しい位置に振り直す。 */
 export function shuffleQuestionChoices(question, rand = Math.random) {
   const order = question.choices.map((_, i) => i);
@@ -39,7 +54,7 @@ export function shuffleAllChoices(questions, rand = Math.random) {
 /* ── 難易度 ── */
 
 export const DIFFICULTY_FILTERS = [
-  { id: 'all',    label: 'ぜんぶ',  short: 'ぜんぶ', emoji: '',    color: 'bg-gray-100 text-gray-700 border-gray-300' },
+  { id: 'all',    label: '全部',  short: '全部', emoji: '',    color: 'bg-gray-100 text-gray-700 border-gray-300' },
   { id: 'easy',   label: '初級',    short: '初級',   emoji: '⭐',   color: 'bg-green-100 text-green-700 border-green-300' },
   { id: 'normal', label: '中級',    short: '中級',   emoji: '⭐⭐', color: 'bg-blue-100 text-blue-700 border-blue-300' },
   { id: 'hard',   label: '上級',    short: '上級',   emoji: '⭐⭐⭐', color: 'bg-orange-100 text-orange-700 border-orange-300' },
