@@ -492,26 +492,32 @@ export default function TopScreen({
                       {group.keys.map((key) => {
                         const theme = themes[key];
                         if (!theme) return null;
-                        const isComingSoon = theme.comingSoon;
                         const themeQuestions = questions.filter(q => q.theme === key);
                         const count = countByDifficulty(themeQuestions, difficulty);
+                        // その難易度の問題が1問もないテーマは選べないようにする
+                        // （0問と表示しておいて始まってしまうのは分かりにくいため）
+                        const isComingSoon = theme.comingSoon;
+                        const isEmpty = !isComingSoon && count === 0;
+                        const disabled = isComingSoon || isEmpty;
                         return (
                           <button
                             key={key}
-                            onClick={() => !isComingSoon && onSelectTheme(key, difficulty)}
-                            disabled={isComingSoon}
+                            onClick={() => !disabled && onSelectTheme(key, difficulty)}
+                            disabled={disabled}
                             className={`relative flex flex-col items-center justify-center gap-1 p-2 pt-3 rounded-2xl border shadow-sm h-24 active:scale-[0.96] transition-all ${
-                              isComingSoon
+                              disabled
                                 ? 'bg-gray-50 border-gray-100 text-gray-400 cursor-not-allowed opacity-50'
                                 : `bg-white border-gray-200 text-gray-800 hover:shadow-md cursor-pointer ${style.hover}`
                             }`}
                           >
-                            <span className={`flex items-center justify-center w-10 h-10 rounded-full text-2xl ${isComingSoon ? 'bg-gray-100' : style.iconBg}`}>
+                            <span className={`flex items-center justify-center w-10 h-10 rounded-full text-2xl ${disabled ? 'bg-gray-100' : style.iconBg}`}>
                               {theme.icon}
                             </span>
                             <span className="font-bold text-xs text-center leading-tight">{theme.name}</span>
                             {isComingSoon ? (
                               <span className="text-xs text-gray-400">準備中</span>
+                            ) : isEmpty ? (
+                              <span className="text-xs text-gray-400">この難易度はなし</span>
                             ) : (
                               <span className={`absolute top-1 right-1 text-[10px] font-bold px-1.5 py-px rounded-full ${style.badge}`}>
                                 {count}問

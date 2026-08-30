@@ -1,11 +1,13 @@
 import { infieldScenarios } from './infield';
 import { outfieldScenarios } from './outfieldPlay';
 import { offenseScenarios } from './offense';
+import { batteryScenarios } from './battery';
 
 export const scenarios = [
   ...infieldScenarios,
   ...outfieldScenarios,
   ...offenseScenarios,
+  ...batteryScenarios,
 ];
 
 /** レベル表示（学童向けの言葉づかいのまま、判断の難度だけを上げていく） */
