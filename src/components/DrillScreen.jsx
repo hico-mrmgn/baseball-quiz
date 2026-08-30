@@ -4,7 +4,7 @@ import { DIFFICULTY_FILTERS, countByDifficulty } from '../utils/questionPrep';
 import { getWrongAnswers } from '../utils/weakness';
 
 /**
- * きそ練習（従来の問題編）の専用画面。
+ * 基本練習（従来の問題編）の専用画面。
  *
  * テーマ14個と難易度5段階をトップに並べると、それだけで画面の半分を
  * 占めてしまい、主導線が埋もれていた。使う頻度は実戦トレーニングより
@@ -45,15 +45,15 @@ export default function DrillScreen({ onBack, onSelectTheme, onRandom, onWeaknes
             ← 戻る
           </button>
           <div>
-            <h1 className="text-base font-black text-gray-900">📖 きそ練習</h1>
+            <h1 className="text-base font-black text-gray-900">📖 基本練習</h1>
             <p className="text-xs text-gray-400">ポジション別の基本を覚える・{questions.length}問</p>
           </div>
         </div>
 
-        {/* むずかしさで絞り込む */}
+        {/* 難しさで絞り込む */}
         <div className="max-w-2xl lg:max-w-5xl mx-auto px-3 lg:px-6 pb-3">
           <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-0.5">
-            <span className="text-xs font-black text-gray-500 flex-shrink-0">むずかしさ</span>
+            <span className="text-xs font-black text-gray-500 flex-shrink-0">難しさ</span>
             {DIFFICULTY_FILTERS.map((d) => {
               const active = difficulty === d.id;
               return (
@@ -84,7 +84,7 @@ export default function DrillScreen({ onBack, onSelectTheme, onRandom, onWeaknes
           >
             <span className="text-2xl">🎲</span>
             <div className="text-left">
-              <div className="text-xs font-black text-white">ぜんぶからランダム</div>
+              <div className="text-xs font-black text-white">全部からランダム</div>
               <div className="text-xs font-bold text-sky-100">15問</div>
             </div>
           </button>
@@ -100,7 +100,7 @@ export default function DrillScreen({ onBack, onSelectTheme, onRandom, onWeaknes
             <span className="text-2xl">📝</span>
             <div className="text-left">
               <div className={`text-xs font-black ${wrongCount > 0 ? 'text-white' : 'text-gray-400'}`}>
-                まちがえた問題
+                間違えた問題
               </div>
               <div className={`text-xs font-bold ${wrongCount > 0 ? 'text-violet-100' : 'text-gray-400'}`}>
                 {wrongCount > 0 ? `${wrongCount}問` : 'まだなし'}

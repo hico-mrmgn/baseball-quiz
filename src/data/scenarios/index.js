@@ -20,7 +20,7 @@ export const SCENARIO_LEVELS = {
 export const SCENARIO_TRACKS = [
   {
     id: 'all',
-    name: 'ぜんぶ',
+    name: '全部',
     emoji: '🎯',
     description: '守備も攻撃も混ぜて、実戦のまま出題する',
     filter: () => true,
@@ -111,7 +111,7 @@ export function scenarioCount(trackId = 'all') {
 }
 
 /**
- * 「きょうのトレーニング」の出題を組み立てる。
+ * 「今日のトレーニング」の出題を組み立てる。
  *
  * 日付シードで決まるので、同じ日に何度開いても中身は変わらない
  * （気に入らない出題を引き直せてしまうと練習にならないため）。

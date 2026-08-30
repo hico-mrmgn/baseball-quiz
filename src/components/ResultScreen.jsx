@@ -7,8 +7,8 @@ import { playResult } from '../utils/sound';
 export default function ResultScreen({ score, total, maxCombo, theme, onRetry, onHome, onHistory }) {
   const percentage = Math.round((score / total) * 100);
   const themeInfo = theme === 'random' ? { name: 'ランダム', icon: '🎲' }
-    : theme === 'daily' ? { name: 'きょうのチャレンジ', icon: '📅' }
-    : theme === 'weakness' ? { name: 'にがてこくふく', icon: '📝' }
+    : theme === 'daily' ? { name: '今日のチャレンジ', icon: '📅' }
+    : theme === 'weakness' ? { name: '間違えた問題', icon: '📝' }
     : themes[theme];
   const tier = getCareerTier(percentage);
 

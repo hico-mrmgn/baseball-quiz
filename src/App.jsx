@@ -13,41 +13,39 @@ import InningResultScreen from './components/InningResultScreen';
 import DailyResultScreen from './components/DailyResultScreen';
 import DrillScreen from './components/DrillScreen';
 import FormationScreen from './components/FormationScreen';
-import { questions } from './data/questions';
+import { questions, themes } from './data/questions';
 import {
   buildScenarioSet, buildDailyTraining, buildTagSet, SCENARIO_TRACKS,
 } from './data/scenarios';
 import { inningScenarios } from './data/innings';
-import { summarize } from './utils/scenario';
+import { summarize, bestStreak } from './utils/scenario';
 import {
-  shuffleAllChoices, makeSeededRandom, filterByDifficulty,
+  shuffleAllChoices, makeSeededRandom, filterByDifficulty, shuffleArray,
 } from './utils/questionPrep';
 import { getCareerTier } from './utils/career';
 import { saveResult, getHistory } from './utils/history';
-import { checkAndUnlockBadges } from './utils/badges';
+import { checkAndUnlockBadges, buildBadgeStats } from './utils/badges';
 import { addXp } from './utils/level';
 import { getDailyStreak, completeDailyChallenge, getDailySeed } from './utils/daily';
 import { saveWrongAnswer, removeWrongAnswer, getWrongAnswers } from './utils/weakness';
 import { recordScenarioAnswers, getWeakTags } from './utils/weakTags';
 import { playLevelUp } from './utils/sound';
 
-function shuffle(array) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-// シードベースのシャッフル（デイリーチャレンジ用）
-function seededShuffle(array, rand) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
+/**
+ * 画面の上に重ねて出す通知（バッジ獲得・レベルアップ）。
+ * 結果画面が4種類あり、どれも同じものを出すのでまとめている。
+ */
+function Notifications({ newBadges, onBadgesDone, levelUpInfo, onLevelUpClose }) {
+  return (
+    <>
+      {newBadges.length > 0 && (
+        <BadgeNotification badges={newBadges} onDone={onBadgesDone} />
+      )}
+      {levelUpInfo && (
+        <LevelUpNotification levelInfo={levelUpInfo} onClose={onLevelUpClose} />
+      )}
+    </>
+  );
 }
 
 export default function App() {
@@ -65,7 +63,7 @@ export default function App() {
   const [scenarioAnswers, setScenarioAnswers] = useState([]);
   const [currentInning, setCurrentInning] = useState(null);
   const [inningResult, setInningResult] = useState(null);
-  // きょうのトレーニング（実戦5場面 → 守り切れ1回）を1セッションとして扱う
+  // 今日のトレーニング（実戦5場面 → 守り切れ1回）を1セッションとして扱う
   const [sessionMode, setSessionMode] = useState('single'); // 'single' | 'daily'
   const [dailyScenarioAnswers, setDailyScenarioAnswers] = useState([]);
 
@@ -73,7 +71,7 @@ export default function App() {
     const pool = theme === 'random'
       ? questions
       : questions.filter((q) => q.theme === theme);
-    const selected = shuffle(filterByDifficulty(pool, difficulty)).slice(0, 15);
+    const selected = shuffleArray(filterByDifficulty(pool, difficulty)).slice(0, 15);
     setCurrentTheme(theme);
     // 選択肢は出題のたびに混ぜる（並び順のクセで解けないようにするため）
     setQuizQuestions(shuffleAllChoices(selected));
@@ -85,7 +83,7 @@ export default function App() {
   const startDailyChallenge = useCallback(() => {
     // 全員が同じ問題・同じ選択肢の並びで解けるよう、日付シードから再現する
     const rand = makeSeededRandom(getDailySeed());
-    const selected = seededShuffle(questions, rand).slice(0, 5);
+    const selected = shuffleArray(questions, rand).slice(0, 5);
     setCurrentTheme('daily');
     setQuizQuestions(shuffleAllChoices(selected, rand));
     setQuizDifficulty('all');
@@ -97,12 +95,24 @@ export default function App() {
     const wrongIds = getWrongAnswers();
     const wrongQuestions = questions.filter((q) => wrongIds.includes(q.id));
     if (wrongQuestions.length === 0) return;
-    const selected = shuffle(wrongQuestions).slice(0, Math.min(15, wrongQuestions.length));
+    const selected = shuffleArray(wrongQuestions).slice(0, Math.min(15, wrongQuestions.length));
     setCurrentTheme('weakness');
     setQuizQuestions(shuffleAllChoices(selected));
     setQuizDifficulty('all');
     setQuizMode('weakness');
     setScreen('quiz');
+  }, []);
+
+  /** 履歴とタグの成績からバッジを判定する。どのモードの終わりからも呼ぶ。 */
+  const refreshBadges = useCallback(() => {
+    const stats = buildBadgeStats({
+      history: getHistory(),
+      dailyStreak: getDailyStreak(),
+      totalInnings: inningScenarios.length,
+      totalDrillThemes: Object.keys(themes).length,
+    });
+    const badges = checkAndUnlockBadges(stats);
+    if (badges.length > 0) setNewBadges(badges);
   }, []);
 
   const handleFinish = useCallback((score, maxCombo, wrongAnswerIds, correctAnswerIds, totalOverride) => {
@@ -119,7 +129,7 @@ export default function App() {
     }
 
     // 履歴保存（デイリー・苦手モードも通常と同じ）
-    const themeForSave = quizMode === 'daily' ? 'daily' : quizMode === 'weakness' ? 'weakness' : currentTheme;
+    const themeForSave = quizMode === 'normal' ? currentTheme : quizMode;
     saveResult({
       theme: themeForSave,
       score,
@@ -127,6 +137,7 @@ export default function App() {
       maxCombo,
       careerTitle: tier.title,
       careerEmoji: tier.emoji,
+      meta: { mode: 'drill', difficulty: quizDifficulty },
     });
 
     // デイリーチャレンジ完了（途中終了の場合は完了扱いにしない）
@@ -140,26 +151,13 @@ export default function App() {
       setLevelUpInfo(xpResult.levelInfo);
     }
 
-    // バッジチェック
-    const history = getHistory();
-    const stats = {
-      totalGames: history.length,
-      hasPerfect: history.some((h) => h.percentage === 100),
-      bestScore: Math.max(...history.map((h) => h.percentage), 0),
-      bestCombo: Math.max(...history.map((h) => h.maxCombo || 0), 0),
-      uniqueThemes: new Set(history.map((h) => h.theme).filter((t) => t !== 'daily' && t !== 'weakness' && t !== 'random')).size,
-      dailyStreak: getDailyStreak(),
-    };
-    const badges = checkAndUnlockBadges(stats);
-    if (badges.length > 0) {
-      setNewBadges(badges);
-    }
+    refreshBadges();
 
     setFinalScore(score);
     setFinalMaxCombo(maxCombo);
     setQuizQuestions((prev) => totalOverride ? prev.slice(0, totalOverride) : prev);
     setScreen('result');
-  }, [currentTheme, quizQuestions.length, quizMode]);
+  }, [currentTheme, quizQuestions.length, quizMode, quizDifficulty, refreshBadges]);
 
   const handleQuit = useCallback((score, maxCombo, wrongAnswerIds, correctAnswerIds, answeredCount) => {
     if (answeredCount === 0) {
@@ -173,24 +171,6 @@ export default function App() {
     handleFinish(score, maxCombo, wrongAnswerIds, correctAnswerIds);
   }, [handleFinish]);
 
-  /** 履歴から実績を集計してバッジを判定する。複数のモードから呼ぶ。 */
-  const refreshBadges = useCallback(() => {
-    const history = getHistory();
-    const stats = {
-      totalGames: history.length,
-      hasPerfect: history.some((h) => h.percentage === 100),
-      bestScore: Math.max(...history.map((h) => h.percentage), 0),
-      bestCombo: Math.max(...history.map((h) => h.maxCombo || 0), 0),
-      uniqueThemes: new Set(
-        history.map((h) => h.theme)
-          .filter((t) => !['daily', 'weakness', 'random', 'scenario', 'inning'].includes(t)),
-      ).size,
-      dailyStreak: getDailyStreak(),
-    };
-    const badges = checkAndUnlockBadges(stats);
-    if (badges.length > 0) setNewBadges(badges);
-  }, []);
-
   /* ── 実戦シナリオ ── */
   const startScenario = useCallback((trackId) => {
     const track = SCENARIO_TRACKS.find((t) => t.id === trackId) ?? SCENARIO_TRACKS[0];
@@ -203,7 +183,7 @@ export default function App() {
     setScreen('scenario');
   }, []);
 
-  /* ── きょうのトレーニング（実戦5場面 → 守り切れ1回） ── */
+  /* ── 今日のトレーニング（実戦5場面 → 守り切れ1回） ── */
   const startDailyTraining = useCallback(() => {
     // 日付シードなので同じ日に開き直しても中身は変わらない。
     // そのうえで、苦手なタグを含む場面を優先して出す。
@@ -211,7 +191,7 @@ export default function App() {
     const set = buildDailyTraining(rand, getWeakTags(), 5);
     if (set.length === 0) return;
     const inning = inningScenarios[Math.floor(rand() * inningScenarios.length)];
-    setScenarioTrack({ id: 'daily', name: 'きょうのトレーニング' });
+    setScenarioTrack({ id: 'daily', name: '今日のトレーニング' });
     setScenarioList(set);
     setScenarioAnswers([]);
     setDailyScenarioAnswers([]);
@@ -222,7 +202,7 @@ export default function App() {
   }, []);
 
   const finishScenario = useCallback((answers) => {
-    // 判断の種類ごとの苦手を記録する。次のきょうのトレーニングの出題に効く。
+    // 判断の種類ごとの苦手を記録する。次の今日のトレーニングの出題に効く。
     recordScenarioAnswers(answers);
 
     if (sessionMode === 'daily') {
@@ -239,17 +219,26 @@ export default function App() {
     // 実戦シナリオは配点制なので、経験値・履歴には「最善手の数」を成績として渡す。
     const s = summarize(answers);
     const bestCount = s.counts.best;
+    const tier = getCareerTier(s.bestRate);
     saveResult({
       theme: 'scenario',
       score: bestCount,
       total: answers.length,
       maxCombo: 0,
-      careerTitle: getCareerTier(s.bestRate).title,
-      careerEmoji: getCareerTier(s.bestRate).emoji,
+      careerTitle: tier.title,
+      careerEmoji: tier.emoji,
+      meta: {
+        mode: 'scenario',
+        bestRate: s.bestRate,
+        fatalCount: s.counts.fatal,
+        bestStreak: bestStreak(answers),
+        total: answers.length,
+      },
     });
     const xpResult = addXp(bestCount, answers.length, 0);
     if (xpResult.levelUp) setLevelUpInfo(xpResult.levelInfo);
-  }, [sessionMode]);
+    refreshBadges();
+  }, [sessionMode, refreshBadges]);
 
   /** 結果画面の「ここを練習」から、その判断だけを集めて出題する。 */
   const startTagPractice = useCallback((tag) => {
@@ -283,13 +272,23 @@ export default function App() {
       if (all.length === 0) return;
 
       const s = summarize(all);
+      const tier = getCareerTier(s.bestRate);
       saveResult({
         theme: 'daily',
         score: s.counts.best,
         total: all.length,
         maxCombo: 0,
-        careerTitle: getCareerTier(s.bestRate).title,
-        careerEmoji: getCareerTier(s.bestRate).emoji,
+        careerTitle: tier.title,
+        careerEmoji: tier.emoji,
+        meta: {
+          mode: 'daily',
+          bestRate: s.bestRate,
+          fatalCount: s.counts.fatal,
+          bestStreak: bestStreak(all),
+          total: all.length,
+          inningId: currentInning?.id,
+          cleared: result.cleared,
+        },
       });
       completeDailyChallenge();
       const xpResult = addXp(s.counts.best, all.length, result.cleared ? 5 : 0);
@@ -309,11 +308,19 @@ export default function App() {
       maxCombo: 0,
       careerTitle: result.cleared ? '守り切った' : '守り切れず',
       careerEmoji: result.cleared ? '🛡️' : '💧',
+      meta: {
+        mode: 'inning',
+        inningId: currentInning?.id,
+        cleared: result.cleared,
+        bestStreak: bestStreak(result.answers),
+        total: result.answers.length,
+      },
     });
     // 守り切れたイニングにはボーナス経験値
     const xpResult = addXp(s.counts.best, result.answers.length, result.cleared ? 5 : 0);
     if (xpResult.levelUp) setLevelUpInfo(xpResult.levelInfo);
-  }, [sessionMode, dailyScenarioAnswers, refreshBadges]);
+    refreshBadges();
+  }, [sessionMode, dailyScenarioAnswers, currentInning, refreshBadges]);
 
   const handleRetry = useCallback(() => {
     if (quizMode === 'daily') {
@@ -364,15 +371,15 @@ export default function App() {
           onPracticeTag={startTagPractice}
           onHome={handleHome}
         />
-        {levelUpInfo && (
-          <LevelUpNotification
-            levelInfo={levelUpInfo}
-            onClose={() => {
-              playLevelUp();
-              setLevelUpInfo(null);
-            }}
-          />
-        )}
+        <Notifications
+          newBadges={newBadges}
+          onBadgesDone={() => setNewBadges([])}
+          levelUpInfo={levelUpInfo}
+          onLevelUpClose={() => {
+            playLevelUp();
+            setLevelUpInfo(null);
+          }}
+        />
       </>
     );
   }
@@ -388,18 +395,15 @@ export default function App() {
           onHome={handleHome}
           onHistory={() => setScreen('history')}
         />
-        {newBadges.length > 0 && (
-          <BadgeNotification badges={newBadges} onDone={() => setNewBadges([])} />
-        )}
-        {levelUpInfo && (
-          <LevelUpNotification
-            levelInfo={levelUpInfo}
-            onClose={() => {
-              playLevelUp();
-              setLevelUpInfo(null);
-            }}
-          />
-        )}
+        <Notifications
+          newBadges={newBadges}
+          onBadgesDone={() => setNewBadges([])}
+          levelUpInfo={levelUpInfo}
+          onLevelUpClose={() => {
+            playLevelUp();
+            setLevelUpInfo(null);
+          }}
+        />
       </>
     );
   }
@@ -423,15 +427,15 @@ export default function App() {
           onRetry={() => startInning(currentInning.id)}
           onHome={handleHome}
         />
-        {levelUpInfo && (
-          <LevelUpNotification
-            levelInfo={levelUpInfo}
-            onClose={() => {
-              playLevelUp();
-              setLevelUpInfo(null);
-            }}
-          />
-        )}
+        <Notifications
+          newBadges={newBadges}
+          onBadgesDone={() => setNewBadges([])}
+          levelUpInfo={levelUpInfo}
+          onLevelUpClose={() => {
+            playLevelUp();
+            setLevelUpInfo(null);
+          }}
+        />
       </>
     );
   }
@@ -440,7 +444,7 @@ export default function App() {
     return (
       <QuizScreen
         questions={quizQuestions}
-        theme={quizMode === 'daily' ? 'random' : quizMode === 'weakness' ? 'random' : currentTheme}
+        theme={quizMode === 'normal' ? currentTheme : 'random'}
         onFinish={handleFinish}
         onQuit={handleQuit}
       />
@@ -454,23 +458,20 @@ export default function App() {
           score={finalScore}
           total={quizQuestions.length}
           maxCombo={finalMaxCombo}
-          theme={quizMode === 'daily' ? 'daily' : quizMode === 'weakness' ? 'weakness' : currentTheme}
+          theme={quizMode === 'normal' ? currentTheme : quizMode}
           onRetry={handleRetry}
           onHome={handleHome}
           onHistory={() => setScreen('history')}
         />
-        {newBadges.length > 0 && (
-          <BadgeNotification badges={newBadges} onDone={() => setNewBadges([])} />
-        )}
-        {levelUpInfo && (
-          <LevelUpNotification
-            levelInfo={levelUpInfo}
-            onClose={() => {
-              playLevelUp();
-              setLevelUpInfo(null);
-            }}
-          />
-        )}
+        <Notifications
+          newBadges={newBadges}
+          onBadgesDone={() => setNewBadges([])}
+          levelUpInfo={levelUpInfo}
+          onLevelUpClose={() => {
+            playLevelUp();
+            setLevelUpInfo(null);
+          }}
+        />
       </>
     );
   }
