@@ -6,6 +6,7 @@ import { isDailyCompleted, getDailyStreak } from '../utils/daily';
 import { getWrongAnswers } from '../utils/weakness';
 import { SCENARIO_TRACKS, scenarioCount } from '../data/scenarios';
 import { inningScenarios } from '../data/innings';
+import { DIFFICULTY_FILTERS, countByDifficulty } from '../utils/questionPrep';
 import FormationDiagram from './FormationDiagram';
 
 const themeGroups = [
@@ -236,6 +237,7 @@ export default function TopScreen({
   onStartScenario, onStartInning,
 }) {
   const [activeTab, setActiveTab] = useState('quiz');
+  const [difficulty, setDifficulty] = useState('all');
   const [selectedCategoryId, setSelectedCategoryId] = useState('no-runner');
   const [selectedFormation, setSelectedFormation] = useState(null);
 
@@ -458,6 +460,25 @@ export default function TopScreen({
         {/* ═══ 問題編 ═══ */}
         {activeTab === 'quiz' && (
           <div className="mb-4">
+            {/* むずかしさで絞り込む。difficulty はこれまで表示だけで、
+                出題には使われていなかった。 */}
+            <div className="flex items-center gap-1.5 mb-3 overflow-x-auto pb-1">
+              <span className="text-xs font-black text-gray-500 flex-shrink-0">むずかしさ</span>
+              {DIFFICULTY_FILTERS.map((d) => {
+                const active = difficulty === d.id;
+                return (
+                  <button
+                    key={d.id}
+                    onClick={() => setDifficulty(d.id)}
+                    className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-black border transition-all cursor-pointer ${
+                      active ? d.color + ' ring-2 ring-offset-1 ring-gray-300' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    {d.emoji} {d.label}
+                  </button>
+                );
+              })}
+            </div>
             <div className="grid gap-4">
               {themeGroups.map((group) => {
                 const style = groupStyles[group.color];
@@ -472,11 +493,12 @@ export default function TopScreen({
                         const theme = themes[key];
                         if (!theme) return null;
                         const isComingSoon = theme.comingSoon;
-                        const count = questions.filter(q => q.theme === key).length;
+                        const themeQuestions = questions.filter(q => q.theme === key);
+                        const count = countByDifficulty(themeQuestions, difficulty);
                         return (
                           <button
                             key={key}
-                            onClick={() => !isComingSoon && onSelectTheme(key)}
+                            onClick={() => !isComingSoon && onSelectTheme(key, difficulty)}
                             disabled={isComingSoon}
                             className={`relative flex flex-col items-center justify-center gap-1 p-2 pt-3 rounded-2xl border shadow-sm h-24 active:scale-[0.96] transition-all ${
                               isComingSoon

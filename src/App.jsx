@@ -14,11 +14,14 @@ import { questions } from './data/questions';
 import { buildScenarioSet, SCENARIO_TRACKS } from './data/scenarios';
 import { inningScenarios } from './data/innings';
 import { summarize } from './utils/scenario';
+import {
+  shuffleAllChoices, makeSeededRandom, filterByDifficulty,
+} from './utils/questionPrep';
 import { getCareerTier } from './utils/career';
 import { saveResult, getHistory } from './utils/history';
 import { checkAndUnlockBadges } from './utils/badges';
 import { addXp } from './utils/level';
-import { getDailyStreak, completeDailyChallenge, isDailyCompleted, getDailySeed } from './utils/daily';
+import { getDailyStreak, completeDailyChallenge, getDailySeed } from './utils/daily';
 import { saveWrongAnswer, removeWrongAnswer, getWrongAnswers } from './utils/weakness';
 import { playLevelUp } from './utils/sound';
 
@@ -32,12 +35,10 @@ function shuffle(array) {
 }
 
 // シードベースのシャッフル（デイリーチャレンジ用）
-function seededShuffle(array, seed) {
+function seededShuffle(array, rand) {
   const arr = [...array];
-  let s = seed;
   for (let i = arr.length - 1; i > 0; i--) {
-    s = (s * 1103515245 + 12345) & 0x7fffffff;
-    const j = s % (i + 1);
+    const j = Math.floor(rand() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
@@ -50,6 +51,7 @@ export default function App() {
   const [finalScore, setFinalScore] = useState(0);
   const [finalMaxCombo, setFinalMaxCombo] = useState(0);
   const [quizMode, setQuizMode] = useState('normal'); // 'normal' | 'daily' | 'weakness'
+  const [quizDifficulty, setQuizDifficulty] = useState('all');
   const [newBadges, setNewBadges] = useState([]);
   const [levelUpInfo, setLevelUpInfo] = useState(null);
   const [scenarioList, setScenarioList] = useState([]);
@@ -58,24 +60,26 @@ export default function App() {
   const [currentInning, setCurrentInning] = useState(null);
   const [inningResult, setInningResult] = useState(null);
 
-  const startQuiz = useCallback((theme) => {
-    let selected;
-    if (theme === 'random') {
-      selected = shuffle(questions).slice(0, 15);
-    } else {
-      selected = shuffle(questions.filter((q) => q.theme === theme)).slice(0, 15);
-    }
+  const startQuiz = useCallback((theme, difficulty = 'all') => {
+    const pool = theme === 'random'
+      ? questions
+      : questions.filter((q) => q.theme === theme);
+    const selected = shuffle(filterByDifficulty(pool, difficulty)).slice(0, 15);
     setCurrentTheme(theme);
-    setQuizQuestions(selected);
+    // 選択肢は出題のたびに混ぜる（並び順のクセで解けないようにするため）
+    setQuizQuestions(shuffleAllChoices(selected));
+    setQuizDifficulty(difficulty);
     setQuizMode('normal');
     setScreen('quiz');
   }, []);
 
   const startDailyChallenge = useCallback(() => {
-    const seed = getDailySeed();
-    const selected = seededShuffle(questions, seed).slice(0, 5);
+    // 全員が同じ問題・同じ選択肢の並びで解けるよう、日付シードから再現する
+    const rand = makeSeededRandom(getDailySeed());
+    const selected = seededShuffle(questions, rand).slice(0, 5);
     setCurrentTheme('daily');
-    setQuizQuestions(selected);
+    setQuizQuestions(shuffleAllChoices(selected, rand));
+    setQuizDifficulty('all');
     setQuizMode('daily');
     setScreen('quiz');
   }, []);
@@ -86,7 +90,8 @@ export default function App() {
     if (wrongQuestions.length === 0) return;
     const selected = shuffle(wrongQuestions).slice(0, Math.min(15, wrongQuestions.length));
     setCurrentTheme('weakness');
-    setQuizQuestions(selected);
+    setQuizQuestions(shuffleAllChoices(selected));
+    setQuizDifficulty('all');
     setQuizMode('weakness');
     setScreen('quiz');
   }, []);
@@ -224,9 +229,9 @@ export default function App() {
     } else if (quizMode === 'weakness') {
       startWeaknessQuiz();
     } else {
-      startQuiz(currentTheme);
+      startQuiz(currentTheme, quizDifficulty);
     }
-  }, [currentTheme, quizMode, startQuiz, startDailyChallenge, startWeaknessQuiz]);
+  }, [currentTheme, quizMode, quizDifficulty, startQuiz, startDailyChallenge, startWeaknessQuiz]);
 
   const handleHome = useCallback(() => {
     setScreen('top');
