@@ -135,7 +135,12 @@ src/
 │   ├── QuizScreen.jsx             # 基本練習のクイズ
 │   ├── ResultScreen.jsx           # 基本練習の結果
 │   ├── HistoryScreen.jsx          # 戦績
-│   └── FormationScreen.jsx        # 解説編
+│   ├── FormationScreen.jsx        # 解説編
+│   ├── ChoiceList.jsx             # 配点制の選択肢（実戦・守り切れ で共通）
+│   ├── ConfirmDialog.jsx          # 「やめる？」の確認（3画面で共通）
+│   ├── StatCard.jsx               # 結果画面の数値カード（3画面で共通）
+│   ├── WeakTagList.jsx            # 弱かった判断の一覧（2画面で共通）
+│   └── tierStyles.js              # 配点ごとの色（実戦・守り切れ で共通）
 ├── data/
 │   ├── scenarios/                 # 実戦シナリオ（構造化データ・双子問題）
 │   │   ├── infield.js             #   内野編
