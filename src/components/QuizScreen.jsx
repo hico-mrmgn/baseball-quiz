@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { themes } from '../data/questions';
 import FieldDiagram from './FieldDiagram';
 import Confetti from './Confetti';
@@ -16,7 +16,6 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish, 
   const [wrongIds] = useState([]);
   const [correctIds] = useState([]);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
-  const prevComboRef = useRef(0);
 
   const current = quizQuestions[currentIndex];
   const total = quizQuestions.length;

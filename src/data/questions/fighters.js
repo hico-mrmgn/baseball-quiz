@@ -77,7 +77,7 @@ export const fightersQuestions = [
     theme: "fighters",
     situation: "エスコンフィールドには、世界的にもめずらしいお風呂がある。",
     question: "エスコンフィールドの中にある温泉施設の名前は？",
-    choices: ["球場の湯", "tower eleven onsen & sauna", "ファイターズ温泉", "北海道スパドーム"],
+    choices: ["ballpark spa hokkaido（ボールパークスパ北海道）", "tower eleven onsen & sauna", "escon field onsen resort（エスコンフィールド温泉）", "north star spa & sauna（ノーススタースパ）"],
     correct: 1,
     explanation: "「tower eleven onsen & sauna」は、試合を見ながら温泉に入れる世界でもめずらしい施設だよ。サウナもあって、ととのいながらホームランを見届けられるなんてすごいよね！",
     difficulty: "normal"
@@ -316,7 +316,7 @@ export const fightersQuestions = [
     theme: "fighters",
     situation: "SHINJO選手（新庄剛志）は現役時代にメジャーリーグでもプレーした。",
     question: "新庄剛志選手がメジャーリーグで所属したチームはどこ？",
-    choices: ["ニューヨーク・メッツ", "ロサンゼルス・ドジャース", "サンフランシスコ・ジャイアンツ", "ニューヨーク・メッツとサンフランシスコ・ジャイアンツ"],
+    choices: ["ニューヨーク・メッツとロサンゼルス・ドジャース", "ロサンゼルス・ドジャースとシアトル・マリナーズ", "サンフランシスコ・ジャイアンツとシカゴ・カブス", "ニューヨーク・メッツとサンフランシスコ・ジャイアンツ"],
     correct: 3,
     explanation: "新庄選手はメッツとジャイアンツの2チームでプレーしたよ。2001年にメッツに入団し、その後ジャイアンツに移籍したんだ。ジャイアンツ時代の2002年にはワールドシリーズにも出場した、日本人初のワールドシリーズ出場選手なんだよ。",
     difficulty: "hard"

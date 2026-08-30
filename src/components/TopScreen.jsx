@@ -6,6 +6,7 @@ import { isDailyCompleted, getDailyStreak } from '../utils/daily';
 import { getWrongAnswers } from '../utils/weakness';
 import { SCENARIO_TRACKS, scenarioCount } from '../data/scenarios';
 import { inningScenarios } from '../data/innings';
+import { DIFFICULTY_FILTERS, countByDifficulty } from '../utils/questionPrep';
 import FormationDiagram from './FormationDiagram';
 
 const themeGroups = [
@@ -236,6 +237,7 @@ export default function TopScreen({
   onStartScenario, onStartInning,
 }) {
   const [activeTab, setActiveTab] = useState('quiz');
+  const [difficulty, setDifficulty] = useState('all');
   const [selectedCategoryId, setSelectedCategoryId] = useState('no-runner');
   const [selectedFormation, setSelectedFormation] = useState(null);
 
@@ -458,6 +460,25 @@ export default function TopScreen({
         {/* ═══ 問題編 ═══ */}
         {activeTab === 'quiz' && (
           <div className="mb-4">
+            {/* むずかしさで絞り込む。difficulty はこれまで表示だけで、
+                出題には使われていなかった。 */}
+            <div className="flex items-center gap-1.5 mb-3 overflow-x-auto pb-1">
+              <span className="text-xs font-black text-gray-500 flex-shrink-0">むずかしさ</span>
+              {DIFFICULTY_FILTERS.map((d) => {
+                const active = difficulty === d.id;
+                return (
+                  <button
+                    key={d.id}
+                    onClick={() => setDifficulty(d.id)}
+                    className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-black border transition-all cursor-pointer ${
+                      active ? d.color + ' ring-2 ring-offset-1 ring-gray-300' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    {d.emoji} {d.label}
+                  </button>
+                );
+              })}
+            </div>
             <div className="grid gap-4">
               {themeGroups.map((group) => {
                 const style = groupStyles[group.color];
@@ -471,25 +492,32 @@ export default function TopScreen({
                       {group.keys.map((key) => {
                         const theme = themes[key];
                         if (!theme) return null;
+                        const themeQuestions = questions.filter(q => q.theme === key);
+                        const count = countByDifficulty(themeQuestions, difficulty);
+                        // その難易度の問題が1問もないテーマは選べないようにする
+                        // （0問と表示しておいて始まってしまうのは分かりにくいため）
                         const isComingSoon = theme.comingSoon;
-                        const count = questions.filter(q => q.theme === key).length;
+                        const isEmpty = !isComingSoon && count === 0;
+                        const disabled = isComingSoon || isEmpty;
                         return (
                           <button
                             key={key}
-                            onClick={() => !isComingSoon && onSelectTheme(key)}
-                            disabled={isComingSoon}
+                            onClick={() => !disabled && onSelectTheme(key, difficulty)}
+                            disabled={disabled}
                             className={`relative flex flex-col items-center justify-center gap-1 p-2 pt-3 rounded-2xl border shadow-sm h-24 active:scale-[0.96] transition-all ${
-                              isComingSoon
+                              disabled
                                 ? 'bg-gray-50 border-gray-100 text-gray-400 cursor-not-allowed opacity-50'
                                 : `bg-white border-gray-200 text-gray-800 hover:shadow-md cursor-pointer ${style.hover}`
                             }`}
                           >
-                            <span className={`flex items-center justify-center w-10 h-10 rounded-full text-2xl ${isComingSoon ? 'bg-gray-100' : style.iconBg}`}>
+                            <span className={`flex items-center justify-center w-10 h-10 rounded-full text-2xl ${disabled ? 'bg-gray-100' : style.iconBg}`}>
                               {theme.icon}
                             </span>
                             <span className="font-bold text-xs text-center leading-tight">{theme.name}</span>
                             {isComingSoon ? (
                               <span className="text-xs text-gray-400">準備中</span>
+                            ) : isEmpty ? (
+                              <span className="text-xs text-gray-400">この難易度はなし</span>
                             ) : (
                               <span className={`absolute top-1 right-1 text-[10px] font-bold px-1.5 py-px rounded-full ${style.badge}`}>
                                 {count}問
