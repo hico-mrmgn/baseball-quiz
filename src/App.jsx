@@ -6,7 +6,14 @@ import HistoryScreen from './components/HistoryScreen';
 import BadgeScreen from './components/BadgeScreen';
 import BadgeNotification from './components/BadgeNotification';
 import LevelUpNotification from './components/LevelUpNotification';
+import ScenarioScreen from './components/ScenarioScreen';
+import ScenarioResultScreen from './components/ScenarioResultScreen';
+import InningScreen from './components/InningScreen';
+import InningResultScreen from './components/InningResultScreen';
 import { questions } from './data/questions';
+import { buildScenarioSet, SCENARIO_TRACKS } from './data/scenarios';
+import { inningScenarios } from './data/innings';
+import { summarize } from './utils/scenario';
 import { getCareerTier } from './utils/career';
 import { saveResult, getHistory } from './utils/history';
 import { checkAndUnlockBadges } from './utils/badges';
@@ -45,6 +52,11 @@ export default function App() {
   const [quizMode, setQuizMode] = useState('normal'); // 'normal' | 'daily' | 'weakness'
   const [newBadges, setNewBadges] = useState([]);
   const [levelUpInfo, setLevelUpInfo] = useState(null);
+  const [scenarioList, setScenarioList] = useState([]);
+  const [scenarioTrack, setScenarioTrack] = useState(SCENARIO_TRACKS[0]);
+  const [scenarioAnswers, setScenarioAnswers] = useState([]);
+  const [currentInning, setCurrentInning] = useState(null);
+  const [inningResult, setInningResult] = useState(null);
 
   const startQuiz = useCallback((theme) => {
     let selected;
@@ -147,6 +159,65 @@ export default function App() {
     handleFinish(score, maxCombo, wrongAnswerIds, correctAnswerIds);
   }, [handleFinish]);
 
+  /* ── 実戦シナリオ ── */
+  const startScenario = useCallback((trackId) => {
+    const track = SCENARIO_TRACKS.find((t) => t.id === trackId) ?? SCENARIO_TRACKS[0];
+    const set = buildScenarioSet(trackId, 10);
+    if (set.length === 0) return;
+    setScenarioTrack(track);
+    setScenarioList(set);
+    setScenarioAnswers([]);
+    setScreen('scenario');
+  }, []);
+
+  const finishScenario = useCallback((answers) => {
+    setScenarioAnswers(answers);
+    setScreen('scenarioResult');
+    if (answers.length === 0) return;
+
+    // 実戦シナリオは配点制なので、経験値・履歴には「最善手の数」を成績として渡す。
+    const s = summarize(answers);
+    const bestCount = s.counts.best;
+    saveResult({
+      theme: 'scenario',
+      score: bestCount,
+      total: answers.length,
+      maxCombo: 0,
+      careerTitle: getCareerTier(s.bestRate).title,
+      careerEmoji: getCareerTier(s.bestRate).emoji,
+    });
+    const xpResult = addXp(bestCount, answers.length, 0);
+    if (xpResult.levelUp) setLevelUpInfo(xpResult.levelInfo);
+  }, []);
+
+  /* ── イニング制「守り切れ！」 ── */
+  const startInning = useCallback((inningId) => {
+    const target = inningScenarios.find((i) => i.id === inningId);
+    if (!target) return;
+    setCurrentInning(target);
+    setInningResult(null);
+    setScreen('inning');
+  }, []);
+
+  const finishInning = useCallback((result) => {
+    setInningResult(result);
+    setScreen('inningResult');
+    if (result.answers.length === 0) return;
+
+    const s = summarize(result.answers);
+    saveResult({
+      theme: 'inning',
+      score: s.counts.best,
+      total: result.answers.length,
+      maxCombo: 0,
+      careerTitle: result.cleared ? '守り切った' : '守り切れず',
+      careerEmoji: result.cleared ? '🛡️' : '💧',
+    });
+    // 守り切れたイニングにはボーナス経験値
+    const xpResult = addXp(s.counts.best, result.answers.length, result.cleared ? 5 : 0);
+    if (xpResult.levelUp) setLevelUpInfo(xpResult.levelInfo);
+  }, []);
+
   const handleRetry = useCallback(() => {
     if (quizMode === 'daily') {
       startDailyChallenge();
@@ -162,7 +233,81 @@ export default function App() {
     setCurrentTheme(null);
     setQuizQuestions([]);
     setQuizMode('normal');
+    setScenarioList([]);
+    setScenarioAnswers([]);
+    setCurrentInning(null);
+    setInningResult(null);
   }, []);
+
+  if (screen === 'scenario') {
+    return (
+      <ScenarioScreen
+        scenarios={scenarioList}
+        trackName={scenarioTrack.name}
+        onFinish={finishScenario}
+        onQuit={(answers) => {
+          if (answers.length === 0) {
+            setScreen('top');
+            return;
+          }
+          finishScenario(answers);
+        }}
+      />
+    );
+  }
+
+  if (screen === 'scenarioResult') {
+    return (
+      <>
+        <ScenarioResultScreen
+          answers={scenarioAnswers}
+          onRetry={() => startScenario(scenarioTrack.id)}
+          onHome={handleHome}
+        />
+        {levelUpInfo && (
+          <LevelUpNotification
+            levelInfo={levelUpInfo}
+            onClose={() => {
+              playLevelUp();
+              setLevelUpInfo(null);
+            }}
+          />
+        )}
+      </>
+    );
+  }
+
+  if (screen === 'inning' && currentInning) {
+    return (
+      <InningScreen
+        inning={currentInning}
+        onFinish={finishInning}
+        onQuit={handleHome}
+      />
+    );
+  }
+
+  if (screen === 'inningResult' && currentInning && inningResult) {
+    return (
+      <>
+        <InningResultScreen
+          inning={currentInning}
+          result={inningResult}
+          onRetry={() => startInning(currentInning.id)}
+          onHome={handleHome}
+        />
+        {levelUpInfo && (
+          <LevelUpNotification
+            levelInfo={levelUpInfo}
+            onClose={() => {
+              playLevelUp();
+              setLevelUpInfo(null);
+            }}
+          />
+        )}
+      </>
+    );
+  }
 
   if (screen === 'quiz') {
     return (
@@ -214,6 +359,8 @@ export default function App() {
   return (
     <TopScreen
       onSelectTheme={startQuiz}
+      onStartScenario={startScenario}
+      onStartInning={startInning}
       onHistory={() => setScreen('history')}
       onBadges={() => setScreen('badges')}
       onDailyChallenge={startDailyChallenge}

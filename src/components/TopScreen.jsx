@@ -4,6 +4,8 @@ import { formations, formationCategories } from '../data/formations';
 import { getLevelData, getLevelInfo } from '../utils/level';
 import { isDailyCompleted, getDailyStreak } from '../utils/daily';
 import { getWrongAnswers } from '../utils/weakness';
+import { SCENARIO_TRACKS, scenarioCount } from '../data/scenarios';
+import { inningScenarios } from '../data/innings';
 import FormationDiagram from './FormationDiagram';
 
 const themeGroups = [
@@ -229,7 +231,10 @@ function FormationCard({ formation, onClick }) {
 }
 
 /* ── メイン画面 ── */
-export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyChallenge, onWeaknessQuiz }) {
+export default function TopScreen({
+  onSelectTheme, onHistory, onBadges, onDailyChallenge, onWeaknessQuiz,
+  onStartScenario, onStartInning,
+}) {
   const [activeTab, setActiveTab] = useState('quiz');
   const [selectedCategoryId, setSelectedCategoryId] = useState('no-runner');
   const [selectedFormation, setSelectedFormation] = useState(null);
@@ -311,6 +316,60 @@ export default function TopScreen({ onSelectTheme, onHistory, onBadges, onDailyC
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* ═══ 実戦トレーニング ═══
+            点差・イニング・カウントまで込みの場面で判断させる、このアプリの中心。 */}
+        <div className="mb-5">
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="text-sm">🧠</span>
+            <span className="text-sm font-black text-gray-700">実戦トレーニング</span>
+            <span className="text-[10px] font-bold text-white bg-red-500 rounded-full px-2 py-0.5">
+              ファイジュニ級
+            </span>
+          </div>
+
+          {/* 守り切れ！（イニング制） */}
+          <div className="grid gap-2 mb-2">
+            {inningScenarios.map((inn) => (
+              <button
+                key={inn.id}
+                onClick={() => onStartInning(inn.id)}
+                className="w-full flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r from-gray-800 to-gray-900 shadow-md hover:shadow-lg active:scale-[0.98] transition-all cursor-pointer text-left"
+              >
+                <span className="text-3xl flex-shrink-0">🛡️</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-black text-white">{inn.title}</div>
+                  <div className="text-xs font-bold text-gray-300 truncate">{inn.subtitle}</div>
+                </div>
+                <span className="text-xs font-black text-amber-300 flex-shrink-0">
+                  打者{inn.plays.length}人
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {/* 判断の種類べつ（シナリオ演習） */}
+          <div className="grid grid-cols-2 gap-2">
+            {SCENARIO_TRACKS.map((track) => (
+              <button
+                key={track.id}
+                onClick={() => onStartScenario(track.id)}
+                className="flex flex-col items-start gap-0.5 p-3 rounded-2xl bg-white border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 active:scale-[0.98] transition-all cursor-pointer text-left"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xl">{track.emoji}</span>
+                  <span className="text-sm font-black text-gray-800">{track.name}</span>
+                </div>
+                <div className="text-[11px] text-gray-500 font-bold leading-snug">
+                  {track.description}
+                </div>
+                <div className="text-[10px] font-black text-blue-600 mt-0.5">
+                  {scenarioCount(track.id)}場面
+                </div>
+              </button>
+            ))}
           </div>
         </div>
 
