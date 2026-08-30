@@ -6,7 +6,10 @@ function getThemeInfo(theme) {
   if (theme === 'random') return { name: 'ランダム', icon: '🎲' };
   if (theme === 'daily') return { name: 'デイリー', icon: '📅' };
   if (theme === 'weakness') return { name: 'にがて', icon: '📝' };
-  return themes[theme];
+  if (theme === 'scenario') return { name: '実戦シナリオ', icon: '🧠' };
+  if (theme === 'inning') return { name: '守り切れ', icon: '🛡️' };
+  // 未知のテーマでも履歴画面が落ちないようにしておく
+  return themes[theme] ?? { name: theme ?? '不明', icon: '⚾' };
 }
 
 export default function HistoryScreen({ onBack }) {
