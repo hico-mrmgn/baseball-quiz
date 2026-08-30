@@ -2,25 +2,12 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import ScenarioField from './ScenarioField';
 import SituationPanel from './SituationPanel';
 import Confetti from './Confetti';
+import ChoiceList from './ChoiceList';
+import ConfirmDialog from './ConfirmDialog';
+import { TIER_BOX, TIER_TEXT } from './tierStyles';
 import { SCENARIO_LEVELS } from '../data/scenarios';
 import { prepareScenario, tierOf, timeLimitOf } from '../utils/scenario';
 import { playCorrect, playWrong, playCombo } from '../utils/sound';
-
-const TIER_BOX = {
-  best:  'bg-green-50 border-green-300',
-  ok:    'bg-sky-50 border-sky-300',
-  poor:  'bg-amber-50 border-amber-300',
-  fatal: 'bg-red-50 border-red-300',
-};
-const TIER_TEXT = {
-  best: 'text-green-800', ok: 'text-sky-800', poor: 'text-amber-800', fatal: 'text-red-800',
-};
-const TIER_CHIP = {
-  best:  'bg-green-500 text-white',
-  ok:    'bg-sky-500 text-white',
-  poor:  'bg-amber-500 text-white',
-  fatal: 'bg-red-500 text-white',
-};
 
 const PHASE_BADGE = {
   pre:  { text: '⏱️ 投球前の判断', className: 'bg-indigo-100 text-indigo-700' },
@@ -143,28 +130,12 @@ export default function ScenarioScreen({ scenarios: list, trackName, onFinish, o
         </div>
 
         {showQuitConfirm && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-            <div className="bg-white rounded-2xl p-5 max-w-xs w-full shadow-xl text-center">
-              <div className="text-lg font-bold text-gray-800 mb-2">トレーニングをやめる？</div>
-              <div className="text-sm text-gray-500 mb-4">
-                ここまでの{answers.length}問の結果で終了します
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowQuitConfirm(false)}
-                  className="flex-1 p-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold text-sm cursor-pointer"
-                >
-                  続ける
-                </button>
-                <button
-                  onClick={() => onQuit(answers)}
-                  className="flex-1 p-2.5 rounded-xl bg-red-500 text-white font-bold text-sm cursor-pointer"
-                >
-                  やめる
-                </button>
-              </div>
-            </div>
-          </div>
+          <ConfirmDialog
+            title="トレーニングをやめる？"
+            message={`ここまでの${answers.length}問の結果で終了します`}
+            onCancel={() => setShowQuitConfirm(false)}
+            onConfirm={() => onQuit(answers)}
+          />
         )}
 
         {/* 進捗 */}
@@ -226,54 +197,12 @@ export default function ScenarioScreen({ scenarios: list, trackName, onFinish, o
         </div>
 
         {/* 選択肢 */}
-        <div className="grid lg:grid-cols-2 gap-2 mb-3">
-          {prepared.choices.map((choice, i) => {
-            const ct = tierOf(choice.score);
-            let style, chipStyle, chipContent;
-            if (confirmed !== null) {
-              const picked = i === confirmed;
-              style = `${TIER_BOX[ct.key]} border-2 ${picked ? 'ring-2 ring-offset-1 ring-gray-400 shadow-md' : 'opacity-90'}`;
-              chipStyle = TIER_CHIP[ct.key];
-              chipContent = choice.score > 0 ? `+${choice.score}` : `${choice.score}`;
-            } else if (pending === i) {
-              style = 'bg-blue-50 border-2 border-blue-500 ring-2 ring-blue-200 shadow-md';
-              chipStyle = 'bg-blue-500 text-white';
-              chipContent = String.fromCharCode(65 + i);
-            } else {
-              style = 'bg-white border-2 border-gray-200 hover:border-blue-400 hover:bg-blue-50';
-              chipStyle = 'bg-gray-100 text-gray-500';
-              chipContent = String.fromCharCode(65 + i);
-            }
-
-            return (
-              <button
-                key={choice.originalIndex}
-                onClick={() => confirmed === null && setPending(i)}
-                disabled={confirmed !== null}
-                className={`w-full flex flex-col gap-1.5 p-3 rounded-2xl text-left transition-all ${style} ${
-                  confirmed === null ? 'active:scale-[0.98] cursor-pointer' : ''
-                }`}
-              >
-                <div className="flex items-start gap-2.5">
-                  <span className={`flex-shrink-0 w-9 h-8 rounded-full flex items-center justify-center text-xs font-black ${chipStyle}`}>
-                    {chipContent}
-                  </span>
-                  <span className={`flex-1 font-bold text-sm md:text-base ${confirmed !== null ? TIER_TEXT[ct.key] : 'text-gray-800'}`}>
-                    {choice.text}
-                  </span>
-                </div>
-                {/* 選んだ選択肢だけでなく、全部の「なぜ」を出す。
-                    正解を覚えるのではなく、他がなぜダメかまで持ち帰ってほしい。 */}
-                {confirmed !== null && (
-                  <div className={`text-xs leading-relaxed pl-11 ${TIER_TEXT[ct.key]}`}>
-                    <span className="font-black mr-1">{ct.emoji}{ct.label}：</span>
-                    {choice.fb}
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
+        <ChoiceList
+          choices={prepared.choices}
+          pending={pending}
+          confirmed={confirmed}
+          onSelect={setPending}
+        />
 
         {confirmed === null && (
           <button

@@ -20,7 +20,7 @@ import {
 import { inningScenarios } from './data/innings';
 import { summarize, bestStreak } from './utils/scenario';
 import {
-  shuffleAllChoices, makeSeededRandom, filterByDifficulty,
+  shuffleAllChoices, makeSeededRandom, filterByDifficulty, shuffleArray,
 } from './utils/questionPrep';
 import { getCareerTier } from './utils/career';
 import { saveResult, getHistory } from './utils/history';
@@ -31,23 +31,21 @@ import { saveWrongAnswer, removeWrongAnswer, getWrongAnswers } from './utils/wea
 import { recordScenarioAnswers, getWeakTags } from './utils/weakTags';
 import { playLevelUp } from './utils/sound';
 
-function shuffle(array) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-// シードベースのシャッフル（デイリーチャレンジ用）
-function seededShuffle(array, rand) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
+/**
+ * 画面の上に重ねて出す通知（バッジ獲得・レベルアップ）。
+ * 結果画面が4種類あり、どれも同じものを出すのでまとめている。
+ */
+function Notifications({ newBadges, onBadgesDone, levelUpInfo, onLevelUpClose }) {
+  return (
+    <>
+      {newBadges.length > 0 && (
+        <BadgeNotification badges={newBadges} onDone={onBadgesDone} />
+      )}
+      {levelUpInfo && (
+        <LevelUpNotification levelInfo={levelUpInfo} onClose={onLevelUpClose} />
+      )}
+    </>
+  );
 }
 
 export default function App() {
@@ -73,7 +71,7 @@ export default function App() {
     const pool = theme === 'random'
       ? questions
       : questions.filter((q) => q.theme === theme);
-    const selected = shuffle(filterByDifficulty(pool, difficulty)).slice(0, 15);
+    const selected = shuffleArray(filterByDifficulty(pool, difficulty)).slice(0, 15);
     setCurrentTheme(theme);
     // 選択肢は出題のたびに混ぜる（並び順のクセで解けないようにするため）
     setQuizQuestions(shuffleAllChoices(selected));
@@ -85,7 +83,7 @@ export default function App() {
   const startDailyChallenge = useCallback(() => {
     // 全員が同じ問題・同じ選択肢の並びで解けるよう、日付シードから再現する
     const rand = makeSeededRandom(getDailySeed());
-    const selected = seededShuffle(questions, rand).slice(0, 5);
+    const selected = shuffleArray(questions, rand).slice(0, 5);
     setCurrentTheme('daily');
     setQuizQuestions(shuffleAllChoices(selected, rand));
     setQuizDifficulty('all');
@@ -97,7 +95,7 @@ export default function App() {
     const wrongIds = getWrongAnswers();
     const wrongQuestions = questions.filter((q) => wrongIds.includes(q.id));
     if (wrongQuestions.length === 0) return;
-    const selected = shuffle(wrongQuestions).slice(0, Math.min(15, wrongQuestions.length));
+    const selected = shuffleArray(wrongQuestions).slice(0, Math.min(15, wrongQuestions.length));
     setCurrentTheme('weakness');
     setQuizQuestions(shuffleAllChoices(selected));
     setQuizDifficulty('all');
@@ -131,7 +129,7 @@ export default function App() {
     }
 
     // 履歴保存（デイリー・苦手モードも通常と同じ）
-    const themeForSave = quizMode === 'daily' ? 'daily' : quizMode === 'weakness' ? 'weakness' : currentTheme;
+    const themeForSave = quizMode === 'normal' ? currentTheme : quizMode;
     saveResult({
       theme: themeForSave,
       score,
@@ -221,13 +219,14 @@ export default function App() {
     // 実戦シナリオは配点制なので、経験値・履歴には「最善手の数」を成績として渡す。
     const s = summarize(answers);
     const bestCount = s.counts.best;
+    const tier = getCareerTier(s.bestRate);
     saveResult({
       theme: 'scenario',
       score: bestCount,
       total: answers.length,
       maxCombo: 0,
-      careerTitle: getCareerTier(s.bestRate).title,
-      careerEmoji: getCareerTier(s.bestRate).emoji,
+      careerTitle: tier.title,
+      careerEmoji: tier.emoji,
       meta: {
         mode: 'scenario',
         bestRate: s.bestRate,
@@ -273,13 +272,14 @@ export default function App() {
       if (all.length === 0) return;
 
       const s = summarize(all);
+      const tier = getCareerTier(s.bestRate);
       saveResult({
         theme: 'daily',
         score: s.counts.best,
         total: all.length,
         maxCombo: 0,
-        careerTitle: getCareerTier(s.bestRate).title,
-        careerEmoji: getCareerTier(s.bestRate).emoji,
+        careerTitle: tier.title,
+        careerEmoji: tier.emoji,
         meta: {
           mode: 'daily',
           bestRate: s.bestRate,
@@ -371,15 +371,15 @@ export default function App() {
           onPracticeTag={startTagPractice}
           onHome={handleHome}
         />
-        {levelUpInfo && (
-          <LevelUpNotification
-            levelInfo={levelUpInfo}
-            onClose={() => {
-              playLevelUp();
-              setLevelUpInfo(null);
-            }}
-          />
-        )}
+        <Notifications
+          newBadges={newBadges}
+          onBadgesDone={() => setNewBadges([])}
+          levelUpInfo={levelUpInfo}
+          onLevelUpClose={() => {
+            playLevelUp();
+            setLevelUpInfo(null);
+          }}
+        />
       </>
     );
   }
@@ -395,18 +395,15 @@ export default function App() {
           onHome={handleHome}
           onHistory={() => setScreen('history')}
         />
-        {newBadges.length > 0 && (
-          <BadgeNotification badges={newBadges} onDone={() => setNewBadges([])} />
-        )}
-        {levelUpInfo && (
-          <LevelUpNotification
-            levelInfo={levelUpInfo}
-            onClose={() => {
-              playLevelUp();
-              setLevelUpInfo(null);
-            }}
-          />
-        )}
+        <Notifications
+          newBadges={newBadges}
+          onBadgesDone={() => setNewBadges([])}
+          levelUpInfo={levelUpInfo}
+          onLevelUpClose={() => {
+            playLevelUp();
+            setLevelUpInfo(null);
+          }}
+        />
       </>
     );
   }
@@ -430,15 +427,15 @@ export default function App() {
           onRetry={() => startInning(currentInning.id)}
           onHome={handleHome}
         />
-        {levelUpInfo && (
-          <LevelUpNotification
-            levelInfo={levelUpInfo}
-            onClose={() => {
-              playLevelUp();
-              setLevelUpInfo(null);
-            }}
-          />
-        )}
+        <Notifications
+          newBadges={newBadges}
+          onBadgesDone={() => setNewBadges([])}
+          levelUpInfo={levelUpInfo}
+          onLevelUpClose={() => {
+            playLevelUp();
+            setLevelUpInfo(null);
+          }}
+        />
       </>
     );
   }
@@ -447,7 +444,7 @@ export default function App() {
     return (
       <QuizScreen
         questions={quizQuestions}
-        theme={quizMode === 'daily' ? 'random' : quizMode === 'weakness' ? 'random' : currentTheme}
+        theme={quizMode === 'normal' ? currentTheme : 'random'}
         onFinish={handleFinish}
         onQuit={handleQuit}
       />
@@ -461,23 +458,20 @@ export default function App() {
           score={finalScore}
           total={quizQuestions.length}
           maxCombo={finalMaxCombo}
-          theme={quizMode === 'daily' ? 'daily' : quizMode === 'weakness' ? 'weakness' : currentTheme}
+          theme={quizMode === 'normal' ? currentTheme : quizMode}
           onRetry={handleRetry}
           onHome={handleHome}
           onHistory={() => setScreen('history')}
         />
-        {newBadges.length > 0 && (
-          <BadgeNotification badges={newBadges} onDone={() => setNewBadges([])} />
-        )}
-        {levelUpInfo && (
-          <LevelUpNotification
-            levelInfo={levelUpInfo}
-            onClose={() => {
-              playLevelUp();
-              setLevelUpInfo(null);
-            }}
-          />
-        )}
+        <Notifications
+          newBadges={newBadges}
+          onBadgesDone={() => setNewBadges([])}
+          levelUpInfo={levelUpInfo}
+          onLevelUpClose={() => {
+            playLevelUp();
+            setLevelUpInfo(null);
+          }}
+        />
       </>
     );
   }
