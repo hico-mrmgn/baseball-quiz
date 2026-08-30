@@ -5,7 +5,7 @@ import { getHistory, clearAllData } from '../utils/history';
 function getThemeInfo(theme) {
   if (theme === 'random') return { name: 'ランダム', icon: '🎲' };
   if (theme === 'daily') return { name: 'デイリー', icon: '📅' };
-  if (theme === 'weakness') return { name: 'にがて', icon: '📝' };
+  if (theme === 'weakness') return { name: '苦手', icon: '📝' };
   if (theme === 'scenario') return { name: '実戦シナリオ', icon: '🧠' };
   if (theme === 'inning') return { name: '守り切れ', icon: '🛡️' };
   // 未知のテーマでも履歴画面が落ちないようにしておく
@@ -105,7 +105,7 @@ export default function HistoryScreen({ onBack }) {
             {confirmClear ? (
               <div className="bg-white rounded-2xl shadow p-4 text-center">
                 <div className="text-sm font-bold text-red-600 mb-1">⚠️ すべてのデータをリセットしますか？</div>
-                <div className="text-xs text-gray-500 mb-3">戦績・レベル・バッジ・にがて問題がすべて消えます</div>
+                <div className="text-xs text-gray-500 mb-3">戦績・レベル・バッジ・苦手問題がすべて消えます</div>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setConfirmClear(false)}

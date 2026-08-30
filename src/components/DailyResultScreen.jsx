@@ -1,7 +1,7 @@
 import { summarize, tagBreakdown } from '../utils/scenario';
 
 /**
- * きょうのトレーニング（実戦5場面 → 守り切れ1回）の結果。
+ * 今日のトレーニング（実戦5場面 → 守り切れ1回）の結果。
  *
  * 「何点だったか」より「明日どこを練習すればいいか」で終わらせたい画面なので、
  * 弱かった判断の種類から、そのまま練習に入れる導線を置いている。
@@ -30,7 +30,7 @@ export default function DailyResultScreen({
       <div className="max-w-2xl mx-auto">
 
         <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-5 text-center shadow-lg mb-4">
-          <div className="text-xs font-black text-blue-200 mb-1">きょうのトレーニング かんりょう</div>
+          <div className="text-xs font-black text-blue-200 mb-1">今日のトレーニング 終わり</div>
           <div className="text-5xl mb-1">{rank.emoji}</div>
           <div className="text-xl font-black text-white mb-2">{rank.title}</div>
           {streak > 0 && (
@@ -72,7 +72,7 @@ export default function DailyResultScreen({
         {/* ここが本題。結果を見て終わりにせず、次の練習に直接つなげる */}
         {weak.length > 0 && (
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 mb-4">
-            <div className="text-sm font-black text-gray-700 mb-1">きょう弱かった判断</div>
+            <div className="text-sm font-black text-gray-700 mb-1">今日弱かった判断</div>
             <div className="text-xs text-gray-500 mb-3">
               タップすると、その判断だけを集めて練習できます
             </div>
@@ -105,7 +105,7 @@ export default function DailyResultScreen({
         {weak.length === 0 && all.length > 0 && (
           <div className="bg-green-50 rounded-2xl p-4 border border-green-200 mb-4 text-center">
             <div className="text-sm font-black text-green-700">
-              きょうは苦手な判断がありませんでした 🎉
+              今日は苦手な判断がありませんでした 🎉
             </div>
           </div>
         )}

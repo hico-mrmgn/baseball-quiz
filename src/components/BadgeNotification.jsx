@@ -34,7 +34,7 @@ export default function BadgeNotification({ badges, onDone }) {
           onClick={(e) => { e.stopPropagation(); handleNext(); }}
           className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-white font-bold text-lg shadow active:scale-95 transition-all cursor-pointer"
         >
-          {currentIndex + 1 < badges.length ? 'つぎのバッジ →' : 'やったね！'}
+          {currentIndex + 1 < badges.length ? '次のバッジ →' : 'やったね！'}
         </button>
       </div>
     </div>

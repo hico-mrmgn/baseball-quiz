@@ -66,7 +66,7 @@ export default function ScenarioResultScreen({ answers, onRetry, onPracticeTag, 
             unit="%"
             tone={s.fatalRate > 0 ? 'bad' : 'good'}
           />
-          <StatCard label="はやい判断" value={s.inTimeRate} unit="%" tone="neutral" />
+          <StatCard label="速い判断" value={s.inTimeRate} unit="%" tone="neutral" />
         </div>
 
         {/* 判断の内訳 */}

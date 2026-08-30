@@ -14,8 +14,8 @@ import { getWeakTags } from '../utils/weakTags';
  * 実戦トレーニングと基礎ドリルがそれぞれ独立した導線を持っていたのが原因で、
  * どちらをやればいいのかが画面から読み取れなかった。
  *
- * いまは主導線を「きょうのトレーニング」1つに絞り、それ以外は
- * 「えらんで練習」「きそ練習」「解説編」の3つに畳んでいる。
+ * 今は主導線を「今日のトレーニング」1つに絞り、それ以外は
+ * 「選んで練習」「基本練習」「解説編」の3つに畳んでいる。
  */
 export default function TopScreen({
   onStartDailyTraining, onStartScenario, onStartInning,
@@ -77,7 +77,7 @@ export default function TopScreen({
           </button>
         </div>
 
-        {/* ── 主導線：きょうのトレーニング ── */}
+        {/* ── 主導線：今日のトレーニング ── */}
         <button
           onClick={onStartDailyTraining}
           className={`w-full rounded-3xl p-5 mb-3 shadow-lg active:scale-[0.98] transition-all cursor-pointer text-left ${
@@ -90,11 +90,11 @@ export default function TopScreen({
             <span className="text-4xl flex-shrink-0">{dailyDone ? '✅' : '🔥'}</span>
             <div className="flex-1 min-w-0">
               <div className={`text-lg font-black ${dailyDone ? 'text-green-700' : 'text-white'}`}>
-                {dailyDone ? 'きょうはクリア済み' : 'きょうのトレーニング'}
+                {dailyDone ? '今日はクリア済み' : '今日のトレーニング'}
               </div>
               <div className={`text-xs font-bold ${dailyDone ? 'text-gray-500' : 'text-orange-50'}`}>
                 {dailyDone
-                  ? 'ぜんぶ終わりました。もう一度やってもOK'
+                  ? '全部終わりました。もう一度やってもOK'
                   : '実戦5場面 ＋ 守り切れ1回'}
               </div>
               {streak > 0 && (
@@ -116,7 +116,7 @@ export default function TopScreen({
               dailyDone ? 'border-gray-100' : 'border-white/20'
             }`}>
               <span className={`text-xs font-bold ${dailyDone ? 'text-gray-400' : 'text-orange-100'}`}>
-                きょうは
+                今日は
               </span>
               {weakTags.map((t) => (
                 <span
@@ -138,7 +138,7 @@ export default function TopScreen({
         {/* ── 副導線 ── */}
         <div className="space-y-2">
 
-          {/* えらんで練習（開くと種類が出る） */}
+          {/* 選んで練習（開くと種類が出る） */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <button
               onClick={() => setPickerOpen((v) => !v)}
@@ -146,7 +146,7 @@ export default function TopScreen({
             >
               <span className="text-2xl flex-shrink-0">🎯</span>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-black text-gray-800">えらんで練習</div>
+                <div className="text-sm font-black text-gray-800">選んで練習</div>
                 <div className="text-xs text-gray-500">
                   実戦シナリオ {scenarios.length}場面 ／ 守り切れ {inningScenarios.length}イニング
                 </div>
@@ -160,7 +160,7 @@ export default function TopScreen({
 
             {pickerOpen && (
               <div className="px-3 pb-3 pt-1 border-t border-gray-100">
-                <div className="text-xs font-black text-gray-500 mt-2 mb-1.5">判断の種類でえらぶ</div>
+                <div className="text-xs font-black text-gray-500 mt-2 mb-1.5">判断の種類で選ぶ</div>
                 <div className="grid grid-cols-2 gap-1.5 mb-3">
                   {SCENARIO_TRACKS.map((track) => (
                     <button
@@ -202,14 +202,14 @@ export default function TopScreen({
             )}
           </div>
 
-          {/* きそ練習（別画面へ） */}
+          {/* 基本練習（別画面へ） */}
           <button
             onClick={onOpenDrill}
             className="w-full flex items-center gap-3 p-3.5 bg-white rounded-2xl border border-gray-200 shadow-sm hover:bg-gray-50 active:scale-[0.99] transition-all cursor-pointer text-left"
           >
             <span className="text-2xl flex-shrink-0">📖</span>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-black text-gray-800">きそ練習</div>
+              <div className="text-sm font-black text-gray-800">基本練習</div>
               <div className="text-xs text-gray-500">
                 ポジション別の基本を覚える・{questions.length}問
               </div>
@@ -235,7 +235,7 @@ export default function TopScreen({
 
         <p className="text-center text-xs text-gray-400 mt-5 leading-relaxed">
           実戦トレーニングは「型を捨てる練習」。<br />
-          きそ練習は「型を覚える練習」。
+          基本練習は「型を覚える練習」。
         </p>
       </div>
     </div>

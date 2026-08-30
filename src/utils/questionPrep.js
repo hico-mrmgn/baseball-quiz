@@ -39,7 +39,7 @@ export function shuffleAllChoices(questions, rand = Math.random) {
 /* ── 難易度 ── */
 
 export const DIFFICULTY_FILTERS = [
-  { id: 'all',    label: 'ぜんぶ',  short: 'ぜんぶ', emoji: '',    color: 'bg-gray-100 text-gray-700 border-gray-300' },
+  { id: 'all',    label: '全部',  short: '全部', emoji: '',    color: 'bg-gray-100 text-gray-700 border-gray-300' },
   { id: 'easy',   label: '初級',    short: '初級',   emoji: '⭐',   color: 'bg-green-100 text-green-700 border-green-300' },
   { id: 'normal', label: '中級',    short: '中級',   emoji: '⭐⭐', color: 'bg-blue-100 text-blue-700 border-blue-300' },
   { id: 'hard',   label: '上級',    short: '上級',   emoji: '⭐⭐⭐', color: 'bg-orange-100 text-orange-700 border-orange-300' },

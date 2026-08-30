@@ -60,7 +60,7 @@ export default function InningScreen({ inning, onFinish, onQuit }) {
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
 
   const play = inning.plays[playIndex];
-  // 打者ひとりにつき1アウト。判断が決めるのは「何点を与えるか」。
+  // 打者一人につき1アウト。判断が決めるのは「何点を与えるか」。
   const outs = inning.startOuts + playIndex;
   const them = inning.score.them + runsAllowed;
   const us = inning.score.us;
@@ -153,7 +153,7 @@ export default function InningScreen({ inning, onFinish, onQuit }) {
                   onClick={() => setShowQuitConfirm(false)}
                   className="flex-1 p-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold text-sm cursor-pointer"
                 >
-                  つづける
+                  続ける
                 </button>
                 <button
                   onClick={onQuit}
@@ -269,7 +269,7 @@ export default function InningScreen({ inning, onFinish, onQuit }) {
               {chosen.result.text}
             </div>
             <div className="bg-white/70 rounded-xl p-2.5 border border-white">
-              <div className="text-xs font-black text-gray-500 mb-0.5">おぼえること</div>
+              <div className="text-xs font-black text-gray-500 mb-0.5">覚えること</div>
               <div className="text-sm font-bold text-gray-800 leading-snug">{play.explain.key}</div>
             </div>
           </div>

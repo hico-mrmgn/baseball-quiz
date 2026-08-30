@@ -154,7 +154,7 @@ export default function ScenarioScreen({ scenarios: list, trackName, onFinish, o
                   onClick={() => setShowQuitConfirm(false)}
                   className="flex-1 p-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold text-sm cursor-pointer"
                 >
-                  つづける
+                  続ける
                 </button>
                 <button
                   onClick={() => onQuit(answers)}
@@ -179,7 +179,7 @@ export default function ScenarioScreen({ scenarios: list, trackName, onFinish, o
         {confirmed === null && (
           <div className="flex items-center gap-2 mb-3">
             <span className={`text-xs font-black ${timeUp ? 'text-gray-400' : 'text-gray-600'}`}>
-              {timeUp ? '判断タイム終了' : `のこり ${Math.ceil(remaining / 1000)}秒`}
+              {timeUp ? '判断タイム終了' : `残り ${Math.ceil(remaining / 1000)}秒`}
             </span>
             <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
               <div
@@ -299,7 +299,7 @@ export default function ScenarioScreen({ scenarios: list, trackName, onFinish, o
               <span className={`ml-auto px-2 py-0.5 rounded-full text-xs ${
                 wasInTime ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'
               }`}>
-                {wasInTime ? '⚡ はやい判断' : '🐢 判断がおそい'}
+                {wasInTime ? '⚡ 速い判断' : '🐢 判断がおそい'}
               </span>
             </div>
 
@@ -308,7 +308,7 @@ export default function ScenarioScreen({ scenarios: list, trackName, onFinish, o
             </div>
 
             <div className="bg-white/70 rounded-xl p-2.5 mb-2 border border-white">
-              <div className="text-xs font-black text-gray-500 mb-0.5">おぼえること</div>
+              <div className="text-xs font-black text-gray-500 mb-0.5">覚えること</div>
               <div className="text-sm font-bold text-gray-800 leading-snug">{current.explain.key}</div>
             </div>
 

@@ -65,7 +65,7 @@ export default function App() {
   const [scenarioAnswers, setScenarioAnswers] = useState([]);
   const [currentInning, setCurrentInning] = useState(null);
   const [inningResult, setInningResult] = useState(null);
-  // きょうのトレーニング（実戦5場面 → 守り切れ1回）を1セッションとして扱う
+  // 今日のトレーニング（実戦5場面 → 守り切れ1回）を1セッションとして扱う
   const [sessionMode, setSessionMode] = useState('single'); // 'single' | 'daily'
   const [dailyScenarioAnswers, setDailyScenarioAnswers] = useState([]);
 
@@ -203,7 +203,7 @@ export default function App() {
     setScreen('scenario');
   }, []);
 
-  /* ── きょうのトレーニング（実戦5場面 → 守り切れ1回） ── */
+  /* ── 今日のトレーニング（実戦5場面 → 守り切れ1回） ── */
   const startDailyTraining = useCallback(() => {
     // 日付シードなので同じ日に開き直しても中身は変わらない。
     // そのうえで、苦手なタグを含む場面を優先して出す。
@@ -211,7 +211,7 @@ export default function App() {
     const set = buildDailyTraining(rand, getWeakTags(), 5);
     if (set.length === 0) return;
     const inning = inningScenarios[Math.floor(rand() * inningScenarios.length)];
-    setScenarioTrack({ id: 'daily', name: 'きょうのトレーニング' });
+    setScenarioTrack({ id: 'daily', name: '今日のトレーニング' });
     setScenarioList(set);
     setScenarioAnswers([]);
     setDailyScenarioAnswers([]);
@@ -222,7 +222,7 @@ export default function App() {
   }, []);
 
   const finishScenario = useCallback((answers) => {
-    // 判断の種類ごとの苦手を記録する。次のきょうのトレーニングの出題に効く。
+    // 判断の種類ごとの苦手を記録する。次の今日のトレーニングの出題に効く。
     recordScenarioAnswers(answers);
 
     if (sessionMode === 'daily') {
