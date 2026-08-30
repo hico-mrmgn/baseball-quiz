@@ -1,4 +1,5 @@
 import { summarize } from '../utils/scenario';
+import StatCard from './StatCard';
 
 /**
  * イニング制モードの結果。
@@ -37,24 +38,14 @@ export default function InningResultScreen({ inning, result, onRetry, onHome }) 
         </div>
 
         <div className="flex gap-2 mb-4">
-          <div className="flex-1 rounded-2xl border-2 border-green-200 bg-green-50 p-3 text-center">
-            <div className="text-xs font-black text-green-700 mb-0.5">最善手率</div>
-            <div className="text-2xl font-black text-green-700 leading-none">
-              {s.bestRate}<span className="text-sm ml-0.5">%</span>
-            </div>
-          </div>
-          <div className="flex-1 rounded-2xl border-2 border-red-200 bg-red-50 p-3 text-center">
-            <div className="text-xs font-black text-red-700 mb-0.5">与えた点</div>
-            <div className="text-2xl font-black text-red-700 leading-none">
-              {runsAllowed}<span className="text-sm ml-0.5">点</span>
-            </div>
-          </div>
-          <div className="flex-1 rounded-2xl border-2 border-gray-200 bg-gray-50 p-3 text-center">
-            <div className="text-xs font-black text-gray-700 mb-0.5">判断した数</div>
-            <div className="text-2xl font-black text-gray-700 leading-none">
-              {s.total}<span className="text-sm ml-0.5">回</span>
-            </div>
-          </div>
+          <StatCard label="最善手率" value={s.bestRate} unit="%" tone="good" />
+          <StatCard
+            label="与えた点"
+            value={runsAllowed}
+            unit="点"
+            tone={runsAllowed > 0 ? 'bad' : 'good'}
+          />
+          <StatCard label="判断した数" value={s.total} unit="回" tone="neutral" />
         </div>
 
         {/* プレーごとの振り返り */}

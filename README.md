@@ -88,7 +88,9 @@
 ## その他の機能
 
 - **解説編** … 守備フォーメーションの図解
-- **レベル / バッジ / デイリーチャレンジ / 間違えた問題** … LocalStorageで継続を支援
+- **レベル / デイリーチャレンジ / 間違えた問題** … LocalStorageで継続を支援
+- **バッジ** … 20個を5つに分けています（続ける／判断の質／守り切れ／判断の種類／基本練習）。
+  実戦シナリオの指標（最善手率・致命傷ゼロ・最善手の連続・タグの習熟）で評価します。
 - **戦績** … 履歴・通算成績の表示
 
 ## 技術スタック
@@ -133,7 +135,12 @@ src/
 │   ├── QuizScreen.jsx             # 基本練習のクイズ
 │   ├── ResultScreen.jsx           # 基本練習の結果
 │   ├── HistoryScreen.jsx          # 戦績
-│   └── FormationScreen.jsx        # 解説編
+│   ├── FormationScreen.jsx        # 解説編
+│   ├── ChoiceList.jsx             # 配点制の選択肢（実戦・守り切れ で共通）
+│   ├── ConfirmDialog.jsx          # 「やめる？」の確認（3画面で共通）
+│   ├── StatCard.jsx               # 結果画面の数値カード（3画面で共通）
+│   ├── WeakTagList.jsx            # 弱かった判断の一覧（2画面で共通）
+│   └── tierStyles.js              # 配点ごとの色（実戦・守り切れ で共通）
 ├── data/
 │   ├── scenarios/                 # 実戦シナリオ（構造化データ・双子問題）
 │   │   ├── infield.js             #   内野編
@@ -148,7 +155,8 @@ src/
     ├── weakTags.js                # 苦手を判断の種類（タグ）単位で記録
     ├── questionPrep.js            # 基本練習のシャッフル・難易度フィルタ
     ├── career.js                  # キャリアティア判定
-    ├── level.js / badges.js       # レベル・バッジ
+    ├── level.js                   # レベルと経験値
+    ├── badges.js                  # バッジの定義と判定
     └── history.js                 # 履歴のLocalStorage管理
 
 scripts/

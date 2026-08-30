@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { themes } from '../data/questions';
 import FieldDiagram from './FieldDiagram';
 import Confetti from './Confetti';
+import ConfirmDialog from './ConfirmDialog';
 import { playCorrect, playWrong, playCombo } from '../utils/sound';
 
 export default function QuizScreen({ questions: quizQuestions, theme, onFinish, onQuit }) {
@@ -126,31 +127,17 @@ export default function QuizScreen({ questions: quizQuestions, theme, onFinish, 
 
         {/* やめる確認 */}
         {showQuitConfirm && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-            <div className="bg-white rounded-2xl p-5 max-w-xs w-full shadow-xl text-center">
-              <div className="text-lg font-bold text-gray-800 mb-2">クイズをやめる？</div>
-              <div className="text-sm text-gray-500 mb-4">
-                ここまでの結果（{score}/{confirmedAnswer !== null ? currentIndex + 1 : currentIndex}問）で終了します
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowQuitConfirm(false)}
-                  className="flex-1 p-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold text-sm cursor-pointer"
-                >
-                  続ける
-                </button>
-                <button
-                  onClick={() => {
-                    const answered = confirmedAnswer !== null ? currentIndex + 1 : currentIndex;
-                    onQuit(score, maxCombo, wrongIds, correctIds, answered);
-                  }}
-                  className="flex-1 p-2.5 rounded-xl bg-red-500 text-white font-bold text-sm cursor-pointer"
-                >
-                  やめる
-                </button>
-              </div>
-            </div>
-          </div>
+          <ConfirmDialog
+            title="クイズをやめる？"
+            message={`ここまでの結果（${score}/${
+              confirmedAnswer !== null ? currentIndex + 1 : currentIndex
+            }問）で終了します`}
+            onCancel={() => setShowQuitConfirm(false)}
+            onConfirm={() => {
+              const answered = confirmedAnswer !== null ? currentIndex + 1 : currentIndex;
+              onQuit(score, maxCombo, wrongIds, correctIds, answered);
+            }}
+          />
         )}
 
         {/* Progress bar */}
