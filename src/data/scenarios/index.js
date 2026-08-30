@@ -109,3 +109,66 @@ export function scenarioCount(trackId = 'all') {
   const track = SCENARIO_TRACKS.find((t) => t.id === trackId) ?? SCENARIO_TRACKS[0];
   return scenarios.filter(track.filter).length;
 }
+
+/**
+ * 「きょうのトレーニング」の出題を組み立てる。
+ *
+ * 日付シードで決まるので、同じ日に何度開いても中身は変わらない
+ * （気に入らない出題を引き直せてしまうと練習にならないため）。
+ * そのうえで、苦手なタグを含む場面を前に寄せる。
+ *
+ * rand      : 決定的な擬似乱数（utils/questionPrep の makeSeededRandom）
+ * weakTags  : [{ tag, percent }] 弱い順。utils/weakTags の getWeakTags
+ */
+export function buildDailyTraining(rand, weakTags = [], count = 5) {
+  const groups = pairsOf(scenarios);
+
+  for (let i = groups.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [groups[i], groups[j]] = [groups[j], groups[i]];
+  }
+
+  // 苦手なタグほど重みを大きくする。弱い順に並んでいるので先頭ほど重い。
+  const weightOf = (group) => {
+    const tags = new Set(group.flatMap((s) => s.tags ?? []));
+    return weakTags.reduce(
+      (n, w, i) => n + (tags.has(w.tag) ? weakTags.length - i : 0),
+      0,
+    );
+  };
+
+  // シャッフル済みの順番を保ったまま、重みの大きい塊を前に出す（安定ソート）
+  const ordered = groups
+    .map((group, i) => ({ group, i, w: weightOf(group) }))
+    .sort((a, b) => (b.w - a.w) || (a.i - b.i))
+    .map((x) => x.group);
+
+  const out = [];
+  for (const group of ordered) {
+    if (out.length + group.length > count) continue;
+    out.push(...group);
+    if (out.length >= count) break;
+  }
+  return out;
+}
+
+/** 特定の判断（タグ）だけを集めて練習する。結果画面の「ここを練習」から使う。 */
+export function buildTagSet(tag, count = 8, rand = Math.random) {
+  const pool = scenarios.filter((sc) => (sc.tags ?? []).includes(tag));
+  if (pool.length === 0) return [];
+  const groups = pairsOf(pool);
+  for (let i = groups.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [groups[i], groups[j]] = [groups[j], groups[i]];
+  }
+  const out = [];
+  for (const group of groups) {
+    if (out.length + group.length > count) continue;
+    out.push(...group);
+    if (out.length >= count) break;
+  }
+  return out;
+}
+
+/** 出題されうるタグの一覧（重複なし） */
+export const ALL_TAGS = [...new Set(scenarios.flatMap((s) => s.tags ?? []))].sort();
