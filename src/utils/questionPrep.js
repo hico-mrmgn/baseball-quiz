@@ -18,6 +18,21 @@ export function makeSeededRandom(seed) {
   };
 }
 
+/**
+ * 配列を混ぜる（元の配列は変えない）。
+ *
+ * `rand` を渡さなければ毎回ちがう並び、`makeSeededRandom()` を渡せば
+ * 同じシードから同じ並びが再現できる。
+ */
+export function shuffleArray(array, rand = Math.random) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 /** 1問の選択肢を混ぜ、correct を新しい位置に振り直す。 */
 export function shuffleQuestionChoices(question, rand = Math.random) {
   const order = question.choices.map((_, i) => i);

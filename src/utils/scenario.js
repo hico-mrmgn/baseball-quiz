@@ -152,6 +152,21 @@ export function summarize(answers) {
   };
 }
 
+/** 最善手が何回続いたか、その最長を返す。バッジの判定に使う。 */
+export function bestStreak(answers) {
+  let best = 0;
+  let run = 0;
+  for (const a of answers) {
+    if (a.choice.score === MAX_CHOICE_SCORE) {
+      run += 1;
+      if (run > best) best = run;
+    } else {
+      run = 0;
+    }
+  }
+  return best;
+}
+
 /**
  * タグごとの成績を出す。「あなたは"点差による判断の切りかえ"が弱い」と
  * 言えるようにするための集計。問題ID単位の苦手リストより粒度が粗いぶん、

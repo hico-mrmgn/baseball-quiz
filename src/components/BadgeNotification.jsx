@@ -1,14 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function BadgeNotification({ badges, onDone }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visible, setVisible] = useState(true);
+  const [shownBadges, setShownBadges] = useState(badges);
 
-  useEffect(() => {
-    if (!badges || badges.length === 0) return;
-    setVisible(true);
+  // 新しいバッジが届いたら1枚目から見せ直す。
+  // 効果（useEffect）で状態を戻すと一度古い内容を描いてから描き直しになるので、
+  // Reactが勧めている「描画中に前回の値と比べて直す」書き方にしている。
+  if (badges !== shownBadges) {
+    setShownBadges(badges);
     setCurrentIndex(0);
-  }, [badges]);
+    setVisible(true);
+  }
 
   if (!badges || badges.length === 0 || !visible) return null;
 
