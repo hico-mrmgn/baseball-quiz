@@ -13,18 +13,18 @@ import InningResultScreen from './components/InningResultScreen';
 import DailyResultScreen from './components/DailyResultScreen';
 import DrillScreen from './components/DrillScreen';
 import FormationScreen from './components/FormationScreen';
-import { questions } from './data/questions';
+import { questions, themes } from './data/questions';
 import {
   buildScenarioSet, buildDailyTraining, buildTagSet, SCENARIO_TRACKS,
 } from './data/scenarios';
 import { inningScenarios } from './data/innings';
-import { summarize } from './utils/scenario';
+import { summarize, bestStreak } from './utils/scenario';
 import {
   shuffleAllChoices, makeSeededRandom, filterByDifficulty,
 } from './utils/questionPrep';
 import { getCareerTier } from './utils/career';
 import { saveResult, getHistory } from './utils/history';
-import { checkAndUnlockBadges } from './utils/badges';
+import { checkAndUnlockBadges, buildBadgeStats } from './utils/badges';
 import { addXp } from './utils/level';
 import { getDailyStreak, completeDailyChallenge, getDailySeed } from './utils/daily';
 import { saveWrongAnswer, removeWrongAnswer, getWrongAnswers } from './utils/weakness';
@@ -105,6 +105,18 @@ export default function App() {
     setScreen('quiz');
   }, []);
 
+  /** 履歴とタグの成績からバッジを判定する。どのモードの終わりからも呼ぶ。 */
+  const refreshBadges = useCallback(() => {
+    const stats = buildBadgeStats({
+      history: getHistory(),
+      dailyStreak: getDailyStreak(),
+      totalInnings: inningScenarios.length,
+      totalDrillThemes: Object.keys(themes).length,
+    });
+    const badges = checkAndUnlockBadges(stats);
+    if (badges.length > 0) setNewBadges(badges);
+  }, []);
+
   const handleFinish = useCallback((score, maxCombo, wrongAnswerIds, correctAnswerIds, totalOverride) => {
     const total = totalOverride || quizQuestions.length;
     const percentage = Math.round((score / total) * 100);
@@ -127,6 +139,7 @@ export default function App() {
       maxCombo,
       careerTitle: tier.title,
       careerEmoji: tier.emoji,
+      meta: { mode: 'drill', difficulty: quizDifficulty },
     });
 
     // デイリーチャレンジ完了（途中終了の場合は完了扱いにしない）
@@ -140,26 +153,13 @@ export default function App() {
       setLevelUpInfo(xpResult.levelInfo);
     }
 
-    // バッジチェック
-    const history = getHistory();
-    const stats = {
-      totalGames: history.length,
-      hasPerfect: history.some((h) => h.percentage === 100),
-      bestScore: Math.max(...history.map((h) => h.percentage), 0),
-      bestCombo: Math.max(...history.map((h) => h.maxCombo || 0), 0),
-      uniqueThemes: new Set(history.map((h) => h.theme).filter((t) => t !== 'daily' && t !== 'weakness' && t !== 'random')).size,
-      dailyStreak: getDailyStreak(),
-    };
-    const badges = checkAndUnlockBadges(stats);
-    if (badges.length > 0) {
-      setNewBadges(badges);
-    }
+    refreshBadges();
 
     setFinalScore(score);
     setFinalMaxCombo(maxCombo);
     setQuizQuestions((prev) => totalOverride ? prev.slice(0, totalOverride) : prev);
     setScreen('result');
-  }, [currentTheme, quizQuestions.length, quizMode]);
+  }, [currentTheme, quizQuestions.length, quizMode, quizDifficulty, refreshBadges]);
 
   const handleQuit = useCallback((score, maxCombo, wrongAnswerIds, correctAnswerIds, answeredCount) => {
     if (answeredCount === 0) {
@@ -172,24 +172,6 @@ export default function App() {
     // 途中退出時は元の問題数をtotalとして使う（未回答は不正解扱い）
     handleFinish(score, maxCombo, wrongAnswerIds, correctAnswerIds);
   }, [handleFinish]);
-
-  /** 履歴から実績を集計してバッジを判定する。複数のモードから呼ぶ。 */
-  const refreshBadges = useCallback(() => {
-    const history = getHistory();
-    const stats = {
-      totalGames: history.length,
-      hasPerfect: history.some((h) => h.percentage === 100),
-      bestScore: Math.max(...history.map((h) => h.percentage), 0),
-      bestCombo: Math.max(...history.map((h) => h.maxCombo || 0), 0),
-      uniqueThemes: new Set(
-        history.map((h) => h.theme)
-          .filter((t) => !['daily', 'weakness', 'random', 'scenario', 'inning'].includes(t)),
-      ).size,
-      dailyStreak: getDailyStreak(),
-    };
-    const badges = checkAndUnlockBadges(stats);
-    if (badges.length > 0) setNewBadges(badges);
-  }, []);
 
   /* ── 実戦シナリオ ── */
   const startScenario = useCallback((trackId) => {
@@ -246,10 +228,18 @@ export default function App() {
       maxCombo: 0,
       careerTitle: getCareerTier(s.bestRate).title,
       careerEmoji: getCareerTier(s.bestRate).emoji,
+      meta: {
+        mode: 'scenario',
+        bestRate: s.bestRate,
+        fatalCount: s.counts.fatal,
+        bestStreak: bestStreak(answers),
+        total: answers.length,
+      },
     });
     const xpResult = addXp(bestCount, answers.length, 0);
     if (xpResult.levelUp) setLevelUpInfo(xpResult.levelInfo);
-  }, [sessionMode]);
+    refreshBadges();
+  }, [sessionMode, refreshBadges]);
 
   /** 結果画面の「ここを練習」から、その判断だけを集めて出題する。 */
   const startTagPractice = useCallback((tag) => {
@@ -290,6 +280,15 @@ export default function App() {
         maxCombo: 0,
         careerTitle: getCareerTier(s.bestRate).title,
         careerEmoji: getCareerTier(s.bestRate).emoji,
+        meta: {
+          mode: 'daily',
+          bestRate: s.bestRate,
+          fatalCount: s.counts.fatal,
+          bestStreak: bestStreak(all),
+          total: all.length,
+          inningId: currentInning?.id,
+          cleared: result.cleared,
+        },
       });
       completeDailyChallenge();
       const xpResult = addXp(s.counts.best, all.length, result.cleared ? 5 : 0);
@@ -309,11 +308,19 @@ export default function App() {
       maxCombo: 0,
       careerTitle: result.cleared ? '守り切った' : '守り切れず',
       careerEmoji: result.cleared ? '🛡️' : '💧',
+      meta: {
+        mode: 'inning',
+        inningId: currentInning?.id,
+        cleared: result.cleared,
+        bestStreak: bestStreak(result.answers),
+        total: result.answers.length,
+      },
     });
     // 守り切れたイニングにはボーナス経験値
     const xpResult = addXp(s.counts.best, result.answers.length, result.cleared ? 5 : 0);
     if (xpResult.levelUp) setLevelUpInfo(xpResult.levelInfo);
-  }, [sessionMode, dailyScenarioAnswers, refreshBadges]);
+    refreshBadges();
+  }, [sessionMode, dailyScenarioAnswers, currentInning, refreshBadges]);
 
   const handleRetry = useCallback(() => {
     if (quizMode === 'daily') {
