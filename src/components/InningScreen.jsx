@@ -61,6 +61,8 @@ export default function InningScreen({ inning, onFinish, onQuit }) {
   const sit = {
     inning: inning.inning,
     half: inning.half,
+    // 守り切れは常に守備側。実戦シナリオと同じチップを出すために明示する
+    side: 'defense',
     score: { us, them },
     outs,
     runners: play.runners,
@@ -158,7 +160,8 @@ export default function InningScreen({ inning, onFinish, onQuit }) {
             <ScenarioField sit={sit} theme={null} />
           </div>
           <div className="flex-1 bg-white rounded-xl p-3 shadow-sm border border-green-200 flex flex-col gap-2.5">
-            <SituationPanel sit={sit} />
+            {/* 点差とアウトは上のスコアボードが出しているので、ここでは省く */}
+            <SituationPanel sit={sit} hasScoreboard />
             <div className="border-t border-gray-100 pt-2">
               <div className="text-base md:text-lg font-black text-gray-800 leading-snug">
                 {play.question}
