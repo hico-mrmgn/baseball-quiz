@@ -92,6 +92,28 @@ export function runnerList(sit) {
   return out;
 }
 
+/** 走者を「一・三塁」「満塁」のように短く言う。図の横に置くための表記。 */
+const BASE_KANJI = { first: '一', second: '二', third: '三' };
+
+export function formatRunnerBases(sit) {
+  const on = ['first', 'second', 'third'].filter((b) => sit?.runners?.[b]);
+  if (on.length === 0) return 'ランナーなし';
+  if (on.length === 3) return '満塁';
+  return `${on.map((b) => BASE_KANJI[b]).join('・')}塁`;
+}
+
+/**
+ * 守備隊形。ただし「定位置」は初期配置なので、出しても判断の材料にならない。
+ * 前進守備やバントシフトのように、チームの意思が出ているときだけ返す。
+ * 53場面のうち33場面が定位置なので、これだけで表示が3分の1になる。
+ */
+const NEUTRAL_FORMATION = /^(定位置|内野は定位置)$/;
+
+export function formatFormation(defense) {
+  if (!defense) return null;
+  return NEUTRAL_FORMATION.test(defense) ? null : defense;
+}
+
 export function formatRunners(sit) {
   const list = runnerList(sit);
   if (list.length === 0) return 'ランナーなし';
