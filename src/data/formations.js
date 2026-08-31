@@ -1,3 +1,5 @@
+import { FIELDER_POSITIONS } from './fieldCoords';
+
 // 守備フォーメーション解説データ（190パターン）
 // moves: 動く選手の定義 { player, to: {x,y}, color, role }
 // color: '#ef4444'=赤(積極的に動く), '#3b82f6'=青(カバー), '#10b981'=緑(ベースカバー)
@@ -14,18 +16,8 @@ export const formationCategories = [
   { id: 'runner-123', name: '満塁',        icon: '🔴' },
 ];
 
-// デフォルト守備位置
-export const DEFAULT_POSITIONS = {
-  pitcher: { x: 110, y: 136, label: 'P'  },
-  catcher: { x: 110, y: 196, label: 'C'  },
-  first:   { x: 178, y: 138, label: '1B' },
-  second:  { x: 138, y: 96,  label: '2B' },
-  short:   { x: 80,  y: 96,  label: 'SS' },
-  third:   { x: 40,  y: 138, label: '3B' },
-  left:    { x: 36,  y: 44,  label: 'LF' },
-  center:  { x: 110, y: 24,  label: 'CF' },
-  right:   { x: 184, y: 44,  label: 'RF' },
-};
+// デフォルト守備位置。実体は fieldCoords が持つ（以前は3か所に写しがあった）
+export const DEFAULT_POSITIONS = FIELDER_POSITIONS;
 
 export const formations = [
 

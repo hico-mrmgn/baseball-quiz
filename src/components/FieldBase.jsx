@@ -150,26 +150,99 @@ export function FieldGround({ uid }) {
 }
 
 /* ── 守備選手（ちびキャラ: 白ユニフォーム＋カラーキャップ） ── */
-export function PlayerIcon({ x, y, color = '#1e3a8a', scale = 1 }) {
+/**
+ * 守備の選手。
+ *
+ * 以前は9人とも同じ形だった。守備は「誰がどこで何をしているか」を読む絵なので、
+ * 少なくとも捕手（しゃがんでミットを構える）と投手（プレートを踏む）は
+ * ひと目で分かるようにしている。野手はグラブを持たせた。
+ */
+export function PlayerIcon({ x, y, color = '#1e3a8a', scale = 1, pose = 'field' }) {
   return (
     <g transform={`translate(${x}, ${y}) scale(${scale})`}>
-      {/* 影 */}
+      {pose === 'catcher' ? <CatcherBody color={color} />
+        : pose === 'pitcher' ? <PitcherBody color={color} />
+        : <FielderBody color={color} />}
+    </g>
+  );
+}
+
+/** グラブ。どの守備者も左手にはめている前提で描く。 */
+function Glove({ cx, cy, r = 2.4 }) {
+  return <circle cx={cx} cy={cy} r={r} fill="#8b5e34" stroke="#5c3d21" strokeWidth="0.5" />;
+}
+
+/** 帽子（つば付き）。頭の形は3種類で共通。 */
+function Cap({ color, cy = -7.2 }) {
+  return (
+    <>
+      <path d={`M-4.2,${cy} A4.2,4.2 0 0 1 4.2,${cy} Z`} fill={color} />
+      <rect x="-4.8" y={cy - 0.7} width="9.6" height="1.5" rx="0.75" fill={color} />
+    </>
+  );
+}
+
+function FielderBody({ color }) {
+  return (
+    <>
       <ellipse cx="0.5" cy="10.5" rx="5.5" ry="1.8" fill="rgba(0,0,0,0.2)" />
-      {/* 脚 */}
-      <path d="M-2.2,5.5 L-2.6,9.5 M2.2,5.5 L2.6,9.5" stroke="#52525b" strokeWidth="2" strokeLinecap="round" />
-      {/* 腕 */}
-      <path d="M-3.8,0.5 L-6.2,3.5 M3.8,0.5 L6.2,3.5" stroke={color} strokeWidth="2" strokeLinecap="round" />
-      {/* 胴体（ユニフォーム） */}
+      {/* 構えの足幅。棒立ちより少し開く */}
+      <path d="M-2.6,5.5 L-3.4,9.5 M2.6,5.5 L3.4,9.5" stroke="#52525b" strokeWidth="2" strokeLinecap="round" />
+      <path d="M-3.8,0.5 L-6.4,3.4 M3.8,0.5 L6.2,3.5" stroke={color} strokeWidth="2" strokeLinecap="round" />
       <path
         d="M-4,-0.5 Q-4.8,6.5 0,6.5 Q4.8,6.5 4,-0.5 Q3,-2.8 0,-2.8 Q-3,-2.8 -4,-0.5 Z"
         fill="#ffffff" stroke={color} strokeWidth="1"
       />
-      {/* 顔 */}
+      <Glove cx={-6.9} cy={3.8} />
       <circle cx="0" cy="-6.5" r="4.2" fill="#fcd7b0" />
-      {/* キャップ */}
-      <path d="M-4.2,-7.2 A4.2,4.2 0 0 1 4.2,-7.2 Z" fill={color} />
-      <rect x="-4.8" y="-7.9" width="9.6" height="1.5" rx="0.75" fill={color} />
-    </g>
+      <Cap color={color} />
+    </>
+  );
+}
+
+/** 投手。プレートを踏み、グラブを胸の前に置く。 */
+function PitcherBody({ color }) {
+  return (
+    <>
+      <ellipse cx="0.5" cy="10.5" rx="5.5" ry="1.8" fill="rgba(0,0,0,0.2)" />
+      {/* 投手板 */}
+      <rect x="-5.2" y="9.2" width="10.4" height="1.7" rx="0.7" fill="#f8fafc" opacity="0.95" />
+      <path d="M-1.8,5.5 L-2.2,9.2 M1.8,5.5 L2.2,9.2" stroke="#52525b" strokeWidth="2" strokeLinecap="round" />
+      <path d="M-3.6,0.6 L-5.2,2.2 M3.6,0.6 L5.6,2.6" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <path
+        d="M-4,-0.5 Q-4.8,6.5 0,6.5 Q4.8,6.5 4,-0.5 Q3,-2.8 0,-2.8 Q-3,-2.8 -4,-0.5 Z"
+        fill="#ffffff" stroke={color} strokeWidth="1"
+      />
+      <Glove cx={-4.4} cy={1.4} r={2.7} />
+      <circle cx="0" cy="-6.5" r="4.2" fill="#fcd7b0" />
+      <Cap color={color} />
+    </>
+  );
+}
+
+/** 捕手。しゃがんでミットを構え、マスクをつけている。 */
+function CatcherBody({ color }) {
+  return (
+    <>
+      <ellipse cx="0.5" cy="8.2" rx="6" ry="1.8" fill="rgba(0,0,0,0.2)" />
+      {/* しゃがんだ脚。膝が外へ開く */}
+      <path d="M-2.6,3.4 L-5.6,7 M2.6,3.4 L5.6,7" stroke="#52525b" strokeWidth="2.2" strokeLinecap="round" />
+      {/* プロテクターごと低く構えた胴体 */}
+      <path
+        d="M-4.2,-1 Q-5,4.6 0,4.6 Q5,4.6 4.2,-1 Q3.2,-3.2 0,-3.2 Q-3.2,-3.2 -4.2,-1 Z"
+        fill="#ffffff" stroke={color} strokeWidth="1"
+      />
+      <path d="M3.6,-0.4 L5.6,1.6" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      {/* ミット。野手のグラブより大きい */}
+      <Glove cx={-6} cy={0.6} r={3.1} />
+      <circle cx="0" cy="-6.6" r="4" fill="#fcd7b0" />
+      <Cap color={color} cy={-7.3} />
+      {/* マスクの格子 */}
+      <g stroke="#3f3f46" strokeWidth="0.7" strokeLinecap="round">
+        <path d="M-3.4,-7.4 L-3.4,-4.2 M0,-7.6 L0,-4 M3.4,-7.4 L3.4,-4.2" />
+        <path d="M-3.6,-6.4 L3.6,-6.4 M-3.4,-4.6 L3.4,-4.6" />
+      </g>
+    </>
   );
 }
 
