@@ -100,9 +100,9 @@ const CONTRADICTIONS = [
  */
 const REVIEWED_WARNINGS = new Set([
   'baserun-088', 'batting-030', 'batting-058', 'coach-074', 'coach-096',
-  'fighters-018', 'first-011', 'first-085', 'outfield-026', 'outfield-038',
-  'pitcher-016', 'rules-012', 'rules-013', 'second-063', 'third-030',
-  'third-035', 'third-051', 'umpire-031', 'umpire-041',
+  'fighters-018', 'first-011', 'first-085', 'outfield-038', 'pitcher-016',
+  'rules-012', 'rules-044', 'second-063', 'third-030', 'third-035',
+  'third-051', 'umpire-031',
 ]);
 
 async function loadQuestions() {
