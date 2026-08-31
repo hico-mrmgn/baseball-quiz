@@ -169,7 +169,7 @@ export function bestChoiceIndex(choices) {
 
 /**
  * 回答結果を集計する。
- * answers: [{ scenario, choice, elapsedMs, inTime }]
+ * answers: [{ scenario, choice }]
  */
 export function summarize(answers) {
   const total = answers.length;
@@ -179,7 +179,6 @@ export function summarize(answers) {
   const ok    = answers.filter((x) => x.choice.score === 1).length;
   const poor  = answers.filter((x) => x.choice.score === 0).length;
   const fatal = answers.filter((x) => x.choice.score === -1).length;
-  const inTime = answers.filter((x) => x.inTime).length;
 
   return {
     total,
@@ -189,7 +188,6 @@ export function summarize(answers) {
     percent: possible > 0 ? Math.round((Math.max(gained, 0) / possible) * 100) : 0,
     bestRate:  total > 0 ? Math.round((best / total) * 100) : 0,
     fatalRate: total > 0 ? Math.round((fatal / total) * 100) : 0,
-    inTimeRate: total > 0 ? Math.round((inTime / total) * 100) : 0,
     counts: { best, ok, poor, fatal },
   };
 }
@@ -228,14 +226,4 @@ export function tagBreakdown(answers) {
   return [...map.values()]
     .map((t) => ({ ...t, percent: Math.round((Math.max(t.gained, 0) / t.possible) * 100) }))
     .sort((a, b) => a.percent - b.percent);
-}
-
-/* ── 判断スピード ──
- * 実戦の判断は打球が飛ぶ前におおむね終わっている。読む時間は要るので
- * 時間切れでも回答はできるが、制限内に決めたときだけ「速い判断」として
- * 評価する。焦らせて当てずっぽうを誘発しないための設計。 */
-export const DEFAULT_TIME_LIMIT_MS = 20000;
-
-export function timeLimitOf(scenario) {
-  return scenario.timeLimitMs ?? DEFAULT_TIME_LIMIT_MS;
 }
