@@ -1,30 +1,14 @@
 import { useId } from 'react';
-import { FIRST, SECOND, THIRD } from '../data/fieldCoords';
+import {
+  FIRST, SECOND, THIRD, FIELDER_POSITIONS, shiftedPosition, poseOf,
+} from '../data/fieldCoords';
 import {
   FieldDefs, FieldGround,
   PlayerIcon, RunnerIcon, BallIcon, OutsCounter, PlayerLabel,
 } from './FieldBase';
 import { RUNNER_SPEED } from '../utils/scenario';
 
-const FIELDERS = {
-  pitcher: { x: 110, y: 136, label: 'P'  },
-  catcher: { x: 110, y: 196, label: 'C'  },
-  first:   { x: 178, y: 138, label: '1B' },
-  second:  { x: 138, y: 96,  label: '2B' },
-  short:   { x: 80,  y: 96,  label: 'SS' },
-  third:   { x: 40,  y: 138, label: '3B' },
-  left:    { x: 36,  y: 44,  label: 'LF' },
-  center:  { x: 110, y: 24,  label: 'CF' },
-  right:   { x: 184, y: 44,  label: 'RF' },
-};
-
-/** 前進守備・バントシフトでは内野の位置が変わる。隊形が見えないと判断できない。 */
-const DEFENSE_SHIFTS = {
-  '前進守備':       { first: { dy: -14 }, second: { dy: -16 }, short: { dy: -16 }, third: { dy: -14 } },
-  '定位置より少し前': { first: { dy: -6 }, second: { dy: -7 }, short: { dy: -7 }, third: { dy: -6 } },
-  'やや後ろ':       { left: { dy: -8 }, center: { dy: -6 }, right: { dy: -8 } },
-  'バントシフト':    { first: { dy: -26 }, third: { dy: -26 } },
-};
+const FIELDERS = FIELDER_POSITIONS;
 
 /** 打球の落下位置。旧データの文字列マッチと違い、キーで直接指定する。 */
 const BALL_SPOTS = {
@@ -46,12 +30,6 @@ const THEME_FIELDER = {
   third: 'third', second: 'second', short: 'short',
   first: 'first', pitcher: 'pitcher', catcher: 'catcher',
 };
-
-function shifted(key, pos, defense) {
-  const shift = DEFENSE_SHIFTS[defense]?.[key];
-  if (!shift) return pos;
-  return { ...pos, x: pos.x + (shift.dx ?? 0), y: pos.y + (shift.dy ?? 0) };
-}
 
 /** 走者の脚質バッジ。「速」「遅」が見えるだけで判断が変わる。 */
 function SpeedTag({ x, y, speed }) {
@@ -96,6 +74,14 @@ export default function ScenarioField({ sit, theme }) {
   const highlighted = THEME_FIELDER[theme] ?? null;
   const ball = sit.ballArea ? BALL_SPOTS[sit.ballArea] : null;
 
+  // 位置と色は先に決めておく。アイコンとラベルを別々の重なり順で描くため。
+  const placed = Object.entries(FIELDERS).map(([key, base]) => {
+    const pos = shiftedPosition(key, base, sit.defense);
+    const isHL = key === highlighted;
+    const moved = pos.x !== base.x || pos.y !== base.y;
+    return { key, base, pos, isHL, color: isHL ? '#f59e0b' : moved ? '#0ea5e9' : '#1e3a8a' };
+  });
+
   return (
     <div className="w-full">
       <svg viewBox="0 0 220 210" className="w-full rounded-xl" aria-label="グラウンド図">
@@ -103,24 +89,11 @@ export default function ScenarioField({ sit, theme }) {
         <g clipPath={`url(#${uid}-clip)`}>
           <FieldGround uid={uid} />
 
-          {Object.entries(FIELDERS).map(([key, base]) => {
-            const pos = shifted(key, base, sit.defense);
-            const isHL = key === highlighted;
-            const moved = pos.y !== base.y || pos.x !== base.x;
-            const color = isHL ? '#f59e0b' : moved ? '#0ea5e9' : '#1e3a8a';
-            return (
-              <g key={key} filter={isHL ? `url(#${uid}-glow)` : undefined}>
-                <PlayerIcon x={pos.x} y={pos.y} color={color} scale={isHL ? 1.2 : 1} />
-                <PlayerLabel
-                  x={pos.x} y={pos.y}
-                  label={base.label}
-                  color={color}
-                  side={key === 'catcher'}
-                  emphasized={isHL}
-                />
-              </g>
-            );
-          })}
+          {placed.map(({ key, pos, isHL, color }) => (
+            <g key={key} filter={isHL ? `url(#${uid}-glow)` : undefined}>
+              <PlayerIcon x={pos.x} y={pos.y} color={color} scale={isHL ? 1.2 : 1} pose={poseOf(key)} />
+            </g>
+          ))}
 
           {sit.runners?.first && (
             <>
@@ -142,6 +115,19 @@ export default function ScenarioField({ sit, theme }) {
           )}
 
           {ball && <BallIcon x={ball.x} y={ball.y} uid={uid} />}
+
+          {/* ラベルはボールより後に描く。守備位置を深くしたぶん打球と近づき、
+              「3B」がボールに隠れて「3E」に見える場面があったため。 */}
+          {placed.map(({ key, base, pos, isHL, color }) => (
+            <PlayerLabel
+              key={key}
+              x={pos.x} y={pos.y}
+              label={base.label}
+              color={color}
+              side={key === 'catcher'}
+              emphasized={isHL}
+            />
+          ))}
 
           <OutsCounter outs={sit.outs} />
           <ScoreStrip sit={sit} />

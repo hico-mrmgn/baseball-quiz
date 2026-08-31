@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import ScenarioField from './ScenarioField';
 import SituationPanel from './SituationPanel';
 import Confetti from './Confetti';
@@ -6,7 +6,7 @@ import ChoiceList from './ChoiceList';
 import ConfirmDialog from './ConfirmDialog';
 import { TIER_BOX, TIER_TEXT } from './tierStyles';
 import { SCENARIO_LEVELS } from '../data/scenarios';
-import { prepareScenario, tierOf, timeLimitOf } from '../utils/scenario';
+import { prepareScenario, tierOf } from '../utils/scenario';
 import { playCorrect, playWrong, playCombo } from '../utils/sound';
 
 const PHASE_BADGE = {
@@ -19,10 +19,8 @@ export default function ScenarioScreen({ scenarios: list, trackName, onFinish, o
   const [pending, setPending] = useState(null);
   const [confirmed, setConfirmed] = useState(null);
   const [answers, setAnswers] = useState([]);
-  const [elapsed, setElapsed] = useState(0);
   const [confettiTrigger, setConfettiTrigger] = useState(0);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
-  const startedAt = useRef(null);
 
   const current = list[index];
   const total = list.length;
@@ -30,25 +28,6 @@ export default function ScenarioScreen({ scenarios: list, trackName, onFinish, o
   // 選択肢は出題のたびに混ぜる。並び順のクセで解けないようにするため、
   // index が変わったときだけ作り直す。
   const prepared = useMemo(() => prepareScenario(current), [current]);
-  const limit = timeLimitOf(current);
-
-  // 判断タイムの計測開始。以降の場面では handleNext で開始時刻を打ち直す。
-  useEffect(() => {
-    if (startedAt.current === null) startedAt.current = Date.now();
-  }, []);
-
-  useEffect(() => {
-    if (confirmed !== null) return undefined;
-    const id = setInterval(
-      () => setElapsed(Date.now() - (startedAt.current ?? Date.now())),
-      100,
-    );
-    return () => clearInterval(id);
-  }, [confirmed, index]);
-
-  const remaining = Math.max(0, limit - elapsed);
-  const timeUp = remaining === 0;
-  const timeRatio = Math.max(0, Math.min(1, remaining / limit));
 
   const streak = useMemo(() => {
     let n = 0;
@@ -62,14 +41,8 @@ export default function ScenarioScreen({ scenarios: list, trackName, onFinish, o
   function handleConfirm() {
     if (pending === null || confirmed !== null) return;
     const choice = prepared.choices[pending];
-    const ms = Date.now() - (startedAt.current ?? Date.now());
     setConfirmed(pending);
-    setAnswers((prev) => [...prev, {
-      scenario: current,
-      choice,
-      elapsedMs: ms,
-      inTime: ms <= limit,
-    }]);
+    setAnswers((prev) => [...prev, { scenario: current, choice }]);
 
     if (choice.score === 3) {
       setConfettiTrigger((t) => t + 1);
@@ -89,8 +62,6 @@ export default function ScenarioScreen({ scenarios: list, trackName, onFinish, o
       setIndex((i) => i + 1);
       setPending(null);
       setConfirmed(null);
-      startedAt.current = Date.now();
-      setElapsed(0);
     }
   }
 
@@ -98,8 +69,6 @@ export default function ScenarioScreen({ scenarios: list, trackName, onFinish, o
   const tier = chosen ? tierOf(chosen.score) : null;
   const levelInfo = SCENARIO_LEVELS[current.level];
   const phase = PHASE_BADGE[current.phase] ?? PHASE_BADGE.post;
-  const lastAnswer = answers[answers.length - 1];
-  const wasInTime = confirmed !== null && lastAnswer?.inTime;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 via-gray-50 to-gray-50 px-3 lg:px-6 py-4">
@@ -145,23 +114,6 @@ export default function ScenarioScreen({ scenarios: list, trackName, onFinish, o
             style={{ width: `${(index / total) * 100}%` }}
           />
         </div>
-
-        {/* 判断タイム。時間切れでも答えられるが、速さは評価される */}
-        {confirmed === null && (
-          <div className="flex items-center gap-2 mb-3">
-            <span className={`text-xs font-black ${timeUp ? 'text-gray-400' : 'text-gray-600'}`}>
-              {timeUp ? '判断タイム終了' : `残り ${Math.ceil(remaining / 1000)}秒`}
-            </span>
-            <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-[width] duration-100 ${
-                  timeRatio > 0.5 ? 'bg-green-500' : timeRatio > 0.2 ? 'bg-amber-500' : 'bg-red-500'
-                }`}
-                style={{ width: `${timeRatio * 100}%` }}
-              />
-            </div>
-          </div>
-        )}
 
         {/* 双子問題の合図 */}
         {current.pairRole === 'b' && (
@@ -225,11 +177,6 @@ export default function ScenarioScreen({ scenarios: list, trackName, onFinish, o
               <span className="text-lg">{tier.emoji}</span>
               <span>{tier.label}（{chosen.score > 0 ? `+${chosen.score}` : chosen.score}点）</span>
               <span className="font-bold">{tier.message}</span>
-              <span className={`ml-auto px-2 py-0.5 rounded-full text-xs ${
-                wasInTime ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'
-              }`}>
-                {wasInTime ? '⚡ 速い判断' : '🐢 判断がおそい'}
-              </span>
             </div>
 
             <div className={`text-sm leading-relaxed mb-2.5 ${TIER_TEXT[tier.key]}`}>

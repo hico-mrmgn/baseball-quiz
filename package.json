@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "audit:questions": "node scripts/audit-questions.mjs",
     "audit:explanations": "node scripts/audit-explanations.mjs",
-    "audit:viewpoint": "node scripts/audit-viewpoint.mjs"
+    "audit:viewpoint": "node scripts/audit-viewpoint.mjs",
+    "audit:field": "node scripts/audit-field.mjs"
   },
   "dependencies": {
     "react": "^19.2.4",

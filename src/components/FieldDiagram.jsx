@@ -1,22 +1,12 @@
 import { useId } from 'react';
 import { parseSituation } from '../utils/parseSituation';
-import { FIRST, SECOND, THIRD } from '../data/fieldCoords';
+import { FIRST, SECOND, THIRD, FIELDER_POSITIONS, poseOf } from '../data/fieldCoords';
 import {
   FieldDefs, FieldGround,
   PlayerIcon, RunnerIcon, BallIcon, OutsCounter, PlayerLabel,
 } from './FieldBase';
 
-const FIELDERS = {
-  pitcher: { x: 110, y: 136, label: 'P'  },
-  catcher: { x: 110, y: 196, label: 'C'  },
-  first:   { x: 178, y: 138, label: '1B' },
-  second:  { x: 138, y: 96,  label: '2B' },
-  short:   { x: 80,  y: 96,  label: 'SS' },
-  third:   { x: 40,  y: 138, label: '3B' },
-  left:    { x: 36,  y: 44,  label: 'LF' },
-  center:  { x: 110, y: 24,  label: 'CF' },
-  right:   { x: 184, y: 44,  label: 'RF' },
-};
+const FIELDERS = FIELDER_POSITIONS;
 
 const THEME_FIELDER = {
   third:   'third',
@@ -49,14 +39,7 @@ export default function FieldDiagram({ situation, theme }) {
             const color = isHL ? '#f59e0b' : '#1e3a8a';
             return (
               <g key={key} filter={isHL ? `url(#${uid}-glow)` : undefined}>
-                <PlayerIcon x={pos.x} y={pos.y} color={color} scale={isHL ? 1.2 : 1} />
-                <PlayerLabel
-                  x={pos.x} y={pos.y}
-                  label={pos.label}
-                  color={color}
-                  side={key === 'catcher'}
-                  emphasized={isHL}
-                />
+                <PlayerIcon x={pos.x} y={pos.y} color={color} scale={isHL ? 1.2 : 1} pose={poseOf(key)} />
               </g>
             );
           })}
@@ -68,6 +51,21 @@ export default function FieldDiagram({ situation, theme }) {
 
           {/* ── ボール ── */}
           {ball && <BallIcon x={ball.x} y={ball.y} uid={uid} />}
+
+          {/* ラベルはボールより後。打球と重なっても読めるようにするため */}
+          {Object.entries(FIELDERS).map(([key, pos]) => {
+            const isHL = key === highlighted;
+            return (
+              <PlayerLabel
+                key={key}
+                x={pos.x} y={pos.y}
+                label={pos.label}
+                color={isHL ? '#f59e0b' : '#1e3a8a'}
+                side={key === 'catcher'}
+                emphasized={isHL}
+              />
+            );
+          })}
 
           {/* ── アウトカウント ── */}
           <OutsCounter outs={outs} />

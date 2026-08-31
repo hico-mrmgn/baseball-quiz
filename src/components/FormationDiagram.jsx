@@ -1,5 +1,6 @@
 import { useState, useEffect, useId } from 'react';
 import { DEFAULT_POSITIONS } from '../data/formations';
+import { poseOf } from '../data/fieldCoords';
 import { FIRST, SECOND, THIRD } from '../data/fieldCoords';
 import {
   FieldDefs, FieldGround,
@@ -101,7 +102,7 @@ function GhostIcon({ x, y, delay = 0, animated = false }) {
 }
 
 /* ── アニメーション付き選手 ── */
-function AnimatedPlayer({ fromX, fromY, toX, toY, color, scale, label, delay, side }) {
+function AnimatedPlayer({ fromX, fromY, toX, toY, color, scale, label, delay, side, pose }) {
   const dx = toX - fromX;
   const dy = toY - fromY;
 
@@ -126,7 +127,7 @@ function AnimatedPlayer({ fromX, fromY, toX, toY, color, scale, label, delay, si
           keySplines="0.25 0.1 0.25 1"
         />
         <g transform={`translate(${-dx}, ${-dy})`}>
-          <PlayerIcon x={toX} y={toY} color={color} scale={scale} />
+          <PlayerIcon x={toX} y={toY} color={color} scale={scale} pose={pose} />
           <PlayerLabel x={toX} y={toY} label={label} color={color} side={side} emphasized />
         </g>
       </g>
@@ -253,6 +254,7 @@ export default function FormationDiagram({ formation, compact = false, animated 
                     label={def.label}
                     delay={MOVE_DELAY + moveIdx * 0.08}
                     side={sideLabel}
+                    pose={poseOf(key)}
                   />
                 </g>
               );
@@ -264,6 +266,7 @@ export default function FormationDiagram({ formation, compact = false, animated 
                   x={pos.x} y={pos.y}
                   color={color}
                   scale={isHighlighted ? 1.2 : 1}
+                  pose={poseOf(key)}
                 />
                 <PlayerLabel
                   x={pos.x} y={pos.y}
