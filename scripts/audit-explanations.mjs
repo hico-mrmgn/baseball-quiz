@@ -83,6 +83,28 @@ const CONTRADICTIONS = [
   },
 ];
 
+/**
+ * 3番目の検査を人が読んで確認ずみの問題。
+ *
+ * この検査は文字の一致度で測っているので、次の2つは必ず引っかかる。
+ *   - 解説が誤答をわざと引用して打ち消している
+ *     （例：「『2アウトだから投げなくていい』は大きな間違い」）
+ *   - 正解を解説が別の言葉で言いかえている
+ *     （例：正解「走者の速さと位置を見て決める」／解説「勢いと送球の時間を判断する」）
+ * どちらも良い問題なので、直す必要はない。
+ *
+ * 2026-08-30 に当時の20問すべてを出題データと突き合わせて読み、
+ * 野球としての誤りが無いことを確認した（1問はこの確認で見つかり修正済み）。
+ * ここに載っているものは「確認ずみ」として数え、載っていないものだけを
+ * 新規として出す。問題の中身を書きかえたらここから外し、もう一度読むこと。
+ */
+const REVIEWED_WARNINGS = new Set([
+  'baserun-088', 'batting-030', 'batting-058', 'coach-074', 'coach-096',
+  'fighters-018', 'first-011', 'first-085', 'outfield-026', 'outfield-038',
+  'pitcher-016', 'rules-012', 'rules-013', 'second-063', 'third-030',
+  'third-035', 'third-051', 'umpire-031', 'umpire-041',
+]);
+
 async function loadQuestions() {
   const out = [];
   for (const file of fs.readdirSync(QUESTION_DIR).sort()) {
@@ -165,17 +187,37 @@ for (const { q, why } of contradictions) {
   console.log(`    解説   : ${q.explanation.slice(0, 80)}`);
 }
 
-console.log(`\n■ 要確認（解説が誤答のほうをよく説明している）  ${String(warnings.length).padStart(3)}問`);
-console.log('    誤検出を含みます。人が読んで判断してください（--warn で一覧）。');
+const fresh = warnings.filter((w) => !REVIEWED_WARNINGS.has(w.q.id));
+const reviewed = warnings.filter((w) => REVIEWED_WARNINGS.has(w.q.id));
+
+console.log('\n■ 要確認（解説が誤答のほうをよく説明している）');
+console.log(`    新規       ${String(fresh.length).padStart(3)}問  ← 人が読んで判断してください`);
+console.log(`    確認ずみ   ${String(reviewed.length).padStart(3)}問  （読んだうえで誤検出と判断したもの）`);
 if (showWarnings) {
-  warnings.sort((a, b) => b.gap - a.gap);
-  for (const w of warnings) {
-    console.log(`\n  ${w.q.id}  差=${w.gap.toFixed(2)}（正解 ${w.correctScore.toFixed(2)} / 誤答 ${w.bestOther.toFixed(2)}）`);
-    console.log(`    問い   : ${w.q.question}`);
-    console.log(`    ★正解 : ${w.q.choices[w.q.correct]}`);
-    console.log(`    ?誤答 : ${w.q.choices[w.bestOtherIdx]}`);
-    console.log(`    解説   : ${w.q.explanation.slice(0, 80)}`);
-  }
+  const show = (list, heading) => {
+    if (list.length === 0) return;
+    console.log(`\n  ── ${heading} ──`);
+    list.sort((a, b) => b.gap - a.gap);
+    for (const w of list) {
+      console.log(`\n  ${w.q.id}  差=${w.gap.toFixed(2)}（正解 ${w.correctScore.toFixed(2)} / 誤答 ${w.bestOther.toFixed(2)}）`);
+      console.log(`    問い   : ${w.q.question}`);
+      console.log(`    ★正解 : ${w.q.choices[w.q.correct]}`);
+      console.log(`    ?誤答 : ${w.q.choices[w.bestOtherIdx]}`);
+      console.log(`    解説   : ${w.q.explanation.slice(0, 80)}`);
+    }
+  };
+  show(fresh, '新規');
+  show(reviewed, '確認ずみ');
+} else if (fresh.length > 0) {
+  console.log(`    新規: ${fresh.map((w) => w.q.id).join(', ')}`);
+}
+
+// 確認ずみのIDが残っていない場合、問題が消えたか書きかえられている。
+// 一覧が古いまま新しい問題を見のがすのを防ぐため知らせる。
+const stale = [...REVIEWED_WARNINGS].filter((id) => !warnings.some((w) => w.q.id === id));
+if (stale.length > 0) {
+  console.log(`\n    ※ 確認ずみの一覧に、もう引っかからないIDが ${stale.length}件あります: ${stale.join(', ')}`);
+  console.log('       問題を書きかえたなら REVIEWED_WARNINGS から外してください。');
 }
 
 const failures = [];
