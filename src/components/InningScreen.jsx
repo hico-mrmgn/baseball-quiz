@@ -61,6 +61,8 @@ export default function InningScreen({ inning, onFinish, onQuit }) {
   const sit = {
     inning: inning.inning,
     half: inning.half,
+    // 守り切れは常に守備側。実戦シナリオと同じチップを出すために明示する
+    side: 'defense',
     score: { us, them },
     outs,
     runners: play.runners,

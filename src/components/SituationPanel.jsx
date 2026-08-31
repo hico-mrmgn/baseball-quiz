@@ -1,5 +1,5 @@
 import {
-  formatInning, formatScoreContext, formatOuts, formatBatter,
+  formatInning, formatScoreContext, formatOuts, formatBatter, formatSide,
   runnerList, RUNNER_SPEED,
 } from '../utils/scenario';
 
@@ -25,10 +25,17 @@ function Chip({ children, className = '' }) {
 export default function SituationPanel({ sit, compact = false }) {
   const scoreCtx = formatScoreContext(sit);
   const runners = runnerList(sit);
+  const side = formatSide(sit);
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-1.5">
+        {/* いちばん先に「自分はどっち側か」。ここが読めていないと残りの情報は使えない */}
+        {side && (
+          <Chip className={side.className}>
+            {side.emoji} {side.text}
+          </Chip>
+        )}
         <Chip className="bg-amber-100 text-amber-800 border-amber-200">
           🕐 {formatInning(sit)}
         </Chip>

@@ -44,6 +44,26 @@ export const MAX_CHOICE_SCORE = 3;
 
 /* ── 表示用の整形 ── */
 
+/**
+ * 自分がいま守備側なのか攻撃側なのか。
+ *
+ * 実戦シナリオは守備38場面・攻撃15場面が混ざっていて、今日のトレーニングは
+ * テーマをまたいで5場面を引く。つまり画面が守り→攻め→守りと切りかわる。
+ * これまでこの立場は問題文の中でしか伝えておらず（「サードは正面で捕った」
+ * 「自分は二塁ランナー」など書き方も揃っていなかった）、読み落とすと
+ * 何を考えればいいのかが分からなくなっていた。
+ * データには最初から sit.side があるので、それを画面の先頭に出す。
+ */
+export const SIDE_LABEL = {
+  defense: { text: '守備側', emoji: '🛡️', className: 'bg-emerald-600 text-white border-emerald-700' },
+  offense: { text: '攻撃側', emoji: '🏏', className: 'bg-orange-500 text-white border-orange-600' },
+};
+
+export function formatSide(sit) {
+  return SIDE_LABEL[sit?.side] ?? null;
+}
+
+
 export function formatInning(sit) {
   if (!sit?.inning) return '';
   return `${sit.inning}回${sit.half === 'top' ? '表' : '裏'}`;
