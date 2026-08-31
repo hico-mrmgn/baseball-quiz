@@ -39,7 +39,7 @@ export default function TopScreen({
           <div className="relative flex items-center gap-2 mb-3">
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl font-black text-white drop-shadow-sm">⚾ つぎ、どうする？</h1>
-              <p className="text-xs text-green-100 mt-0.5">野球の状況判断トレーニング</p>
+              <p className="text-xs text-green-100 mt-0.5">野球の判断力トレーニング</p>
             </div>
             <button
               onClick={onBadges}
