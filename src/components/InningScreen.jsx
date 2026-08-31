@@ -84,7 +84,7 @@ export default function InningScreen({ inning, onFinish, onQuit }) {
     if (pending === null || confirmed !== null) return;
     const choice = prepared.choices[pending];
     setConfirmed(pending);
-    setAnswers((prev) => [...prev, { scenario: play, choice, elapsedMs: 0, inTime: true }]);
+    setAnswers((prev) => [...prev, { scenario: play, choice }]);
     if (choice.score === 3) {
       setConfettiTrigger((t) => t + 1);
       playCorrect();
