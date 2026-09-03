@@ -9,6 +9,7 @@ import {
 } from '../utils/daily';
 import DailyCalendar from './DailyCalendar';
 import { getWeakTags } from '../utils/weakTags';
+import { readDayLog, hasRecord } from '../utils/drillStorage';
 
 function formatTime(ms) {
   const d = new Date(ms);
@@ -43,6 +44,7 @@ export default function TopScreen({
   const firstDoneKey = getFirstDoneKey();
   const streak = getDailyStreak();
   const weakTags = getWeakTags(2);
+  const drillWritten = hasRecord(readDayLog(today));
   const selected = selectedKey ? log[selectedKey] : null;
 
   /**
@@ -194,7 +196,7 @@ export default function TopScreen({
             <div className="flex-1 min-w-0">
               <div className="text-sm font-black text-gray-800">きょうのドリル</div>
               <div className="text-xs text-gray-500">
-                自主トレの数を自分でつける
+                {drillWritten ? 'きょうは かいた' : '自主トレの数を自分でつける'}
               </div>
             </div>
             <span className="text-gray-400 font-black text-lg flex-shrink-0">›</span>

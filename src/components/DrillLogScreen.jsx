@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { DRILLS } from '../data/drills';
 import { useDrillLog } from '../hooks/useDrillLog';
-import { readDayLog, exportDayLogs } from '../utils/drillStorage';
-import { todayKey, shiftKey, formatKey } from '../utils/daily';
+import { listDayLogs, exportDayLogs, hasRecord } from '../utils/drillStorage';
+import { todayKey } from '../utils/daily';
 import DrillCard from './DrillCard';
+import DrillCalendar from './DrillCalendar';
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
-const RECENT_DAYS = 7;
 
 /** 'YYYY-MM-DD' → '9月3日(木)' */
 function formatDrillDate(key) {
@@ -15,8 +15,8 @@ function formatDrillDate(key) {
   return `${m}月${d}日(${WEEKDAYS[date.getDay()]})`;
 }
 
-/** 一覧の升目に出す文字。未実施は「—」、done は「やった」。数字はそのまま。 */
-function cellText(def, value) {
+/** 日ごとの中身に出す文字。未実施は「—」、done は「やった」。数字はそのまま。 */
+function valueText(def, value) {
   if (value === undefined) return '—';
   if (def.input === 'done') return value ? 'やった' : '—';
   return String(value);
@@ -37,12 +37,29 @@ export default function DrillLogScreen({ onBack }) {
   const { log, saveFailed, adjust, toggleDone, setNote } = useDrillLog(date);
   const [copyState, setCopyState] = useState(null); // null | 'ok' | 'fail'
 
-  // 直近7日のうち、きょう以外は開いたときに1回だけ読めばよい
+  const [selectedKey, setSelectedKey] = useState(null);
+
+  // 過去の日は開いたときに1回だけ読めばよい。きょうのぶんは操作のたびに変わる
   const pastLogs = useMemo(
-    () => Array.from({ length: RECENT_DAYS - 1 }, (_, i) => readDayLog(shiftKey(date, -(i + 1)))),
+    () => listDayLogs().filter((l) => l.date !== date && hasRecord(l)),
     [date],
   );
-  const recentLogs = [log, ...pastLogs];
+  const recordedDates = useMemo(() => {
+    const set = new Set(pastLogs.map((l) => l.date));
+    if (hasRecord(log)) set.add(date);
+    return set;
+  }, [pastLogs, log, date]);
+  const selectedLog = selectedKey ? pastLogs.find((l) => l.date === selectedKey) : null;
+
+  /** 升目を押したとき。今日は上の入力欄に戻り、過去の日はその日の中身を見せる。 */
+  function pickDay(key) {
+    if (key === date) {
+      setSelectedKey(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    setSelectedKey((k) => (k === key ? null : key));
+  }
 
   useEffect(() => {
     if (!copyState) return undefined;
@@ -105,35 +122,40 @@ export default function DrillLogScreen({ onBack }) {
           />
         </section>
 
-        {/* 直近7日：日付と数字だけ。判定・グラフ・強調はしない */}
-        <section className="mt-6">
-          <h2 className="text-lg font-black text-gray-900 mb-2">この7日</h2>
-          <div className="overflow-x-auto rounded-2xl border-2 border-gray-300">
-            <table className="w-full text-xs font-bold text-gray-900 tabular-nums">
-              <thead>
-                <tr className="border-b-2 border-gray-300">
-                  <th className="px-2 py-2 text-left whitespace-nowrap">日</th>
-                  {DRILLS.map((def) => (
-                    <th key={def.id} className="px-1 py-2 text-center text-[10px] leading-tight font-black">
-                      {def.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {recentLogs.map((dayLog) => (
-                  <tr key={dayLog.date} className="border-b border-gray-200 last:border-b-0">
-                    <td className="px-2 py-2 text-left whitespace-nowrap">{formatKey(dayLog.date)}</td>
+        {/* カレンダー：どの日に書いたか。押した日の中身を下に出す。判定・強調はしない */}
+        <section className="mt-6 bg-white rounded-3xl border-2 border-gray-300 shadow-sm p-4">
+          <h2 className="text-lg font-black text-gray-900 mb-3">かいた日</h2>
+          <DrillCalendar
+            recordedDates={recordedDates}
+            todayKey={date}
+            selectedKey={selectedKey}
+            onPickDay={pickDay}
+          />
+
+          {selectedKey && (
+            <div className="mt-3 rounded-2xl border-2 border-gray-300 p-3 fade-slide-in">
+              <div className="text-base font-black text-gray-900 mb-2">{formatDrillDate(selectedKey)}</div>
+              {selectedLog ? (
+                <>
+                  <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 text-sm font-bold text-gray-900 tabular-nums">
                     {DRILLS.map((def) => (
-                      <td key={def.id} className="px-1 py-2 text-center whitespace-nowrap">
-                        {cellText(def, dayLog.values[def.id])}
-                      </td>
+                      <div key={def.id} className="contents">
+                        <dt>{def.label}</dt>
+                        <dd className="text-right">{valueText(def, selectedLog.values[def.id])}</dd>
+                      </div>
                     ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                  </dl>
+                  {selectedLog.note && (
+                    <p className="mt-2 pt-2 border-t border-gray-200 text-sm font-bold text-gray-900 whitespace-pre-wrap">
+                      {selectedLog.note}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm font-bold text-gray-700">この日は かいていません</p>
+              )}
+            </div>
+          )}
         </section>
 
         {/* localStorage が消えたときの保険。目立たない位置に小さく */}
