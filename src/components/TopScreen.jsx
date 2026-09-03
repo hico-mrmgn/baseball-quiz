@@ -19,7 +19,7 @@ import { getWeakTags } from '../utils/weakTags';
  */
 export default function TopScreen({
   onStartDailyTraining, onStartScenario, onStartInning,
-  onOpenDrill, onOpenFormations, onHistory, onBadges,
+  onOpenDrill, onOpenFormations, onHistory, onBadges, onParentCheck,
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -237,6 +237,19 @@ export default function TopScreen({
           実戦トレーニングは「型を捨てる練習」。<br />
           基本練習は「型を覚える練習」。
         </p>
+
+        {/* 保護者向け：毎日やったかをカレンダーで確かめる */}
+        <button
+          onClick={onParentCheck}
+          className="w-full mt-4 flex items-center gap-3 p-3 bg-white/70 rounded-2xl border border-dashed border-gray-300 hover:bg-white active:scale-[0.99] transition-all cursor-pointer text-left"
+        >
+          <span className="text-xl flex-shrink-0">📅</span>
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-black text-gray-600">保護者の方へ：毎日やったか確かめる</div>
+            <div className="text-[10px] text-gray-400">今日のトレーニングを終えた日をカレンダーで見られます</div>
+          </div>
+          <span className="text-gray-300 font-black text-lg flex-shrink-0">›</span>
+        </button>
       </div>
     </div>
   );
