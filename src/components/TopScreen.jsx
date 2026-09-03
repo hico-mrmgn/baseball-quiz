@@ -31,7 +31,7 @@ function formatTime(ms) {
  */
 export default function TopScreen({
   onStartDailyTraining, onStartScenario, onStartInning,
-  onOpenDrill, onOpenFormations, onHistory, onBadges,
+  onOpenDrill, onOpenDrillLog, onOpenFormations, onHistory, onBadges,
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [selectedKey, setSelectedKey] = useState(null);
@@ -184,6 +184,21 @@ export default function TopScreen({
 
         {/* ── 副導線 ── */}
         <div className="space-y-2">
+
+          {/* きょうのドリル（自主トレの記録帳。別画面へ） */}
+          <button
+            onClick={onOpenDrillLog}
+            className="w-full flex items-center gap-3 p-3.5 bg-white rounded-2xl border border-gray-200 shadow-sm hover:bg-gray-50 active:scale-[0.99] transition-all cursor-pointer text-left"
+          >
+            <span className="text-2xl flex-shrink-0">📒</span>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-black text-gray-800">きょうのドリル</div>
+              <div className="text-xs text-gray-500">
+                自主トレの数を自分でつける
+              </div>
+            </div>
+            <span className="text-gray-400 font-black text-lg flex-shrink-0">›</span>
+          </button>
 
           {/* 選んで練習（開くと種類が出る） */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
