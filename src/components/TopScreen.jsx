@@ -4,8 +4,16 @@ import { inningScenarios } from '../data/innings';
 import { formations } from '../data/formations';
 import { questions } from '../data/questions';
 import { getLevelData, getLevelInfo } from '../utils/level';
-import { isDailyCompleted, getDailyStreak } from '../utils/daily';
+import {
+  getDailyLog, getDailyStreak, getFirstDoneKey, todayKey, formatKey,
+} from '../utils/daily';
+import DailyCalendar from './DailyCalendar';
 import { getWeakTags } from '../utils/weakTags';
+
+function formatTime(ms) {
+  const d = new Date(ms);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
 
 /**
  * トップ画面。
@@ -16,17 +24,38 @@ import { getWeakTags } from '../utils/weakTags';
  *
  * 今は主導線を「今日のトレーニング」1つに絞り、それ以外は
  * 「選んで練習」「基本練習」「解説編」の3つに畳んでいる。
+ *
+ * 主導線はカレンダーの形をしている。終えた日に ✓、やっていない日に ！ がつき、
+ * 日付を押すとその日のぶんが始まる。「毎日やったか」が子どもにも保護者にも
+ * 同じ画面で見えるようにするため。
  */
 export default function TopScreen({
   onStartDailyTraining, onStartScenario, onStartInning,
-  onOpenDrill, onOpenFormations, onHistory, onBadges, onParentCheck,
+  onOpenDrill, onOpenFormations, onHistory, onBadges,
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [selectedKey, setSelectedKey] = useState(null);
 
   const levelInfo = getLevelInfo(getLevelData().xp);
-  const dailyDone = isDailyCompleted();
+  const [log] = useState(getDailyLog);
+  const today = todayKey();
+  const dailyDone = Boolean(log[today]);
+  const firstDoneKey = getFirstDoneKey();
   const streak = getDailyStreak();
   const weakTags = getWeakTags(2);
+  const selected = selectedKey ? log[selectedKey] : null;
+
+  /**
+   * 升目を押したとき。終えた日は結果を見せ、それ以外の日はその日のぶんを始める。
+   * 過去の日はその日付のシードで出題されるので、あとからやっても中身は同じ。
+   */
+  function pickDay(key, status) {
+    if (status === 'done') {
+      setSelectedKey((k) => (k === key ? null : key));
+      return;
+    }
+    onStartDailyTraining(key);
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 via-gray-50 to-gray-50 px-3 lg:px-6 py-4">
@@ -77,63 +106,81 @@ export default function TopScreen({
           </button>
         </div>
 
-        {/* ── 主導線：今日のトレーニング ── */}
-        <button
-          onClick={onStartDailyTraining}
-          className={`w-full rounded-3xl p-5 mb-3 shadow-lg active:scale-[0.98] transition-all cursor-pointer text-left ${
-            dailyDone
-              ? 'bg-white border-2 border-green-300'
-              : 'bg-gradient-to-br from-orange-500 to-red-600 hover:shadow-xl'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            <span className="text-4xl flex-shrink-0">{dailyDone ? '✅' : '🔥'}</span>
+        {/* ── 主導線：カレンダー（今日のトレーニングの入口） ── */}
+        <div className="bg-white rounded-3xl border-2 border-gray-100 shadow-lg p-4 mb-3">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-3xl flex-shrink-0">{dailyDone ? '✅' : '🔥'}</span>
             <div className="flex-1 min-w-0">
-              <div className={`text-lg font-black ${dailyDone ? 'text-green-700' : 'text-white'}`}>
+              <div className={`text-base font-black ${dailyDone ? 'text-green-700' : 'text-gray-800'}`}>
                 {dailyDone ? '今日はクリア済み' : '今日のトレーニング'}
               </div>
-              <div className={`text-xs font-bold ${dailyDone ? 'text-gray-500' : 'text-orange-50'}`}>
-                {dailyDone
-                  ? '全部終わりました。もう一度やってもOK'
-                  : '実戦5場面 ＋ 守り切れ1回'}
+              <div className="text-xs font-bold text-gray-500">
+                {dailyDone ? '日付を押すと結果が見られます' : '実戦5場面 ＋ 守り切れ1回'}
               </div>
-              {streak > 0 && (
-                <div className={`inline-block mt-1.5 rounded-full px-2 py-0.5 text-xs font-black ${
-                  dailyDone ? 'bg-amber-100 text-amber-700' : 'bg-black/25 text-amber-200'
-                }`}>
-                  🔥 {streak}日連続
-                </div>
-              )}
             </div>
-            <span className={`font-black text-2xl flex-shrink-0 ${dailyDone ? 'text-green-400' : 'text-white/80'}`}>
-              ›
-            </span>
+            {streak > 0 && (
+              <div className="rounded-full px-2 py-0.5 text-xs font-black bg-amber-100 text-amber-700 flex-shrink-0">
+                🔥 {streak}日連続
+              </div>
+            )}
           </div>
+
+          <DailyCalendar
+            log={log}
+            firstDoneKey={firstDoneKey}
+            selectedKey={selectedKey}
+            onPickDay={pickDay}
+          />
+
+          {/* 押した日の中身（終えた日だけ） */}
+          {selected && (
+            <div className="mt-3 rounded-2xl bg-green-50 border border-green-200 p-3 fade-slide-in">
+              <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-0 text-sm text-gray-700">
+                  <span className="font-black">{formatKey(selectedKey)}</span>
+                  <span className="ml-2 font-bold text-green-600">✅ やりました</span>
+                  <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5">
+                    {selected.at && <span>終了 {formatTime(selected.at)}</span>}
+                    {selected.bestRate != null && <span>最善手率 {selected.bestRate}%</span>}
+                    {selected.cleared != null && (
+                      <span>守り切れ {selected.cleared ? '成功 🛡️' : '失敗 💧'}</span>
+                    )}
+                    {!selected.at && selected.bestRate == null && <span>記録あり</span>}
+                  </div>
+                </div>
+                <button
+                  onClick={() => onStartDailyTraining(selectedKey)}
+                  className="px-3 py-2 rounded-xl bg-white border-2 border-green-300 text-green-700 text-xs font-black active:scale-95 transition-all cursor-pointer flex-shrink-0"
+                >
+                  もう一度
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!dailyDone && (
+            <button
+              onClick={() => onStartDailyTraining(today)}
+              className="w-full mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 text-white font-black shadow-lg hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              今日のぶんをはじめる
+              <span className="text-white/80">›</span>
+            </button>
+          )}
 
           {/* 苦手が分かっているときは、何を狙って出題するのかを見せる */}
           {weakTags.length > 0 && (
-            <div className={`mt-3 pt-3 border-t flex flex-wrap items-center gap-1.5 ${
-              dailyDone ? 'border-gray-100' : 'border-white/20'
-            }`}>
-              <span className={`text-xs font-bold ${dailyDone ? 'text-gray-400' : 'text-orange-100'}`}>
-                今日は
-              </span>
+            <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap items-center gap-1.5">
+              <span className="text-xs font-bold text-gray-400">今日は</span>
               {weakTags.map((t) => (
-                <span
-                  key={t.tag}
-                  className={`text-xs font-black rounded-full px-2 py-0.5 ${
-                    dailyDone ? 'bg-gray-100 text-gray-600' : 'bg-white/20 text-white'
-                  }`}
-                >
+                <span key={t.tag} className="text-xs font-black rounded-full px-2 py-0.5 bg-gray-100 text-gray-600">
                   {t.tag}
                 </span>
               ))}
-              <span className={`text-xs font-bold ${dailyDone ? 'text-gray-400' : 'text-orange-100'}`}>
-                を多めに
-              </span>
+              <span className="text-xs font-bold text-gray-400">を多めに</span>
             </div>
           )}
-        </button>
+        </div>
 
         {/* ── 副導線 ── */}
         <div className="space-y-2">
@@ -238,18 +285,6 @@ export default function TopScreen({
           基本練習は「型を覚える練習」。
         </p>
 
-        {/* 保護者向け：毎日やったかをカレンダーで確かめる */}
-        <button
-          onClick={onParentCheck}
-          className="w-full mt-4 flex items-center gap-3 p-3 bg-white/70 rounded-2xl border border-dashed border-gray-300 hover:bg-white active:scale-[0.99] transition-all cursor-pointer text-left"
-        >
-          <span className="text-xl flex-shrink-0">📅</span>
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-black text-gray-600">保護者の方へ：毎日やったか確かめる</div>
-            <div className="text-[10px] text-gray-400">今日のトレーニングを終えた日をカレンダーで見られます</div>
-          </div>
-          <span className="text-gray-300 font-black text-lg flex-shrink-0">›</span>
-        </button>
       </div>
     </div>
   );

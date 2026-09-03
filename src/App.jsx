@@ -11,7 +11,6 @@ import ScenarioResultScreen from './components/ScenarioResultScreen';
 import InningScreen from './components/InningScreen';
 import InningResultScreen from './components/InningResultScreen';
 import DailyResultScreen from './components/DailyResultScreen';
-import ParentCheckScreen from './components/ParentCheckScreen';
 import DrillScreen from './components/DrillScreen';
 import FormationScreen from './components/FormationScreen';
 import { questions, themes } from './data/questions';
@@ -27,7 +26,9 @@ import { getCareerTier } from './utils/career';
 import { saveResult, getHistory } from './utils/history';
 import { checkAndUnlockBadges, buildBadgeStats } from './utils/badges';
 import { addXp } from './utils/level';
-import { getDailyStreak, completeDailyChallenge, getDailySeed } from './utils/daily';
+import {
+  getDailyStreak, completeDailyChallenge, getDailySeed, todayKey, formatKey,
+} from './utils/daily';
 import { saveWrongAnswer, removeWrongAnswer, getWrongAnswers } from './utils/weakness';
 import { recordScenarioAnswers, getWeakTags } from './utils/weakTags';
 import { playLevelUp } from './utils/sound';
@@ -67,6 +68,8 @@ export default function App() {
   // 今日のトレーニング（実戦5場面 → 守り切れ1回）を1セッションとして扱う
   const [sessionMode, setSessionMode] = useState('single'); // 'single' | 'daily'
   const [dailyScenarioAnswers, setDailyScenarioAnswers] = useState([]);
+  // どの日のぶんをやっているか。カレンダーから過去の日を選べるので今日とは限らない
+  const [dailyDateKey, setDailyDateKey] = useState(todayKey);
 
   const startQuiz = useCallback((theme, difficulty = 'all') => {
     const pool = theme === 'random'
@@ -185,19 +188,24 @@ export default function App() {
   }, []);
 
   /* ── 今日のトレーニング（実戦5場面 → 守り切れ1回） ── */
-  const startDailyTraining = useCallback(() => {
-    // 日付シードなので同じ日に開き直しても中身は変わらない。
+  const startDailyTraining = useCallback((dateKey = todayKey()) => {
+    // 日付シードなので同じ日に開き直しても中身は変わらない。過去の日を
+    // あとからやるときも、その日のシードで同じ中身を出す。
     // そのうえで、苦手なタグを含む場面を優先して出す。
-    const rand = makeSeededRandom(getDailySeed());
+    const rand = makeSeededRandom(getDailySeed(dateKey));
     const set = buildDailyTraining(rand, getWeakTags(), 5);
     if (set.length === 0) return;
     const inning = inningScenarios[Math.floor(rand() * inningScenarios.length)];
-    setScenarioTrack({ id: 'daily', name: '今日のトレーニング' });
+    setScenarioTrack({
+      id: 'daily',
+      name: dateKey === todayKey() ? '今日のトレーニング' : `${formatKey(dateKey)}のぶんのトレーニング`,
+    });
     setScenarioList(set);
     setScenarioAnswers([]);
     setDailyScenarioAnswers([]);
     setCurrentInning(inning);
     setInningResult(null);
+    setDailyDateKey(dateKey);
     setSessionMode('daily');
     setScreen('scenario');
   }, []);
@@ -289,9 +297,10 @@ export default function App() {
           total: all.length,
           inningId: currentInning?.id,
           cleared: result.cleared,
+          dateKey: dailyDateKey,
         },
       });
-      completeDailyChallenge({ bestRate: s.bestRate, cleared: result.cleared });
+      completeDailyChallenge(dailyDateKey, { bestRate: s.bestRate, cleared: result.cleared });
       const xpResult = addXp(s.counts.best, all.length, result.cleared ? 5 : 0);
       if (xpResult.levelUp) setLevelUpInfo(xpResult.levelInfo);
       refreshBadges();
@@ -321,7 +330,7 @@ export default function App() {
     const xpResult = addXp(s.counts.best, result.answers.length, result.cleared ? 5 : 0);
     if (xpResult.levelUp) setLevelUpInfo(xpResult.levelInfo);
     refreshBadges();
-  }, [sessionMode, dailyScenarioAnswers, currentInning, refreshBadges]);
+  }, [sessionMode, dailyScenarioAnswers, currentInning, dailyDateKey, refreshBadges]);
 
   const handleRetry = useCallback(() => {
     if (quizMode === 'daily') {
@@ -391,6 +400,7 @@ export default function App() {
         <DailyResultScreen
           scenarioAnswers={dailyScenarioAnswers}
           inningResult={inningResult}
+          dateKey={dailyDateKey}
           streak={getDailyStreak()}
           onPracticeTag={startTagPractice}
           onHome={handleHome}
@@ -500,10 +510,6 @@ export default function App() {
     return <BadgeScreen onBack={() => setScreen('top')} />;
   }
 
-  if (screen === 'parent') {
-    return <ParentCheckScreen onBack={() => setScreen('top')} />;
-  }
-
   return (
     <TopScreen
       onStartDailyTraining={startDailyTraining}
@@ -513,7 +519,6 @@ export default function App() {
       onOpenFormations={() => setScreen('formations')}
       onHistory={() => setScreen('history')}
       onBadges={() => setScreen('badges')}
-      onParentCheck={() => setScreen('parent')}
     />
   );
 }
