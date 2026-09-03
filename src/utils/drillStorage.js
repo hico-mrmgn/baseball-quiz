@@ -40,6 +40,11 @@ export function emptyDayLog(date) {
   return { v: DRILL_LOG_VERSION, date, values: {}, updatedAt: new Date(0).toISOString() };
 }
 
+/** 何か1つでも書いてあれば true。done を戻して空になった日は「書いていない」扱い。 */
+export function hasRecord(log) {
+  return Object.keys(log.values).length > 0 || Boolean(log.note);
+}
+
 /** 読めない・壊れているレコードは null。呼ぶ側はその日を新規として扱う。 */
 function parseDayLog(raw, date) {
   if (typeof raw !== 'string') return null;
