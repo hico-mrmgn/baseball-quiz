@@ -11,6 +11,7 @@ import ScenarioResultScreen from './components/ScenarioResultScreen';
 import InningScreen from './components/InningScreen';
 import InningResultScreen from './components/InningResultScreen';
 import DailyResultScreen from './components/DailyResultScreen';
+import ParentCheckScreen from './components/ParentCheckScreen';
 import DrillScreen from './components/DrillScreen';
 import FormationScreen from './components/FormationScreen';
 import { questions, themes } from './data/questions';
@@ -290,7 +291,7 @@ export default function App() {
           cleared: result.cleared,
         },
       });
-      completeDailyChallenge();
+      completeDailyChallenge({ bestRate: s.bestRate, cleared: result.cleared });
       const xpResult = addXp(s.counts.best, all.length, result.cleared ? 5 : 0);
       if (xpResult.levelUp) setLevelUpInfo(xpResult.levelInfo);
       refreshBadges();
@@ -499,6 +500,10 @@ export default function App() {
     return <BadgeScreen onBack={() => setScreen('top')} />;
   }
 
+  if (screen === 'parent') {
+    return <ParentCheckScreen onBack={() => setScreen('top')} />;
+  }
+
   return (
     <TopScreen
       onStartDailyTraining={startDailyTraining}
@@ -508,6 +513,7 @@ export default function App() {
       onOpenFormations={() => setScreen('formations')}
       onHistory={() => setScreen('history')}
       onBadges={() => setScreen('badges')}
+      onParentCheck={() => setScreen('parent')}
     />
   );
 }
