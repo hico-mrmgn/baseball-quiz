@@ -1,6 +1,7 @@
 import { summarize, tagBreakdown } from '../utils/scenario';
 import StatCard from './StatCard';
 import WeakTagList from './WeakTagList';
+import { todayKey, formatKey } from '../utils/daily';
 
 /**
  * 今日のトレーニング（実戦5場面 → 守り切れ1回）の結果。
@@ -18,8 +19,9 @@ const RANKS = [
 ];
 
 export default function DailyResultScreen({
-  scenarioAnswers, inningResult, streak, onPracticeTag, onHome, onHistory,
+  scenarioAnswers, inningResult, dateKey, streak, onPracticeTag, onHome, onHistory,
 }) {
+  const isToday = !dateKey || dateKey === todayKey();
   const all = [...scenarioAnswers, ...(inningResult?.answers ?? [])];
   const s = summarize(all);
   const rank = RANKS.find((r) => s.bestRate >= r.min) ?? RANKS[RANKS.length - 1];
@@ -32,7 +34,9 @@ export default function DailyResultScreen({
       <div className="max-w-2xl mx-auto">
 
         <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-5 text-center shadow-lg mb-4">
-          <div className="text-xs font-black text-blue-200 mb-1">今日のトレーニング 終わり</div>
+          <div className="text-xs font-black text-blue-200 mb-1">
+            {isToday ? '今日のトレーニング 終わり' : `${formatKey(dateKey)}のぶんのトレーニング 終わり`}
+          </div>
           <div className="text-5xl mb-1">{rank.emoji}</div>
           <div className="text-xl font-black text-white mb-2">{rank.title}</div>
           {streak > 0 && (
