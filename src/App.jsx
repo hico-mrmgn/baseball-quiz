@@ -12,6 +12,7 @@ import InningScreen from './components/InningScreen';
 import InningResultScreen from './components/InningResultScreen';
 import DailyResultScreen from './components/DailyResultScreen';
 import DrillScreen from './components/DrillScreen';
+import DrillLogScreen from './components/DrillLogScreen';
 import FormationScreen from './components/FormationScreen';
 import { questions, themes } from './data/questions';
 import {
@@ -502,6 +503,10 @@ export default function App() {
     );
   }
 
+  if (screen === 'drillLog') {
+    return <DrillLogScreen onBack={handleHome} />;
+  }
+
   if (screen === 'formations') {
     return <FormationScreen onBack={handleHome} />;
   }
@@ -516,6 +521,7 @@ export default function App() {
       onStartScenario={startScenario}
       onStartInning={startInning}
       onOpenDrill={() => setScreen('drill')}
+      onOpenDrillLog={() => setScreen('drillLog')}
       onOpenFormations={() => setScreen('formations')}
       onHistory={() => setScreen('history')}
       onBadges={() => setScreen('badges')}
