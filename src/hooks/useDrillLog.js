@@ -57,7 +57,7 @@ export function useDrillLog(date) {
   const setNote = useCallback((text) => {
     const current = logRef.current;
     const next = { ...current };
-    if (text.trim() === '') {
+    if (text === '') {
       delete next.note;
     } else {
       next.note = text;
