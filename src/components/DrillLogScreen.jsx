@@ -26,6 +26,20 @@ function drillLabel(id) {
   return DRILLS.find((d) => d.id === id)?.label ?? '';
 }
 
+/**
+ * 1日ぶんを、人が読める文章にする。保護者やコーチに LINE などで送るためのもの。
+ * JSON のバックアップ（exportDayLogs）とは別。判定や合計は足さない。
+ */
+function formatDayLogText(log) {
+  const lines = [`${formatDrillDate(log.date)} きょうのドリル`];
+  for (const def of DRILLS) {
+    const unit = def.unitLabel !== '' ? `（${def.unitLabel}）` : '';
+    lines.push(`${def.label}${unit} ${valueText(def, log.values[def.id])}`);
+  }
+  if (log.best) lines.push(`いちばん よかった：${drillLabel(log.best)}`);
+  if (log.note) lines.push(`ふりかえり：${log.note}`);
+  return lines.join('\n');
+}
 
 /**
  * 自主トレのドリル記録画面。
@@ -41,6 +55,7 @@ export default function DrillLogScreen({ onBack }) {
   const [date] = useState(todayKey);
   const { log, saveFailed, adjust, toggleDone, setBest, setNote } = useDrillLog(date);
   const [copyState, setCopyState] = useState(null); // null | 'ok' | 'fail'
+  const [shareState, setShareState] = useState(null); // null | 'shared' | 'copied' | 'fail'
 
   const [selectedKey, setSelectedKey] = useState(null);
 
@@ -72,6 +87,12 @@ export default function DrillLogScreen({ onBack }) {
     return () => clearTimeout(timer);
   }, [copyState]);
 
+  useEffect(() => {
+    if (!shareState) return undefined;
+    const timer = setTimeout(() => setShareState(null), 2000);
+    return () => clearTimeout(timer);
+  }, [shareState]);
+
   async function copyAll() {
     try {
       await navigator.clipboard.writeText(exportDayLogs());
@@ -81,6 +102,26 @@ export default function DrillLogScreen({ onBack }) {
     }
   }
 
+  /** きょうのぶんを読める文章で送る。共有シートがあればそれ、なければクリップボード。 */
+  async function shareToday() {
+    const text = formatDayLogText(log);
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ text });
+        setShareState('shared');
+        return;
+      } catch (e) {
+        // 共有シートを閉じただけなら何も言わない
+        if (e?.name === 'AbortError') return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setShareState('copied');
+    } catch {
+      setShareState('fail');
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -187,18 +228,31 @@ export default function DrillLogScreen({ onBack }) {
           )}
         </section>
 
-        {/* localStorage が消えたときの保険。目立たない位置に小さく */}
+        {/* 「おくる」は保護者やコーチに読める文章で渡すため。
+            「コピー」は localStorage が消えたときの保険（JSON）。どちらも目立たない位置に小さく */}
         <div className="mt-8 text-center">
-          <button
-            type="button"
-            onClick={copyAll}
-            className="px-3 py-2 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all cursor-pointer"
-          >
-            きろくをコピー
-          </button>
-          {copyState && (
+          <div className="flex justify-center gap-2">
+            <button
+              type="button"
+              onClick={shareToday}
+              className="px-3 py-2 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all cursor-pointer"
+            >
+              きょうのきろくを おくる
+            </button>
+            <button
+              type="button"
+              onClick={copyAll}
+              className="px-3 py-2 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all cursor-pointer"
+            >
+              きろくをコピー
+            </button>
+          </div>
+          {(shareState || copyState) && (
             <p className="mt-2 text-xs font-bold text-gray-700">
-              {copyState === 'ok' ? 'コピーしました' : 'コピーできませんでした'}
+              {shareState === 'shared' && 'おくりました'}
+              {shareState === 'copied' && 'コピーしました'}
+              {shareState === 'fail' && 'おくれませんでした'}
+              {!shareState && (copyState === 'ok' ? 'コピーしました' : 'コピーできませんでした')}
             </p>
           )}
         </div>
