@@ -22,6 +22,11 @@ function valueText(def, value) {
   return String(value);
 }
 
+function drillLabel(id) {
+  return DRILLS.find((d) => d.id === id)?.label ?? '';
+}
+
+
 /**
  * 自主トレのドリル記録画面。
  *
@@ -34,7 +39,7 @@ function valueText(def, value) {
  */
 export default function DrillLogScreen({ onBack }) {
   const [date] = useState(todayKey);
-  const { log, saveFailed, adjust, toggleDone, setNote } = useDrillLog(date);
+  const { log, saveFailed, adjust, toggleDone, setBest, setNote } = useDrillLog(date);
   const [copyState, setCopyState] = useState(null); // null | 'ok' | 'fail'
 
   const [selectedKey, setSelectedKey] = useState(null);
@@ -76,6 +81,7 @@ export default function DrillLogScreen({ onBack }) {
     }
   }
 
+
   return (
     <div className="min-h-screen bg-white">
       <div className="sticky top-0 z-40 bg-white border-b-2 border-gray-200">
@@ -95,7 +101,7 @@ export default function DrillLogScreen({ onBack }) {
       </div>
 
       <div className="max-w-2xl mx-auto px-3 py-4 pb-24">
-        <div className="space-y-3">
+        <div className="space-y-2">
           {DRILLS.map((def) => (
             <DrillCard
               key={def.id}
@@ -107,18 +113,40 @@ export default function DrillLogScreen({ onBack }) {
           ))}
         </div>
 
-        {/* ふりかえり（任意。書かなくても離れられる） */}
+        {/* ふりかえり（任意。書かなくても離れられる）
+            「どれ」は6種目からの選択なので、文章ではなくタップで答える。
+            キーボードが要るのは「なんで」の一言だけ。順位や点数ではなく本人の選択なので、判定にはならない */}
         <section className="mt-6 bg-white rounded-3xl border-2 border-gray-300 shadow-sm p-4">
           <h2 className="text-lg font-black text-gray-900">ふりかえり</h2>
           <p className="mt-1 text-sm font-bold text-gray-700 leading-snug">
-            きょう いちばん よかったのは どれ？<br />
-            なんで よかった？
+            きょう いちばん よかったのは どれ？
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {DRILLS.map((def) => {
+              const picked = log.best === def.id;
+              return (
+                <button
+                  type="button"
+                  key={def.id}
+                  onClick={() => setBest(def.id)}
+                  aria-pressed={picked}
+                  className={`min-h-12 px-4 rounded-full border-2 border-gray-900 text-sm font-black select-none touch-manipulation active:scale-95 transition-transform cursor-pointer ${
+                    picked ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'
+                  }`}
+                >
+                  {def.label}
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-4 text-sm font-bold text-gray-700 leading-snug">
+            なんで よかった？（かかなくてもいい）
           </p>
           <textarea
             value={log.note ?? ''}
             onChange={(e) => setNote(e.target.value)}
-            rows={3}
-            className="mt-3 w-full rounded-2xl border-2 border-gray-300 bg-white px-3 py-2 text-base font-bold text-gray-900 focus:outline-none focus:border-gray-900"
+            rows={2}
+            className="mt-2 w-full rounded-2xl border-2 border-gray-300 bg-white px-3 py-2 text-base font-bold text-gray-900 focus:outline-none focus:border-gray-900"
           />
         </section>
 
@@ -145,10 +173,11 @@ export default function DrillLogScreen({ onBack }) {
                       </div>
                     ))}
                   </dl>
-                  {selectedLog.note && (
-                    <p className="mt-2 pt-2 border-t border-gray-200 text-sm font-bold text-gray-900 whitespace-pre-wrap">
-                      {selectedLog.note}
-                    </p>
+                  {(selectedLog.best || selectedLog.note) && (
+                    <div className="mt-2 pt-2 border-t border-gray-200 text-sm font-bold text-gray-900">
+                      {selectedLog.best && <p>いちばん よかった：{drillLabel(selectedLog.best)}</p>}
+                      {selectedLog.note && <p className="whitespace-pre-wrap">{selectedLog.note}</p>}
+                    </div>
                   )}
                 </>
               ) : (

@@ -53,6 +53,19 @@ export function useDrillLog(date) {
     commit({ ...current, values });
   }, [commit]);
 
+  /** きょう いちばん よかった種目。同じ種目をもう一度押したら外す（キーごと消す）。 */
+  const setBest = useCallback((id) => {
+    if (!DRILLS.some((d) => d.id === id)) return;
+    const current = logRef.current;
+    const next = { ...current };
+    if (next.best === id) {
+      delete next.best;
+    } else {
+      next.best = id;
+    }
+    commit(next);
+  }, [commit]);
+
   /** ふりかえり。空になったらキーごと消す。 */
   const setNote = useCallback((text) => {
     const current = logRef.current;
@@ -65,5 +78,5 @@ export function useDrillLog(date) {
     commit(next);
   }, [commit]);
 
-  return { log, saveFailed, adjust, toggleDone, setNote };
+  return { log, saveFailed, adjust, toggleDone, setBest, setNote };
 }
