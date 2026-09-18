@@ -9,6 +9,7 @@ import { toDateKey } from '../utils/daily';
  *   今日 … 押すと上の入力欄に戻る
  *
  * 書いていない日には何も出さない。「！」や色分けで催促はしない。
+ * 凡例は置かない。● と塗りつぶしの2つだけなので、見れば分かる。
  * トップのカレンダー（DailyCalendar）とは意味が違うので、部品を共有しない。
  */
 
@@ -99,11 +100,6 @@ export default function DrillCalendar({ recordedDates, todayKey, selectedKey, on
             </button>
           );
         })}
-      </div>
-
-      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[10px] font-bold text-gray-700">
-        <span>● かいた日</span>
-        <span><span className="inline-block w-2.5 h-2.5 rounded bg-gray-900 align-middle mr-1" />今日</span>
       </div>
     </div>
   );

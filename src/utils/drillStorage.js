@@ -18,9 +18,12 @@
  * @property {1} v
  * @property {string} date                          'YYYY-MM-DD'（端末ローカル日付）
  * @property {Partial<Record<DrillId, number>>} values  done は 0 / 1。未実施の種目はキーごと持たない
- * @property {string} [note]                        任意。ふりかえり
+ * @property {DrillId} [best]                       任意。きょう いちばん よかった種目
+ * @property {string} [note]                        任意。ふりかえり（なんで よかったか）
  * @property {string} updatedAt                     ISO8601
  */
+
+import { DRILLS } from '../data/drills';
 
 const NAMESPACE = 'ichi.drill';
 const VERSION = 'v1';
@@ -42,7 +45,11 @@ export function emptyDayLog(date) {
 
 /** 何か1つでも書いてあれば true。done を戻して空になった日は「書いていない」扱い。 */
 export function hasRecord(log) {
-  return Object.keys(log.values).length > 0 || Boolean(log.note);
+  return Object.keys(log.values).length > 0 || Boolean(log.best) || Boolean(log.note);
+}
+
+function isDrillId(id) {
+  return DRILLS.some((d) => d.id === id);
 }
 
 /** 読めない・壊れているレコードは null。呼ぶ側はその日を新規として扱う。 */
@@ -61,6 +68,7 @@ function parseDayLog(raw, date) {
       v: DRILL_LOG_VERSION,
       date: typeof data.date === 'string' && DATE_RE.test(data.date) ? data.date : date,
       values,
+      ...(isDrillId(data.best) ? { best: data.best } : {}),
       ...(typeof data.note === 'string' && data.note !== '' ? { note: data.note } : {}),
       updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : new Date(0).toISOString(),
     };
