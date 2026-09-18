@@ -12,10 +12,22 @@ import { readDayLog, writeDayLog, touchMeta } from '../utils/drillStorage';
  * 未実施の種目はキーごと持たない。「0回」と「やらなかった」を区別するため。
  */
 export function useDrillLog(date) {
-  const [log, setLog] = useState(() => readDayLog(date));
+  // どの日のレコードかを状態と一緒に持つ。日付が変わったら（画面を開いたまま
+  // 日付をまたいだとき）描画中にその日のレコードへ差し替える。差し替えないと、
+  // 翌日の +1 が前日のレコードに入る。
+  const [entry, setEntry] = useState(() => ({ date, log: readDayLog(date) }));
   const [saveFailed, setSaveFailed] = useState(false);
+  let log = entry.log;
+  if (entry.date !== date) {
+    log = readDayLog(date);
+    setEntry({ date, log });
+  }
+
   // 連打しても直前の値から数えられるよう、最新のレコードを ref にも持つ
   const logRef = useRef(log);
+  useEffect(() => {
+    logRef.current = log;
+  }, [log]);
 
   useEffect(() => {
     touchMeta();
@@ -24,7 +36,7 @@ export function useDrillLog(date) {
   const commit = useCallback((nextLog) => {
     const next = { ...nextLog, updatedAt: new Date().toISOString() };
     logRef.current = next;
-    setLog(next);
+    setEntry({ date: next.date, log: next });
     setSaveFailed(!writeDayLog(next));
   }, []);
 
