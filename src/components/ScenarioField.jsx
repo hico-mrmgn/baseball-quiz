@@ -56,9 +56,12 @@ function ScoreStrip({ sit }) {
     <g>
       <rect x="6" y="6" width="118" height="20" rx="6" fill="rgba(0,0,0,0.62)" />
       <text x="13" y="19.5" fontSize="8.5" fill="#fde68a" fontWeight="bold">{inning}</text>
-      <text x="52" y="19.5" fontSize="9" fill="white" fontWeight="bold">
-        {sit.score.us} - {sit.score.them}
-      </text>
+      {/* じっさいの試合の場面には、点差を読み取れなかったものがある */}
+      {sit.score && (
+        <text x="52" y="19.5" fontSize="9" fill="white" fontWeight="bold">
+          {sit.score.us} - {sit.score.them}
+        </text>
+      )}
       {count && (
         <>
           <text x="88" y="14" fontSize="5" fill="rgba(255,255,255,0.7)" fontWeight="bold">B-S</text>
