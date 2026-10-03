@@ -115,6 +115,16 @@ export default function ScenarioScreen({ scenarios: list, trackName, onFinish, o
           />
         </div>
 
+        {/* じっさいの試合から拾った場面。「もしも」は実際と条件を変えた双子問題 */}
+        {current.source && (
+          <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 px-2.5 py-1 text-xs font-black">
+            <span>📒</span>
+            <span>
+              {current.source.whatIf ? current.source.label : `じっさいの試合：${current.source.label}`}
+            </span>
+          </div>
+        )}
+
         {/* 双子問題の合図 */}
         {current.pairRole === 'b' && (
           <div className="mb-3 rounded-xl bg-indigo-600 text-white px-3 py-2 text-sm font-black flex items-center gap-2">

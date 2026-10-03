@@ -2,12 +2,14 @@ import { infieldScenarios } from './infield';
 import { outfieldScenarios } from './outfieldPlay';
 import { offenseScenarios } from './offense';
 import { batteryScenarios } from './battery';
+import { realGameScenarios } from './realGames';
 
 export const scenarios = [
   ...infieldScenarios,
   ...outfieldScenarios,
   ...offenseScenarios,
   ...batteryScenarios,
+  ...realGameScenarios,
 ];
 
 /** レベル表示（学童向けの言葉づかいのまま、判断の難度だけを上げていく） */
@@ -52,6 +54,13 @@ export const SCENARIO_TRACKS = [
     emoji: '⏱️',
     description: '打球が飛ぶ前に決めておくこと',
     filter: (s) => s.phase === 'pre',
+  },
+  {
+    id: 'real',
+    name: 'じっさいの試合',
+    emoji: '📒',
+    description: 'スコアブックから拾った、蘭越の試合で本当にあった場面',
+    filter: (s) => Boolean(s.source),
   },
 ];
 
