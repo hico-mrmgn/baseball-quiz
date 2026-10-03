@@ -297,6 +297,19 @@ export default function TopScreen({
           </button>
         </div>
 
+        {/* 新しいアプリ（試合・成長・自主練がひとつにつながる版）。public/season にある別ページ */}
+        <a
+          href="/season/"
+          className="mt-3 flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-br from-green-700 to-green-900 text-white border-2 border-white shadow-md active:scale-[0.99] transition-all"
+        >
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] font-bold tracking-widest text-lime-300">NEW</div>
+            <div className="text-lg font-black leading-tight">MY SEASON — 先に動け</div>
+            <div className="text-xs text-green-100 mt-0.5">投げる前に決めて、結果が動く。成長がレーダーで見える</div>
+          </div>
+          <span className="font-black text-lg flex-shrink-0">›</span>
+        </a>
+
         <p className="text-center text-xs text-gray-400 mt-5 leading-relaxed">
           実戦トレーニングは「型を捨てる練習」。<br />
           基本練習は「型を覚える練習」。
