@@ -68,12 +68,13 @@ function speedTag(speed) {
   if (speed !== 'fast' && speed !== 'slow') return '';
   return `<circle cx="9" cy="-13" r="4.2" fill="${speed === 'fast' ? '#dc604b' : '#6b8290'}" stroke="#fff" stroke-width=".7"/><text x="9" y="-11.3" font-size="4.6" font-weight="900" fill="#fff" text-anchor="middle">${speed === 'fast' ? '速' : '遅'}</text>`;
 }
-function athlete({ x, y, type, label = '', scale = 1, speed = null, flip = false }) {
+function athlete({ x, y, type, label = '', scale = 1, speed = null, flip = false, me = false }) {
   const c = P_CELLS[type];
   return `<g transform="translate(${x} ${y}) scale(${scale})">
     <ellipse cx="0" cy="10" rx="7.4" ry="2.2" fill="#153d24" opacity=".28"/>
-    <svg x="-10" y="-19" width="20" height="30" viewBox="${c.x} 30 ${c.w} 405" preserveAspectRatio="xMidYMid meet" overflow="hidden" ${flip ? 'transform="scale(-1 1)"' : ''}><use href="#playerAtlas"/></svg>
-    ${pill(y, label, false)}${speedTag(speed)}</g>`;
+    ${me ? '<ellipse cx="0" cy="10" rx="10" ry="3.7" fill="#e3ff9033" stroke="#e1ff8a" stroke-width="1.2"/>' : ''}
+    <g ${flip ? 'transform="scale(-1 1)"' : ''}><svg x="-10" y="-19" width="20" height="30" viewBox="${c.x} 30 ${c.w} 405" preserveAspectRatio="xMidYMid meet" overflow="hidden"><use href="#playerAtlas"/></svg></g>
+    ${pill(y, label, me)}${speedTag(speed)}</g>`;
 }
 function meSprite({ x, y, action = 'ready', label = 'YOU', scale = 1.25, flip = false }) {
   const i = M_FRAMES[action] ?? 0, col = i % 3, row = Math.floor(i / 3);
@@ -136,7 +137,8 @@ export function renderField(view) {
     else actors.push({ y: p.y, draw: () => athlete({ x: p.x, y: p.y, type: 0, label: key === 'catcher' ? '' : POS[key].l }) });
   }
   for (const r of view.runners) {
-    if (r.me) actors.push({ y: r.y + 0.5, draw: () => meSprite({ x: r.x, y: r.y, action: r.action ?? (r.bat ? 'ready' : 'run'), scale: 1.1, flip: r.flip }) });
+    // 自分がランナー・打者のときは、守備の絵（帽子とグラブ）ではなくランナーの絵（ヘルメット）で描く
+    if (r.me) actors.push({ y: r.y + 0.5, draw: () => athlete({ x: r.x, y: r.y, type: 2, scale: 1.15, flip: r.flip, me: true, label: 'YOU' }) });
     else actors.push({ y: r.y + 0.5, draw: () => athlete({ x: r.x, y: r.y, type: 2, scale: 0.85, speed: r.speed, flip: r.flip }) });
   }
   actors.sort((a, b) => a.y - b.y).forEach((a) => { g += a.draw(); });

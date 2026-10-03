@@ -94,7 +94,7 @@ export function mountSim(root, set, { onExit }) {
           <div class="field-wrap">
             <div class="match-hud"></div>
             <svg viewBox="0 0 ${W} ${H}" class="field" aria-label="グラウンド"></svg>
-            <div class="field-caption"><span><i class="dot"></i> 自分</span><span><i class="dot white"></i> 味方</span><span><i class="dot red"></i> ランナー</span></div>
+            <div class="field-caption"></div>
           </div>
           <div class="position-caption"><small>YOUR POSITION</small><b class="poslabel"></b></div>
         </div>
@@ -126,6 +126,10 @@ export function mountSim(root, set, { onExit }) {
       ? `<span>${esc(me.name)}</span><b class="led">${G.us}</b><i>-</i><b class="led">${G.them}</b><span>${esc(set.opp)}</span>`
       : `<span>とった</span><b class="led">${G.us}</b><i>-</i><b class="led">${G.them}</b><span>とられた</span>`;
     root.querySelector('.poslabel').textContent = ROLE[sc.role] ?? '';
+    // 攻めの場面では、緑の野手は相手、赤いランナーが味方
+    root.querySelector('.field-caption').innerHTML = sc.side === 'off'
+      ? '<span><i class="dot"></i> 自分（ランナー）</span><span><i class="dot red"></i> 味方のランナー</span><span><i class="dot white"></i> 相手の守備</span>'
+      : '<span><i class="dot"></i> 自分</span><span><i class="dot white"></i> 味方</span><span><i class="dot red"></i> 相手のランナー</span>';
     const has = sit.us !== null && sit.us !== undefined;
     root.querySelector('.match-hud').innerHTML = `<div class="inning">GAME SITUATION<strong>${sit.inning}回 ${sit.half === '表' ? 'オモテ' : 'ウラ'}</strong></div>
       <div class="match-score"><div><small>自分のチーム</small><b>${has ? sit.us : '—'}</b></div><em>:</em><div><small>相手チーム</small><b>${has ? sit.them + (G.sceneRuns ?? 0) : '—'}</b></div></div>
