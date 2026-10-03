@@ -197,21 +197,46 @@ function scene(){return SCENES[S.i]}
 
 /* ──────────────── フィールド描画 ──────────────── */
 function fielderPos(key,sit){const p=POS[key];const d=SHIFT[sit.defense]?.[key]||0;return {x:p.x,y:p.y+d}}
-function player(x,y,color,l,scale,hl){
-  const s=scale||1;
-  return `<g transform="translate(${x} ${y}) scale(${s})" ${hl?'filter="url(#glow)"':''}>
-    <ellipse cx="0" cy="12" rx="7" ry="2" fill="rgba(0,0,0,.18)"/>
-    <rect x="-5" y="-2" width="10" height="12" rx="3" fill="${color}"/>
-    <circle cx="0" cy="-7" r="4.6" fill="#f8d9b8"/><path d="M-5 -8 a5 5 0 0 1 10 0 z" fill="${color}"/>
-    <rect x="-5" y="9" width="4" height="4" fill="${color}"/><rect x="1" y="9" width="4" height="4" fill="${color}"/>
-    <circle cx="-7" cy="3" r="3" fill="#8b5a2b"/>
-    <text y="22" font-size="6.5" font-weight="900" text-anchor="middle" fill="#fff" stroke="${color}" stroke-width="1.6" paint-order="stroke">${l}</text></g>`;
+/* 選手は真上から見た姿で描く（フィールドが真上からの図なので、向きがそろう）。
+   ローカル座標は「前＝+y」。face の方向へ回して、体と帽子のつばを向ける。 */
+function facing(x,y,face){return Math.atan2(face.y-y,face.x-x)*180/Math.PI-90}
+function shade(hex,k){const n=parseInt(hex.slice(1),16);const f=v=>Math.max(0,Math.min(255,Math.round(v*k)));return '#'+[n>>16,(n>>8)&255,n&255].map(v=>f(v).toString(16).padStart(2,'0')).join('')}
+function player(x,y,color,l,scale,hl,face,up){
+  const s=(scale||1)*1.22,rot=facing(x,y,face||HOME),dark=shade(color,.72),lite=shade(color,1.25);
+  const ring=hl?`<circle cx="${x}" cy="${y}" r="${11*s}" fill="rgba(245,158,11,.22)" stroke="#fde68a" stroke-width="1.2"/>`:'';
+  return `${ring}<g transform="translate(${x} ${y}) scale(${s})">
+    <ellipse cx="1.2" cy="2" rx="8.5" ry="6" fill="rgba(0,0,0,.22)"/>
+    <g transform="rotate(${rot})">
+      <path d="M-6.5 1.5 q-2.2 3.5 -.8 6.2" stroke="#f3cfa6" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+      <path d="M6.5 1.5 q2 3.2 .2 6" stroke="#f3cfa6" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+      <ellipse cx="-7.2" cy="8.6" rx="3.3" ry="3.6" fill="#8b5a2b" stroke="#5e3a17" stroke-width=".7"/>
+      <path d="M-9 7.6 l3.4 0 M-9 9.4 l3.4 0" stroke="#5e3a17" stroke-width=".5"/>
+      <rect x="-8" y="-3.6" width="16" height="7.6" rx="3.8" fill="#fff"/>
+      <rect x="-8" y="-3.6" width="16" height="7.6" rx="3.8" fill="none" stroke="${dark}" stroke-width=".9"/>
+      <path d="M-8 -.6 h16" stroke="${color}" stroke-width="1.6"/>
+      <path d="M-3.9 2.6 a4.2 3.4 0 0 0 7.8 0 z" fill="${dark}"/>
+      <circle cx="0" cy="0" r="4.3" fill="${color}" stroke="${dark}" stroke-width=".7"/>
+      <path d="M-2.6 -1.6 a3.2 3.2 0 0 1 3 -1.8" stroke="${lite}" stroke-width=".9" stroke-linecap="round" fill="none"/>
+      <circle cx="0" cy="0" r=".8" fill="${dark}"/>
+    </g>
+    <g transform="translate(0 ${up?-12.5:13})"><rect x="-7.5" y="-4.4" width="15" height="7.6" rx="3.8" fill="${hl?color:'#fff'}" stroke="${hl?'#fff':dark}" stroke-width=".8"/>
+      <text y="1.6" font-size="5.6" font-weight="900" text-anchor="middle" fill="${hl?'#fff':dark}">${l}</text></g></g>`;
 }
+const RUN_FACE={r1:SECOND,r2:THIRD,r3:HOME,me:FIRST};
 function runner(x,y,speed,id){
-  return `<g id="${id||''}" transform="translate(${x} ${y})"><ellipse cx="0" cy="11" rx="6" ry="2" fill="rgba(0,0,0,.18)"/>
-    <rect x="-4.5" y="-2" width="9" height="11" rx="3" fill="#d92d20"/><circle cx="0" cy="-7" r="4.3" fill="#f8d9b8"/><path d="M-4.6 -8 a4.6 4.6 0 0 1 9.2 0 z" fill="#d92d20"/>
-    <rect x="-5" y="8" width="4" height="4" fill="#d92d20" transform="rotate(-20)"/><rect x="1" y="8" width="4" height="4" fill="#d92d20" transform="rotate(20)"/>
-    ${speed&&RUNSPD[speed]?`<circle cx="8" cy="-9" r="4.5" fill="${speed==='fast'?'#dc2626':'#64748b'}" stroke="#fff" stroke-width="1"/><text x="8" y="-7" font-size="5.5" font-weight="900" fill="#fff" text-anchor="middle">${RUNSPD[speed]}</text>`:''}</g>`;
+  const face=(S.anim.faces&&S.anim.faces[id])||RUN_FACE[id]||HOME,rot=facing(x,y,face);
+  return `<g id="${id||''}" transform="translate(${x} ${y}) scale(1.2)">
+    <ellipse cx="1.2" cy="2" rx="7.5" ry="5.5" fill="rgba(0,0,0,.22)"/>
+    <g transform="rotate(${rot})">
+      <path d="M-5.6 0 q-2.4 -3 -1.2 -5.6" stroke="#f3cfa6" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <path d="M5.6 0 q2.2 3 1.2 6" stroke="#f3cfa6" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <rect x="-7.5" y="-3.4" width="15" height="7.2" rx="3.6" fill="#fff" stroke="#8f1d14" stroke-width=".9"/><path d="M-7.5 -.4 h15" stroke="#d92d20" stroke-width="1.6"/>
+      <path d="M-3.9 2.4 a4.2 3.6 0 0 0 7.8 0 z" fill="#8f1d14"/>
+      <circle cx="0" cy="0" r="4.3" fill="#e5382b" stroke="#8f1d14" stroke-width=".7"/>
+      <path d="M-2.7 -1.5 a3.2 3.2 0 0 1 3.1 -1.9" stroke="#ffb3ab" stroke-width="1.1" stroke-linecap="round" fill="none"/>
+      <path d="M-4.6 .6 a2 2 0 0 1 -1.2 2.4" stroke="#8f1d14" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+    </g>
+    ${speed&&RUNSPD[speed]?`<circle cx="9" cy="-8" r="4.5" fill="${speed==='fast'?'#dc2626':'#64748b'}" stroke="#fff" stroke-width="1"/><text x="9" y="-6" font-size="5.5" font-weight="900" fill="#fff" text-anchor="middle">${RUNSPD[speed]}</text>`:''}</g>`;
 }
 function draw(opts={}){
   const sc=scene(),sit=sc.sit;const me=sc.role;
@@ -238,15 +263,15 @@ function draw(opts={}){
   g+=`<polygon points="110,188 104,182 106,177 114,177 116,182" fill="#fff"/>`;
   // 野手
   for(const key of Object.keys(POS)){
-    if(sc.role==='batter'||key!==me){const p=S.anim[key]||fielderPos(key,sit);g+=player(p.x,p.y,'#1e3a8a',POS[key].l,1,false)}
+    if(sc.role==='batter'||key!==me){const p=S.anim[key]||fielderPos(key,sit);g+=player(p.x,p.y,'#1e3a8a',POS[key].l,1,false,key==='catcher'?MOUND:HOME,key==='catcher')}
   }
-  if(sc.role!=='batter'){const p=S.anim[me]||fielderPos(me,sit);g+=player(p.x,p.y,'#f59e0b','4',1.25,true)}
+  if(sc.role!=='batter'){const p=S.anim[me]||fielderPos(me,sit);g+=player(p.x,p.y,'#f59e0b','4',1.15,true,S.anim.ball||HOME,me==='catcher')}
   // 走者
   const R=S.anim.runners||sit.runners;
-  if(R.first)g+=runner(FIRST.x-13,FIRST.y-13,R.first,'r1');
-  if(R.second)g+=runner(SECOND.x,SECOND.y-15,R.second,'r2');
-  if(R.third)g+=runner(THIRD.x+13,THIRD.y-13,R.third,'r3');
-  if(sc.role==='batter'){const p=S.anim.me||{x:HOME.x-12,y:HOME.y-4};g+=`<g filter="url(#glow)">${runner(p.x,p.y,null,'me')}</g>`}
+  if(R.first)g+=runner(FIRST.x-12,FIRST.y-12,R.first,'r1');
+  if(R.second)g+=runner(SECOND.x-12,SECOND.y+9,R.second,'r2');
+  if(R.third)g+=runner(THIRD.x+11,THIRD.y+13,R.third,'r3');
+  if(sc.role==='batter'){const p=S.anim.me||{x:HOME.x-12,y:HOME.y-4};g+=`<circle cx="${p.x}" cy="${p.y}" r="11" fill="rgba(245,158,11,.25)" stroke="#fde68a" stroke-width="1.2"/>${runner(p.x,p.y,null,'me')}`}
   for(const [id,p] of Object.entries(S.anim.extraRunners||{}))g+=runner(p.x,p.y,null,id);
   // ボール
   if(S.anim.ball)g+=`<circle cx="${S.anim.ball.x}" cy="${S.anim.ball.y}" r="3.2" fill="#fff" stroke="#c0392b" stroke-width=".8"/>`;
@@ -256,10 +281,10 @@ function draw(opts={}){
     g+=`<g class="tgt" data-t="${t}" style="cursor:pointer"><circle cx="${p.x}" cy="${p.y}" r="9" fill="none" stroke="#fff" stroke-width="2" class="tgt-ring"/><circle cx="${p.x}" cy="${p.y}" r="9" fill="rgba(37,99,235,.85)" stroke="#fff" stroke-width="1.5"/><text x="${p.x}" y="${p.y+2.4}" font-size="6.5" font-weight="900" fill="#fff" text-anchor="middle">${t==='cut'?'C':'●'}</text></g>`}}
   if(S.anim.bubble){const b=S.anim.bubble;g+=`<g><rect x="${b.x-22}" y="${b.y-30}" width="44" height="13" rx="4" fill="#fff" stroke="#14213d" stroke-width=".8"/><text x="${b.x}" y="${b.y-20.5}" font-size="7" font-weight="900" text-anchor="middle" fill="#14213d">${b.t}</text></g>`}
   // スコアボード
-  const sb=sit.score?`${sit.score.us+0} - ${sit.score.them+S.runs}`:`失点 ${S.runs}`;
+  const sb=sit.score?`${sit.score.us+0} - ${sit.score.them+S.runs}`:`${S.runs} 失点`;
   g+=`<rect x="6" y="6" width="88" height="22" rx="6" fill="rgba(0,0,0,.65)"/>
-  <text x="12" y="22" font-family="Bebas Neue" font-size="12" fill="#fde68a">${sit.inning}回${sit.half}</text>
-  <text x="52" y="22.5" font-family="Bebas Neue" font-size="14" fill="#fff" letter-spacing="1">${sb}</text>
+  <text x="12" y="21.5" font-size="9" font-weight="900" fill="#fde68a">${sit.inning}回${sit.half==='オモテ'?'表':'裏'}</text>
+  <text x="46" y="22.5" font-family="Bebas Neue" font-size="14" fill="#fff" letter-spacing="1">${sb}</text>
   <rect x="150" y="186" width="64" height="18" rx="6" fill="rgba(0,0,0,.65)"/><text x="156" y="198.5" font-family="Bebas Neue" font-size="10" fill="#fff">OUT</text>`;
   for(let o=0;o<3;o++)g+=`<circle cx="${184+o*10}" cy="195" r="3.6" fill="${o<S.outs?'#f2b134':'#3b3b3b'}" stroke="#777" stroke-width=".6"/>`;
   g+=`</g>`;
@@ -339,7 +364,7 @@ async function play(){
     await tween(mePos,{x:FIRST.x+8,y:FIRST.y+6},700,p=>{S.anim.me=p;draw()});
     // センターの送球
     await tween(area,{x:HOME.x,y:HOME.y-8},700,p=>{S.anim.ball=p;draw()});
-    if(choice==='run-second'){await tween({x:FIRST.x+8,y:FIRST.y+6},{x:SECOND.x+12,y:SECOND.y+8},700,p=>{S.anim.me=p;draw()});flash('セーフ！')}
+    if(choice==='run-second'){S.anim.faces={me:SECOND};await tween({x:FIRST.x+8,y:FIRST.y+6},{x:SECOND.x+12,y:SECOND.y+8},700,p=>{S.anim.me=p;draw()});flash('セーフ！')}
     else if(choice==='round-first'){await tween({x:FIRST.x+8,y:FIRST.y+6},{x:FIRST.x+10,y:FIRST.y+4},400,p=>{S.anim.me=p;draw()});flash('一塁')}
     else{flash('止まった')}
   } else {
@@ -365,8 +390,8 @@ async function play(){
     else {adv=2;msg='やられた！'}
     if(oc.kind==='not'&&score===3&&oc.noOut){outsAdd=0;msg='止めた！'}
     const nb=nextBases(R,adv);
-    if(adv>0){const moves=[];if(R.third)moves.push({id:'r3',from:{x:THIRD.x+13,y:THIRD.y-13},to:{x:HOME.x-6,y:HOME.y-2}});if(R.second)moves.push({id:'r2',from:{x:SECOND.x,y:SECOND.y-15},to:adv>=2?{x:HOME.x+6,y:HOME.y-2}:{x:THIRD.x+13,y:THIRD.y-13}});if(R.first)moves.push({id:'r1',from:{x:FIRST.x-13,y:FIRST.y-13},to:adv>=2?{x:THIRD.x+13,y:THIRD.y-13}:{x:SECOND.x,y:SECOND.y-15}});
-      S.anim.runners={first:null,second:null,third:null};S.anim.extraRunners={};for(const m of moves)S.anim.extraRunners[m.id]=m.from;
+    if(adv>0){const moves=[];if(R.third)moves.push({id:'r3',from:{x:THIRD.x+11,y:THIRD.y+13},to:{x:HOME.x-6,y:HOME.y-2}});if(R.second)moves.push({id:'r2',from:{x:SECOND.x-12,y:SECOND.y+9},to:adv>=2?{x:HOME.x+6,y:HOME.y-2}:{x:THIRD.x+11,y:THIRD.y+13}});if(R.first)moves.push({id:'r1',from:{x:FIRST.x-12,y:FIRST.y-12},to:adv>=2?{x:THIRD.x+11,y:THIRD.y+13}:{x:SECOND.x-12,y:SECOND.y+9}});
+      S.anim.runners={first:null,second:null,third:null};S.anim.extraRunners={};S.anim.faces={};for(const m of moves){S.anim.extraRunners[m.id]=m.from;S.anim.faces[m.id]=m.to}
       await Promise.all(moves.map(m=>tween(m.from,m.to,700,p=>{S.anim.extraRunners[m.id]=p;draw()})));
     }
     flash(msg);
