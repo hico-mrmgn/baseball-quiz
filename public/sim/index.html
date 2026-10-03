@@ -64,7 +64,7 @@
 <body>
   <div class="top">
     <div class="bar"><div class="t" id="title">先に動け</div><div class="s" id="prog"></div></div>
-    <svg class="field" viewBox="0 0 220 210" id="field" aria-label="グラウンド"></svg>
+    <svg class="field" viewBox="0 0 220 220" id="field" aria-label="グラウンド"></svg>
   </div>
   <div class="panel" id="panel"></div>
   <div class="flash" id="flash"><span id="flashText"></span></div>
@@ -242,30 +242,25 @@ function draw(opts={}){
   const sc=scene(),sit=sc.sit;const me=sc.role;
   const foulLen=Math.hypot(110,127),fx=FENCE_R*110/foulLen,fy=FENCE_R*127/foulLen;
   let g=`<defs>
-    <clipPath id="clip"><rect width="220" height="210" rx="12"/></clipPath>
+    <clipPath id="clip"><rect width="220" height="220" rx="12"/></clipPath>
     <clipPath id="fence"><circle cx="${HOME.x}" cy="${HOME.y}" r="${FENCE_R}"/></clipPath>
     <radialGradient id="mound" cx="50%" cy="38%" r="55%"><stop offset="0%" stop-color="#e8b870"/><stop offset="100%" stop-color="#c08c4a"/></radialGradient>
     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs><g clip-path="url(#clip)">
-  <rect width="220" height="210" fill="#27553a"/>
-  <g clip-path="url(#fence)"><circle cx="${HOME.x}" cy="${HOME.y}" r="${FENCE_R}" fill="#46a258"/>`;
-  let k=0;for(let r=FENCE_R-14;r>24;r-=24,k++)g+=`<circle cx="${HOME.x}" cy="${HOME.y}" r="${r}" fill="${k%2?'#46a258':'#4fae63'}"/>`;
-  g+=`<circle cx="${HOME.x}" cy="${HOME.y}" r="${FENCE_R-7.5}" fill="none" stroke="#b9854c" stroke-width="14"/></g>
-  <circle cx="${HOME.x}" cy="${HOME.y}" r="${FENCE_R}" fill="none" stroke="#1d4d2b" stroke-width="4.5"/>
-  <circle cx="${HOME.x}" cy="${HOME.y}" r="${FENCE_R+2.8}" fill="none" stroke="#facc15" stroke-width="1.4" opacity=".85"/>
-  <circle cx="${MOUND.x}" cy="${MOUND.y}" r="82" fill="#dca35e"/>
-  <polygon points="110,168 154,126 110,84 66,126" fill="#4fae63" stroke="#4fae63" stroke-width="8" stroke-linejoin="round"/>
-  <line x1="${HOME.x}" y1="${HOME.y}" x2="${HOME.x-fx}" y2="${HOME.y-fy}" stroke="#fff" stroke-width="1.5" opacity=".9"/>
-  <line x1="${HOME.x}" y1="${HOME.y}" x2="${HOME.x+fx}" y2="${HOME.y-fy}" stroke="#fff" stroke-width="1.5" opacity=".9"/>
-  <polygon points="${HOME.x},${HOME.y} ${FIRST.x},${FIRST.y} ${SECOND.x},${SECOND.y} ${THIRD.x},${THIRD.y}" fill="none" stroke="#fff" stroke-width="1.2" opacity=".4"/>
-  <ellipse cx="${MOUND.x}" cy="${MOUND.y}" rx="10" ry="8" fill="url(#mound)"/><rect x="106" y="134.5" width="8" height="3" rx=".6" fill="#fff"/>`;
+  <rect width="220" height="220" fill="#2f6b45"/>
+  <g clip-path="url(#fence)"><circle cx="${HOME.x}" cy="${HOME.y}" r="${FENCE_R}" fill="#4aa85d"/></g>
+  <circle cx="${HOME.x}" cy="${HOME.y}" r="${FENCE_R}" fill="none" stroke="#1d4d2b" stroke-width="3"/>
+  <path d="M ${HOME.x} ${HOME.y+10} L ${HOME.x-84} ${HOME.y-74} A 112 112 0 0 1 ${HOME.x+84} ${HOME.y-74} Z" fill="#dca35e"/>
+  <line x1="${HOME.x}" y1="${HOME.y}" x2="${HOME.x-fx}" y2="${HOME.y-fy}" stroke="#fff" stroke-width="1.4" opacity=".9"/>
+  <line x1="${HOME.x}" y1="${HOME.y}" x2="${HOME.x+fx}" y2="${HOME.y-fy}" stroke="#fff" stroke-width="1.4" opacity=".9"/>
+  <ellipse cx="${MOUND.x}" cy="${MOUND.y}" rx="9" ry="7.5" fill="#cf9550"/><rect x="106" y="134.5" width="8" height="3" rx=".6" fill="#fff"/>`;
   for(const p of [FIRST,SECOND,THIRD])g+=`<rect x="${p.x-5}" y="${p.y-5}" width="10" height="10" fill="#fff" transform="rotate(45 ${p.x} ${p.y})"/>`;
   g+=`<polygon points="110,188 104,182 106,177 114,177 116,182" fill="#fff"/>`;
   // 野手
   for(const key of Object.keys(POS)){
-    if(sc.role==='batter'||key!==me){const p=S.anim[key]||fielderPos(key,sit);g+=player(p.x,p.y,'#1e3a8a',POS[key].l,1,false,key==='catcher'?MOUND:HOME,key==='catcher')}
+    if(sc.role==='batter'||key!==me){const p=S.anim[key]||fielderPos(key,sit);g+=player(p.x,p.y,'#1e3a8a',POS[key].l,1,false,key==='catcher'?MOUND:HOME,key==='first'||key==='third')}
   }
-  if(sc.role!=='batter'){const p=S.anim[me]||fielderPos(me,sit);g+=player(p.x,p.y,'#f59e0b','4',1.15,true,S.anim.ball||HOME,me==='catcher')}
+  if(sc.role!=='batter'){const p=S.anim[me]||fielderPos(me,sit);g+=player(p.x,p.y,'#f59e0b','4',1.15,true,S.anim.ball||HOME,me==='first'||me==='third')}
   // 走者
   const R=S.anim.runners||sit.runners;
   if(R.first)g+=runner(FIRST.x-12,FIRST.y-12,R.first,'r1');
@@ -285,8 +280,8 @@ function draw(opts={}){
   g+=`<rect x="6" y="6" width="88" height="22" rx="6" fill="rgba(0,0,0,.65)"/>
   <text x="12" y="21.5" font-size="9" font-weight="900" fill="#fde68a">${sit.inning}回${sit.half==='オモテ'?'表':'裏'}</text>
   <text x="46" y="22.5" font-family="Bebas Neue" font-size="14" fill="#fff" letter-spacing="1">${sb}</text>
-  <rect x="150" y="186" width="64" height="18" rx="6" fill="rgba(0,0,0,.65)"/><text x="156" y="198.5" font-family="Bebas Neue" font-size="10" fill="#fff">OUT</text>`;
-  for(let o=0;o<3;o++)g+=`<circle cx="${184+o*10}" cy="195" r="3.6" fill="${o<S.outs?'#f2b134':'#3b3b3b'}" stroke="#777" stroke-width=".6"/>`;
+  <rect x="150" y="196" width="64" height="18" rx="6" fill="rgba(0,0,0,.65)"/><text x="156" y="208.5" font-family="Bebas Neue" font-size="10" fill="#fff">OUT</text>`;
+  for(let o=0;o<3;o++)g+=`<circle cx="${184+o*10}" cy="205" r="3.6" fill="${o<S.outs?'#f2b134':'#3b3b3b'}" stroke="#777" stroke-width=".6"/>`;
   g+=`</g>`;
   field.innerHTML=g;
   if(opts.onTap)field.querySelectorAll('.tgt').forEach(el=>el.addEventListener('click',()=>opts.onTap(el.dataset.t)));
