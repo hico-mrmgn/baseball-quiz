@@ -20,7 +20,11 @@
  * @property {number} [max]       ratio10 は 10
  */
 
-/** @type {DrillDef[]} 画面に並べる順番のとおり */
+/**
+ * @type {DrillDef[]} 画面に並べる順番のとおり。
+ * id は localStorage の保存キー（values / best）なので、表示名を直しても id は変えない。
+ * 変えると過去の日の数字が画面にも共有文章にも出なくなる。
+ */
 export const DRILLS = [
   {
     id: 'suburi',

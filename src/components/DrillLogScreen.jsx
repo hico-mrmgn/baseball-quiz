@@ -52,12 +52,33 @@ function formatDayLogText(log) {
  * 指示・叱咤・励ましは出さない。
  */
 export default function DrillLogScreen({ onBack }) {
-  const [date] = useState(todayKey);
+  const [date, setDate] = useState(todayKey);
   const { log, saveFailed, adjust, toggleDone, setBest, setNote } = useDrillLog(date);
   const [copyState, setCopyState] = useState(null); // null | 'ok' | 'fail'
   const [shareState, setShareState] = useState(null); // null | 'shared' | 'copied' | 'fail'
 
   const [selectedKey, setSelectedKey] = useState(null);
+
+  // 画面を開いたまま日付をまたぐことがある（前夜に開いたタブを翌日そのまま使う）。
+  // 画面に戻ってきたときに今日の日付を取り直し、変わっていたら入力先を今日に切りかえる。
+  // 取り直さないと、翌日の +1 が前日のレコードに入り、カレンダーの「今日」も前日のままになる。
+  useEffect(() => {
+    function refreshDate() {
+      if (document.visibilityState === 'hidden') return;
+      const now = todayKey();
+      setDate((prev) => {
+        if (prev === now) return prev;
+        setSelectedKey(null);
+        return now;
+      });
+    }
+    document.addEventListener('visibilitychange', refreshDate);
+    window.addEventListener('focus', refreshDate);
+    return () => {
+      document.removeEventListener('visibilitychange', refreshDate);
+      window.removeEventListener('focus', refreshDate);
+    };
+  }, []);
 
   // 過去の日は開いたときに1回だけ読めばよい。きょうのぶんは操作のたびに変わる
   const pastLogs = useMemo(
@@ -102,7 +123,11 @@ export default function DrillLogScreen({ onBack }) {
     }
   }
 
-  /** きょうのぶんを読める文章で送る。共有シートがあればそれ、なければクリップボード。 */
+  /**
+   * きょうのぶんを読める文章で送る。共有シートがあればそれ、なければクリップボード。
+   * navigator.share はユーザー操作の中でしか呼べない。onClick から同期で呼ぶこと。
+   * 文章を作る前に await を挟むと iOS Safari では拒否される。
+   */
   async function shareToday() {
     const text = formatDayLogText(log);
     if (typeof navigator.share === 'function') {
