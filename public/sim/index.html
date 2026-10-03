@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>先に動け — 依知のシーズン（試作）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@500;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#14213d; --muted:#5b6478; --paper:#f6f3ea; --card:#ffffff;
+    --def:#1f8a4c; --off:#e8762b; --out:#f2b134; --run:#d92d20; --best:#2563eb;
+    --line:#e6e1d3;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--paper);color:var(--ink);font-family:"Noto Sans JP",system-ui,sans-serif;font-weight:500}
+  body{max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
+  .top{position:sticky;top:0;z-index:5;background:var(--paper);padding:8px 10px 4px}
+  .bar{display:flex;align-items:center;justify-content:space-between;margin:0 2px 6px}
+  .bar .t{font-weight:900;font-size:15px}
+  .bar .s{font-family:"Bebas Neue",sans-serif;font-size:22px;letter-spacing:1px;color:var(--muted)}
+  svg.field{width:100%;display:block;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+  .board{font-family:"Bebas Neue",sans-serif}
+  .panel{padding:8px 12px 24px;display:flex;flex-direction:column;gap:10px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+  .tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:900}
+  .tag.def{background:var(--def);color:#fff}.tag.off{background:var(--off);color:#fff}
+  .tag.src{background:#fff3c4;color:#7a5a00;border:1px solid #f0d77a}
+  .sit{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px;font-weight:700;margin-top:8px}
+  .sit .diff{font-family:"Bebas Neue",sans-serif;font-size:22px;letter-spacing:.5px}
+  .note{font-size:14px;line-height:1.6;margin-top:6px;color:#333}
+  .q{font-size:20px;font-weight:900;line-height:1.35;margin:4px 0}
+  .q small{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:2px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:2px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;font-size:16px;font-weight:900;cursor:pointer;min-height:48px;flex:1 1 40%}
+  .chip:active{transform:scale(.98)}
+  .chip.sel{border-color:var(--best);background:#eaf1ff}
+  .btn{display:block;width:100%;border:0;border-radius:14px;padding:16px;font-size:18px;font-weight:900;color:#fff;background:linear-gradient(90deg,#f0792b,#e3342f);cursor:pointer;box-shadow:0 6px 14px rgba(227,52,47,.25)}
+  .btn.blue{background:linear-gradient(90deg,#2563eb,#1d4ed8);box-shadow:0 6px 14px rgba(37,99,235,.25)}
+  .btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:none}
+  .btn:disabled{opacity:.4;box-shadow:none}
+  .plan{display:flex;gap:8px;font-size:13px;font-weight:700;color:var(--muted)}
+  .plan span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+  .plan span.on{color:var(--ink);border-color:var(--best)}
+  .result{font-size:26px;font-weight:900;text-align:center;padding:8px 0 0}
+  .result.best{color:#15803d}.result.ok{color:#0369a1}.result.poor{color:#b45309}.result.fatal{color:#b91c1c}
+  .key{background:#14213d;color:#fff;border-radius:14px;padding:14px 16px;font-size:18px;font-weight:900;line-height:1.5;text-align:center}
+  .key small{display:block;font-size:11px;opacity:.7;font-weight:700;margin-bottom:4px;letter-spacing:.1em}
+  .why{font-size:14px;line-height:1.7}
+  details summary{cursor:pointer;font-weight:900;color:var(--muted);font-size:14px}
+  .log{display:flex;flex-direction:column;gap:6px}
+  .log div{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:700}
+  .log b{font-family:"Bebas Neue",sans-serif;font-size:22px;width:28px;text-align:center}
+  .big{font-family:"Bebas Neue",sans-serif;font-size:64px;line-height:1;text-align:center;letter-spacing:2px}
+  .hint{font-size:12px;color:var(--muted);font-weight:700}
+  @keyframes pulse{0%{r:7;opacity:.9}100%{r:13;opacity:0}}
+  .tgt-ring{animation:pulse 1.1s ease-out infinite}
+  .flash{position:fixed;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;z-index:9}
+  .flash span{font-family:"Bebas Neue",sans-serif;font-size:72px;color:#fff;letter-spacing:4px;text-shadow:0 4px 18px rgba(0,0,0,.5);opacity:0;transform:scale(.6)}
+  .flash.show span{animation:pop .9s ease-out forwards}
+  @keyframes pop{0%{opacity:0;transform:scale(.6)}25%{opacity:1;transform:scale(1.1)}70%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="bar"><div class="t" id="title">先に動け</div><div class="s" id="prog"></div></div>
+    <svg class="field" viewBox="0 0 220 220" id="field" aria-label="グラウンド"></svg>
+  </div>
+  <div class="panel" id="panel"></div>
+  <div class="flash" id="flash"><span id="flashText"></span></div>
+
+<script>
+/* ──────────────── 座標（既存アプリの fieldCoords と同じ） ──────────────── */
+const HOME={x:110,y:182},FIRST={x:168,y:126},SECOND={x:110,y:70},THIRD={x:52,y:126},MOUND={x:110,y:136},FENCE_R=176;
+const POS={pitcher:{x:110,y:136,l:'P'},catcher:{x:110,y:196,l:'C'},first:{x:170,y:116,l:'1B'},second:{x:142,y:83,l:'2B'},short:{x:78,y:83,l:'SS'},third:{x:50,y:116,l:'3B'},left:{x:36,y:44,l:'LF'},center:{x:110,y:24,l:'CF'},right:{x:184,y:44,l:'RF'}};
+const SHIFT={'前進守備':{first:14,second:16,short:16,third:14},'バントシフト':{first:28,third:28}};
+const AREA={third:{x:58,y:130},short:{x:72,y:114},second:{x:128,y:102},first:{x:162,y:130},pitcher:{x:110,y:148},bunt:{x:100,y:158},home:{x:110,y:176},left:{x:28,y:36},center:{x:100,y:14},right:{x:172,y:36},rightCenter:{x:158,y:22}};
+/* タップ先：塁・カットマン・守る場所 */
+const SPOT={
+  first:{...FIRST,l:'一塁'},second:{...SECOND,l:'二塁'},third:{...THIRD,l:'三塁'},home:{...HOME,l:'ホーム'},
+  cut:{x:110,y:98,l:'カットマン'},
+  'third-base':{...THIRD,l:'三塁ベースへ'},'first-base':{...FIRST,l:'一塁ベースへ'},'second-base':{...SECOND,l:'二塁ベースへ'},
+  'cover-home':{...HOME,l:'ホームへ'},'backup-home':{x:140,y:200,l:'ホームの後ろへ'},'backup-first':{x:198,y:118,l:'一塁の後ろへ'},
+  'run-second':{...SECOND,l:'二塁まで走る'},'round-first':{x:178,y:112,l:'一塁を回って止まる'},'stay-first':{...FIRST,l:'一塁で止まる'},
+};
+const BTN={hold:'ボールを持ったまま',stay:'そのまま構える',chase:'ボールを追いかける',tag:'走者を追ってタッチ',stepthird:'三塁ベースを踏む'};
+const RUNSPD={fast:'速',normal:'',slow:'遅'};
+
+/* ──────────────── 場面データ ────────────────
+   ask.ball = 自分に来たら（投げる先）  ask.not = 来なかったら（動く先）
+   outcomes = 打球の候補。kind が ball なら自分へ、not なら他へ。w は出やすさ。 */
+const SCENES=[
+ {id:'real-0913-bunt',role:'third',src:'じっさいの試合：9/13 グランツ戦 4回ウラ',
+  sit:{inning:4,half:'ウラ',score:{us:0,them:5},outs:1,runners:{first:'fast',second:null,third:null},defense:'バントシフト',batter:'代打'},
+  note:'相手はバントの構え。自分（サード）は前に出ている。',
+  ball:{options:['first','second','hold'],scores:{first:3,second:1,hold:0},best:'first',
+        fb:{first:'一番確実なアウト。前に出たら一塁へ。',second:'一塁ランナーは足が速い。二塁は間に合わないことが多い。',hold:'アウトが1つも増えない。'}},
+  not:{options:['third-base','stay','chase'],scores:{'third-base':3,stay:0,chase:-1},best:'third-base',
+       fb:{'third-base':'自分のボールじゃない。空けた三塁へ戻る。','stay':'三塁が空いたまま。足の速いランナーは三塁までねらう。','chase':'キャッチャーとぶつかる。三塁はがら空き。'}},
+  outcomes:[{kind:'not',play:'バントは本塁のすぐ前で止まった。キャッチャーが拾う',area:'home',w:2},{kind:'ball',play:'バントは三塁線にころがった',area:'bunt',w:1}],
+  key:'前に出たら、捕らないと分かった瞬間に三塁へ戻る',why:'本塁の前で止まったバントはキャッチャーのボール。サードは三塁ベースを空けてきているから、戻らないと一塁ランナーは三塁まで行ける。'},
+
+ {id:'real-0913-pb',role:'pitcher',src:'じっさいの試合：9/13 グランツ戦 1回ウラ',
+  sit:{inning:1,half:'ウラ',score:{us:0,them:0},outs:1,runners:{first:null,second:'fast',third:null},defense:'定位置',batter:'3番'},
+  note:'0対0。四球で出たランナーが盗塁で二塁にいる。',
+  ball:{options:['first','second','hold'],scores:{first:3,second:1,hold:0},best:'first',
+        fb:{first:'ピッチャーゴロは一塁で確実に。',second:'ランナーはもう走っている。二塁は間に合わない。',hold:'アウトが増えない。'}},
+  not:{options:['cover-home','stay','chase'],scores:{'cover-home':3,stay:0,chase:-1},best:'cover-home',
+       fb:{'cover-home':'キャッチャーが離れたホームを守れるのはピッチャーだけ。','stay':'ホームが空いている。ランナーは一気に2つ進める。','chase':'2人で追うとホームにだれもいない。'}},
+  outcomes:[{kind:'not',play:'キャッチャーが投球を後ろへそらした！',area:'home',w:2,noOut:true},{kind:'ball',play:'ピッチャー正面へのゴロ',area:'pitcher',w:1}],
+  key:'ランナー二塁・三塁でそらしたら、ピッチャーはホームへ',why:'考えてから動くと間に合わない。投げる前に「そらしたらホーム」と決めておく。'},
+
+ {id:'real-0913-2out',role:'pitcher',src:'じっさいの試合：9/13 グランツ戦 2回ウラ',
+  sit:{inning:2,half:'ウラ',score:{us:0,them:0},outs:2,runners:{first:'fast',second:null,third:null},defense:'定位置',batter:'8番'},
+  note:'三振を2つ取ったあとの四球。相手はよく走ってくる。',
+  ball:{options:['first','second','hold'],scores:{first:3,second:1,hold:0},best:'first',
+        fb:{first:'2アウト。打者をアウトにすればチェンジ。',second:'盗塁しているランナーは二塁に着いている。',hold:'アウトが増えない。'}},
+  not:{options:['stay','cover-home','chase'],scores:{stay:3,'cover-home':1,chase:-1},best:'stay',
+       fb:{stay:'2アウトのランナーは追いかけない。次の打者に集中。','cover-home':'ランナーは一塁。ホームに来る場面じゃない。',chase:'走られても点は入らない。追う必要なし。'}},
+  outcomes:[{kind:'not',play:'ランナーが走った。キャッチャーは投げない。打者はファウル',area:'home',w:2,noOut:true},{kind:'ball',play:'ピッチャー前のゴロ',area:'pitcher',w:1}],
+  key:'2アウトのランナーは追いかけない。打者を打ち取ればチェンジ',why:'ランナーが二塁へ進んでも、打者をアウトにすれば点は入らない。投げる相手は打者。'},
+
+ {id:'real-0921-loaded',role:'pitcher',src:'じっさいの試合：9/21 小樽中央戦 3回オモテ',
+  sit:{inning:3,half:'オモテ',score:{us:1,them:5},outs:1,runners:{first:'normal',second:'normal',third:'normal'},defense:'定位置',batter:'4年生'},
+  note:'イニングの途中でマウンドへ。バント処理でアウトが取れず満塁。',
+  ball:{options:['home','first','hold','tag'],scores:{home:3,first:1,hold:0,tag:-1},best:'home',
+        fb:{home:'満塁はどこもフォース。ホームは踏むだけでアウト、点も入らない。',first:'アウトは増えるが1点入る。',hold:'全員が走っている。見ている間に1点。',tag:'フォースだからタッチはいらない。追いつけない。'}},
+  not:{options:['cover-home','stay','chase'],scores:{'cover-home':3,stay:0,chase:-1},best:'cover-home',
+       fb:{'cover-home':'三塁ランナーがいる。そらしたらホームへ。',stay:'ホームが空く。1点。',chase:'ホームにだれもいない。'}},
+  outcomes:[{kind:'ball',play:'ピッチャー正面へのゴロ！',area:'pitcher',w:2},{kind:'not',play:'キャッチャーが後ろへそらした！',area:'home',w:1,noOut:true}],
+  key:'満塁で自分にゴロが来たら、ホーム',why:'満塁では打った瞬間に全員が走る。捕ってから考えると間に合わない。投げる前に決めておく。'},
+
+ {id:'real-0926-fly',role:'right',src:'9/26 グランツ戦の「もしも」：1アウト三塁だったら',
+  sit:{inning:2,half:'オモテ',score:null,outs:1,runners:{first:null,second:null,third:'normal'},defense:'定位置',batter:'5年生'},
+  note:'三塁ランナーはベースについて、捕るのを待っている。',
+  ball:{options:['cut','home','second','hold'],scores:{cut:3,home:1,second:-1,hold:0},best:'cut',
+        fb:{cut:'前へ出ながら捕って、カットマンへ低く強く。本塁で勝負できる。',home:'ライトから直接は遠い。山なりになって間に合わない。',second:'1点が入る。三塁ランナーを忘れている。',hold:'ランナーは歩いてでもホームに還る。'}},
+  not:{options:['backup-first','stay','chase'],scores:{'backup-first':3,stay:1,chase:-1},best:'backup-first',
+       fb:{'backup-first':'内野ゴロのときライトは一塁の後ろ。送球がそれても止められる。',stay:'悪くないが、一塁の後ろにいればもっと安心。',chase:'内野のボールを外野手が追っても届かない。'}},
+  outcomes:[{kind:'ball',play:'ライトへの高いフライ。落ちるのは定位置の少し前',area:'right',w:2},{kind:'not',play:'セカンドへのゴロ。一塁へ送球',area:'second',w:1}],
+  key:'タッチアップがある場面のフライは、後ろから前へ出ながら捕る',why:'三塁ランナーは捕った瞬間にスタートする。捕ってから投げるまでが短いほど、本塁で刺せる。'},
+
+ {id:'real-0926-run',role:'batter',src:'じっさいの試合：9/26 山麓戦 4回ウラ',
+  sit:{inning:4,half:'ウラ',score:{us:5,them:3},outs:2,runners:{first:null,second:'normal',third:null},defense:'定位置',batter:'自分'},
+  note:'自分が打った。二塁ランナーはホームへ走っている。自分は一塁を回るところ。',
+  ball:{label:'センターの送球を見た。どうする？',options:['run-second','round-first','stay-first'],scores:{'run-second':3,'round-first':1,'stay-first':0},best:'run-second',
+        fb:{'run-second':'高い送球はカットマンが止められない。ボールがホームへ行っている間、二塁はだれも守れない。','round-first':'安全。でも通った送球なら二塁へ行けた。','stay-first':'ヒットで止まるのは一塁を回ってから。'}},
+  outcomes:[{kind:'ball',play:'センター前ヒット！センターはホームへ高い送球',area:'center',w:1}],
+  key:'外野の送球が高ければ次の塁へ。低ければ止まる',why:'見るのは「投げたか」ではなく「カットマンが捕れる高さか」。一塁を回りながら送球の高さを見る。'},
+
+ {id:'twin-third-a',role:'third',src:'双子問題 その1',
+  sit:{inning:6,half:'ウラ',score:{us:7,them:2},outs:1,runners:{first:null,second:null,third:'normal'},defense:'定位置',batter:'5番'},
+  note:'5点リード。ここを乗り切れば楽になる。',
+  ball:{options:['first','home','hold','stepthird'],scores:{first:3,home:1,hold:0,stepthird:-1},best:'first',
+        fb:{first:'5点差なら1点はあげていい。アウトを1つずつ増やす。',home:'定位置からの本塁送球はきわどい。5点差でとるリスクではない。',hold:'失点は防げるがアウトが増えない。',stepthird:'ランナー三塁だけはフォースじゃない。踏んでもアウトにならない。'}},
+  not:{options:['third-base','stay'],scores:{'third-base':1,stay:3},best:'stay',
+       fb:{'third-base':'ランナーはベースにいる。戻る必要はない。',stay:'打球がほかへ行ったら、そのまま構えて次に備える。'}},
+  outcomes:[{kind:'ball',play:'サード正面へのゴロ',area:'third',w:2},{kind:'not',play:'セカンドゴロ',area:'second',w:1}],
+  key:'点差が大きいときは、1点よりアウトを積む',why:'定位置のサードゴロなら一塁が一番確実。これで2アウト。'},
+
+ {id:'twin-third-b',role:'third',src:'双子問題 その2：同じ打球、1点リードの最終回',
+  sit:{inning:7,half:'ウラ',score:{us:3,them:2},outs:1,runners:{first:null,second:null,third:'normal'},defense:'前進守備',batter:'5番'},
+  note:'この回を抑えれば勝ち。ベンチの指示で前進守備。',
+  ball:{options:['home','first','hold','stepthird'],scores:{home:3,first:0,hold:1,stepthird:-1},best:'home',
+        fb:{home:'この1点が同点。前進守備は「ホームで刺す」と決めているから。',first:'最終回に同点にされてはリードの意味がない。',hold:'ランナーが走っていなければ悪くない。でも刺せるなら勝負。',stepthird:'フォースじゃない。その間にホームに還られる。'}},
+  not:{options:['third-base','stay'],scores:{'third-base':1,stay:3},best:'stay',
+       fb:{'third-base':'ランナーはベースにいる。',stay:'次に備える。'}},
+  outcomes:[{kind:'ball',play:'さっきと同じ、サード正面へのゴロ',area:'third',w:3}],
+  key:'前進守備は「ホームで刺す」というサイン',why:'守る前に「何点差？何アウト？どこに投げる？」を声に出しておく。隊形を見れば投げる先は決まっている。'},
+
+ {id:'bunt-12',role:'pitcher',src:'基本の場面：ノーアウト一・二塁のバント',
+  sit:{inning:3,half:'オモテ',score:{us:2,them:2},outs:0,runners:{first:'normal',second:'normal',third:null},defense:'バントシフト',batter:'2番'},
+  note:'相手はバントの構え。サードが三塁ベースに入る約束。',
+  ball:{options:['third','first','second','home'],scores:{third:3,first:1,second:0,home:-1},best:'third',
+        fb:{third:'前のランナーを三塁で封殺。マウンドの三塁寄りなら距離も短い。',first:'確実だが、二塁ランナーが三塁へ進む。',second:'遠いし、セカンドが入っているか分からない。',home:'ホームに走者はいない。意味がない。'}},
+  not:{options:['stay','backup-first','chase'],scores:{stay:1,'backup-first':3,chase:-1},best:'backup-first',
+       fb:{stay:'悪くないが仕事がある。','backup-first':'サードが処理したら一塁送球。ピッチャーはそのカバーへ。',chase:'サードのボール。ぶつかる。'}},
+  outcomes:[{kind:'ball',play:'バントはマウンドの前、三塁寄りにころがった',area:'bunt',w:2},{kind:'not',play:'バントは三塁線。サードが処理',area:'third',w:1}],
+  key:'一・二塁のバントは、前のランナーを三塁で',why:'三塁ベースにサードかショートが入っているのを確かめてから投げる。いなければ一塁で確実に。'},
+
+ {id:'of-tie',role:'center',src:'基本の場面：同点の最終回、二塁ランナー',
+  sit:{inning:7,half:'ウラ',score:{us:2,them:2},outs:1,runners:{first:null,second:'normal',third:null},defense:'定位置',batter:'3番'},
+  note:'この1点でサヨナラ負け。二塁ランナーはホームへ全力で走っている。',
+  ball:{options:['cut','home','second','hold'],scores:{cut:3,home:0,second:-1,hold:0},best:'cut',
+        fb:{cut:'低く強くカットマンへ。途中で切れるし、抜ければホームでアウトにできる。',home:'山なりの送球は遅い。カットマンもさわれない。',second:'この1点でサヨナラ負け。打者走者を止めても意味がない。',hold:'同点の最終回に無条件で還してはいけない。'}},
+  not:{options:['stay','backup-first','chase'],scores:{stay:3,'backup-first':0,chase:-1},best:'stay',
+       fb:{stay:'センターはそのまま。内野の打球はセカンドのカバーに備える。','backup-first':'センターから一塁の後ろは遠すぎる。',chase:'内野のボールは追わない。'}},
+  outcomes:[{kind:'ball',play:'センター前へ落ちるヒット',area:'center',w:2},{kind:'not',play:'ショートゴロ',area:'short',w:1}],
+  key:'外野からの送球は低く強く。カットマンに選択肢を残す',why:'高い送球は選択肢を1つに減らす。低ければカットマンが状況で切ることも、そのままホームで刺すこともできる。'},
+];
+
+/* ──────────────── 状態 ──────────────── */
+const S={i:0,outs:0,runs:0,plan:{},log:[],phase:'intro',voice:null,anim:{}};
+const field=document.getElementById('field'),panel=document.getElementById('panel');
+const $=(h)=>{const d=document.createElement('div');d.innerHTML=h.trim();return d.firstChild};
+function scene(){return SCENES[S.i]}
+
+/* ──────────────── フィールド描画 ──────────────── */
+function fielderPos(key,sit){const p=POS[key];const d=SHIFT[sit.defense]?.[key]||0;return {x:p.x,y:p.y+d}}
+/* 選手は真上から見た姿で描く（フィールドが真上からの図なので、向きがそろう）。
+   ローカル座標は「前＝+y」。face の方向へ回して、体と帽子のつばを向ける。 */
+function facing(x,y,face){return Math.atan2(face.y-y,face.x-x)*180/Math.PI-90}
+function shade(hex,k){const n=parseInt(hex.slice(1),16);const f=v=>Math.max(0,Math.min(255,Math.round(v*k)));return '#'+[n>>16,(n>>8)&255,n&255].map(v=>f(v).toString(16).padStart(2,'0')).join('')}
+function player(x,y,color,l,scale,hl,face,up){
+  const s=(scale||1)*1.22,rot=facing(x,y,face||HOME),dark=shade(color,.72),lite=shade(color,1.25);
+  const ring=hl?`<circle cx="${x}" cy="${y}" r="${11*s}" fill="rgba(245,158,11,.22)" stroke="#fde68a" stroke-width="1.2"/>`:'';
+  return `${ring}<g transform="translate(${x} ${y}) scale(${s})">
+    <ellipse cx="1.2" cy="2" rx="8.5" ry="6" fill="rgba(0,0,0,.22)"/>
+    <g transform="rotate(${rot})">
+      <path d="M-6.5 1.5 q-2.2 3.5 -.8 6.2" stroke="#f3cfa6" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+      <path d="M6.5 1.5 q2 3.2 .2 6" stroke="#f3cfa6" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+      <ellipse cx="-7.2" cy="8.6" rx="3.3" ry="3.6" fill="#8b5a2b" stroke="#5e3a17" stroke-width=".7"/>
+      <path d="M-9 7.6 l3.4 0 M-9 9.4 l3.4 0" stroke="#5e3a17" stroke-width=".5"/>
+      <rect x="-8" y="-3.6" width="16" height="7.6" rx="3.8" fill="#fff"/>
+      <rect x="-8" y="-3.6" width="16" height="7.6" rx="3.8" fill="none" stroke="${dark}" stroke-width=".9"/>
+      <path d="M-8 -.6 h16" stroke="${color}" stroke-width="1.6"/>
+      <path d="M-3.9 2.6 a4.2 3.4 0 0 0 7.8 0 z" fill="${dark}"/>
+      <circle cx="0" cy="0" r="4.3" fill="${color}" stroke="${dark}" stroke-width=".7"/>
+      <path d="M-2.6 -1.6 a3.2 3.2 0 0 1 3 -1.8" stroke="${lite}" stroke-width=".9" stroke-linecap="round" fill="none"/>
+      <circle cx="0" cy="0" r=".8" fill="${dark}"/>
+    </g>
+    <g transform="translate(0 ${up?-12.5:13})"><rect x="-7.5" y="-4.4" width="15" height="7.6" rx="3.8" fill="${hl?color:'#fff'}" stroke="${hl?'#fff':dark}" stroke-width=".8"/>
+      <text y="1.6" font-size="5.6" font-weight="900" text-anchor="middle" fill="${hl?'#fff':dark}">${l}</text></g></g>`;
+}
+const RUN_FACE={r1:SECOND,r2:THIRD,r3:HOME,me:FIRST};
+function runner(x,y,speed,id){
+  const face=(S.anim.faces&&S.anim.faces[id])||RUN_FACE[id]||HOME,rot=facing(x,y,face);
+  return `<g id="${id||''}" transform="translate(${x} ${y}) scale(1.2)">
+    <ellipse cx="1.2" cy="2" rx="7.5" ry="5.5" fill="rgba(0,0,0,.22)"/>
+    <g transform="rotate(${rot})">
+      <path d="M-5.6 0 q-2.4 -3 -1.2 -5.6" stroke="#f3cfa6" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <path d="M5.6 0 q2.2 3 1.2 6" stroke="#f3cfa6" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <rect x="-7.5" y="-3.4" width="15" height="7.2" rx="3.6" fill="#fff" stroke="#8f1d14" stroke-width=".9"/><path d="M-7.5 -.4 h15" stroke="#d92d20" stroke-width="1.6"/>
+      <path d="M-3.9 2.4 a4.2 3.6 0 0 0 7.8 0 z" fill="#8f1d14"/>
+      <circle cx="0" cy="0" r="4.3" fill="#e5382b" stroke="#8f1d14" stroke-width=".7"/>
+      <path d="M-2.7 -1.5 a3.2 3.2 0 0 1 3.1 -1.9" stroke="#ffb3ab" stroke-width="1.1" stroke-linecap="round" fill="none"/>
+      <path d="M-4.6 .6 a2 2 0 0 1 -1.2 2.4" stroke="#8f1d14" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+    </g>
+    ${speed&&RUNSPD[speed]?`<circle cx="9" cy="-8" r="4.5" fill="${speed==='fast'?'#dc2626':'#64748b'}" stroke="#fff" stroke-width="1"/><text x="9" y="-6" font-size="5.5" font-weight="900" fill="#fff" text-anchor="middle">${RUNSPD[speed]}</text>`:''}</g>`;
+}
+function draw(opts={}){
+  const sc=scene(),sit=sc.sit;const me=sc.role;
+  const foulLen=Math.hypot(110,127),fx=FENCE_R*110/foulLen,fy=FENCE_R*127/foulLen;
+  let g=`<defs>
+    <clipPath id="clip"><rect width="220" height="220" rx="12"/></clipPath>
+    <clipPath id="fence"><circle cx="${HOME.x}" cy="${HOME.y}" r="${FENCE_R}"/></clipPath>
+    <radialGradient id="mound" cx="50%" cy="38%" r="55%"><stop offset="0%" stop-color="#e8b870"/><stop offset="100%" stop-color="#c08c4a"/></radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs><g clip-path="url(#clip)">
+  <rect width="220" height="220" fill="#2f6b45"/>
+  <g clip-path="url(#fence)"><circle cx="${HOME.x}" cy="${HOME.y}" r="${FENCE_R}" fill="#4aa85d"/></g>
+  <circle cx="${HOME.x}" cy="${HOME.y}" r="${FENCE_R}" fill="none" stroke="#1d4d2b" stroke-width="3"/>
+  <path d="M ${HOME.x} ${HOME.y+10} L ${HOME.x-84} ${HOME.y-74} A 112 112 0 0 1 ${HOME.x+84} ${HOME.y-74} Z" fill="#dca35e"/>
+  <line x1="${HOME.x}" y1="${HOME.y}" x2="${HOME.x-fx}" y2="${HOME.y-fy}" stroke="#fff" stroke-width="1.4" opacity=".9"/>
+  <line x1="${HOME.x}" y1="${HOME.y}" x2="${HOME.x+fx}" y2="${HOME.y-fy}" stroke="#fff" stroke-width="1.4" opacity=".9"/>
+  <ellipse cx="${MOUND.x}" cy="${MOUND.y}" rx="9" ry="7.5" fill="#cf9550"/><rect x="106" y="134.5" width="8" height="3" rx=".6" fill="#fff"/>`;
+  for(const p of [FIRST,SECOND,THIRD])g+=`<rect x="${p.x-5}" y="${p.y-5}" width="10" height="10" fill="#fff" transform="rotate(45 ${p.x} ${p.y})"/>`;
+  g+=`<polygon points="110,188 104,182 106,177 114,177 116,182" fill="#fff"/>`;
+  // 野手
+  for(const key of Object.keys(POS)){
+    if(sc.role==='batter'||key!==me){const p=S.anim[key]||fielderPos(key,sit);g+=player(p.x,p.y,'#1e3a8a',POS[key].l,1,false,key==='catcher'?MOUND:HOME,key==='first'||key==='third')}
+  }
+  if(sc.role!=='batter'){const p=S.anim[me]||fielderPos(me,sit);g+=player(p.x,p.y,'#f59e0b','4',1.15,true,S.anim.ball||HOME,me==='first'||me==='third')}
+  // 走者
+  const R=S.anim.runners||sit.runners;
+  if(R.first)g+=runner(FIRST.x-12,FIRST.y-12,R.first,'r1');
+  if(R.second)g+=runner(SECOND.x-12,SECOND.y+9,R.second,'r2');
+  if(R.third)g+=runner(THIRD.x+11,THIRD.y+13,R.third,'r3');
+  if(sc.role==='batter'){const p=S.anim.me||{x:HOME.x-12,y:HOME.y-4};g+=`<circle cx="${p.x}" cy="${p.y}" r="11" fill="rgba(245,158,11,.25)" stroke="#fde68a" stroke-width="1.2"/>${runner(p.x,p.y,null,'me')}`}
+  for(const [id,p] of Object.entries(S.anim.extraRunners||{}))g+=runner(p.x,p.y,null,id);
+  // ボール
+  if(S.anim.ball)g+=`<circle cx="${S.anim.ball.x}" cy="${S.anim.ball.y}" r="3.2" fill="#fff" stroke="#c0392b" stroke-width=".8"/>`;
+  if(S.anim.line)g+=`<line x1="${S.anim.line.x1}" y1="${S.anim.line.y1}" x2="${S.anim.line.x2}" y2="${S.anim.line.y2}" stroke="#fff" stroke-width="1.4" stroke-dasharray="3 2" opacity=".9"/>`;
+  // タップ先
+  if(opts.targets){for(const t of opts.targets){const p=SPOT[t];if(!p)continue;
+    g+=`<g class="tgt" data-t="${t}" style="cursor:pointer"><circle cx="${p.x}" cy="${p.y}" r="9" fill="none" stroke="#fff" stroke-width="2" class="tgt-ring"/><circle cx="${p.x}" cy="${p.y}" r="9" fill="rgba(37,99,235,.85)" stroke="#fff" stroke-width="1.5"/><text x="${p.x}" y="${p.y+2.4}" font-size="6.5" font-weight="900" fill="#fff" text-anchor="middle">${t==='cut'?'C':'●'}</text></g>`}}
+  if(S.anim.bubble){const b=S.anim.bubble;g+=`<g><rect x="${b.x-22}" y="${b.y-30}" width="44" height="13" rx="4" fill="#fff" stroke="#14213d" stroke-width=".8"/><text x="${b.x}" y="${b.y-20.5}" font-size="7" font-weight="900" text-anchor="middle" fill="#14213d">${b.t}</text></g>`}
+  // スコアボード
+  const sb=sit.score?`${sit.score.us+0} - ${sit.score.them+S.runs}`:`${S.runs} 失点`;
+  g+=`<rect x="6" y="6" width="88" height="22" rx="6" fill="rgba(0,0,0,.65)"/>
+  <text x="12" y="21.5" font-size="9" font-weight="900" fill="#fde68a">${sit.inning}回${sit.half==='オモテ'?'表':'裏'}</text>
+  <text x="46" y="22.5" font-family="Bebas Neue" font-size="14" fill="#fff" letter-spacing="1">${sb}</text>
+  <rect x="150" y="196" width="64" height="18" rx="6" fill="rgba(0,0,0,.65)"/><text x="156" y="208.5" font-family="Bebas Neue" font-size="10" fill="#fff">OUT</text>`;
+  for(let o=0;o<3;o++)g+=`<circle cx="${184+o*10}" cy="205" r="3.6" fill="${o<S.outs?'#f2b134':'#3b3b3b'}" stroke="#777" stroke-width=".6"/>`;
+  g+=`</g>`;
+  field.innerHTML=g;
+  if(opts.onTap)field.querySelectorAll('.tgt').forEach(el=>el.addEventListener('click',()=>opts.onTap(el.dataset.t)));
+}
+
+/* ──────────────── アニメ ──────────────── */
+const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+async function tween(from,to,ms,set){const t0=performance.now();return new Promise(res=>{function f(now){const k=Math.min(1,(now-t0)/ms);const e=k<.5?2*k*k:-1+(4-2*k)*k;set({x:from.x+(to.x-from.x)*e,y:from.y+(to.y-from.y)*e});if(k<1)requestAnimationFrame(f);else res()}requestAnimationFrame(f)})}
+function flash(t){const f=document.getElementById('flash');document.getElementById('flashText').textContent=t;f.classList.remove('show');void f.offsetWidth;f.classList.add('show')}
+
+/* ──────────────── 画面 ──────────────── */
+function sitRow(sit){const d=sit.score?sit.score.us-sit.score.them:null;const diff=d===null?'':d===0?'同点':d>0?`${d}点リード`:`${-d}点ビハインド`;
+  const bases=['first','second','third'].filter(b=>sit.runners[b]).map(b=>({first:'一',second:'二',third:'三'}[b])).join('・');
+  return `<div class="sit"><span class="tag ${scene().role==='batter'?'off':'def'}">${scene().role==='batter'?'攻撃':'守備'}</span><span class="diff">${diff}</span><span>${sit.outs}アウト</span><span>${bases?bases+'塁':'ランナーなし'}</span>${sit.defense!=='定位置'?`<span style="color:#0369a1">${sit.defense}</span>`:''}<span style="color:#6d28d9">打者：${sit.batter}</span></div>`}
+function header(){document.getElementById('prog').textContent=`${S.i+1} / ${SCENES.length}`}
+
+function showIntro(){
+  S.phase='intro';S.anim={};S.plan={};S.voice=null;header();const sc=scene();draw();
+  panel.innerHTML='';
+  panel.append($(`<div class="card"><span class="tag src">${sc.src}</span>${sitRow(sc.sit)}<div class="note">${sc.note}</div></div>`));
+  panel.append($(`<div class="card"><div class="q"><small>まだ投げる前</small>先に決めておこう</div><div class="hint">光っているところをタップ。文は読まなくていい。</div></div>`));
+  const b=$(`<button class="btn">決める ›</button>`);b.onclick=()=>sc.role==='batter'?showBall():showBall();panel.append(b);
+}
+function planRow(){return `<div class="plan"><span class="${S.plan.ball?'on':''}">来たら：${S.plan.ball?(SPOT[S.plan.ball]?.l||BTN[S.plan.ball]):'？'}</span>${scene().not?`<span class="${S.plan.not?'on':''}">来なかったら：${S.plan.not?(SPOT[S.plan.not]?.l||BTN[S.plan.not]):'？'}</span>`:''}</div>`}
+function showBall(){
+  S.phase='ball';const sc=scene();const q=sc.ball;
+  const spots=q.options.filter(o=>SPOT[o]),btns=q.options.filter(o=>BTN[o]);
+  draw({targets:spots,onTap:(t)=>{S.plan.ball=t;sc.not?showNot():showVoice()}});
+  panel.innerHTML='';
+  panel.append($(`<div class="card">${planRow()}<div class="q" style="margin-top:8px"><small>${sc.role==='batter'?'打ったあと':'自分に来たら'}</small>${q.label||'どこへ投げる？'}</div><div class="hint">フィールドの●をタップ</div>
+    ${btns.length?`<div class="chips" style="margin-top:8px">${btns.map(b=>`<button class="chip" data-b="${b}">${BTN[b]}</button>`).join('')}</div>`:''}</div>`));
+  panel.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{S.plan.ball=c.dataset.b;sc.not?showNot():showVoice()});
+}
+function showNot(){
+  S.phase='not';const sc=scene();const q=sc.not;
+  const spots=q.options.filter(o=>SPOT[o]),btns=q.options.filter(o=>BTN[o]);
+  draw({targets:spots,onTap:(t)=>{S.plan.not=t;showVoice()}});
+  panel.innerHTML='';
+  panel.append($(`<div class="card">${planRow()}<div class="q" style="margin-top:8px"><small>自分に来なかったら</small>どこへ動く？</div><div class="hint">フィールドの●をタップ</div>
+    ${btns.length?`<div class="chips" style="margin-top:8px">${btns.map(b=>`<button class="chip" data-b="${b}">${BTN[b]}</button>`).join('')}</div>`:''}</div>`));
+  panel.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{S.plan.not=c.dataset.b;showVoice()});
+}
+const VOICES={pitcher:['ホーム！','ファースト！','任せた！'],third:['ファースト！','サード戻る！','ホーム！'],right:['カット！','バック！','任せた！'],center:['カット！','ホーム！','セカンド！'],batter:['行く！','止まれ！','回る！']};
+function showVoice(){
+  S.phase='voice';const sc=scene();draw();
+  panel.innerHTML='';
+  const v=VOICES[sc.role]||VOICES.third;
+  panel.append($(`<div class="card">${planRow()}<div class="q" style="margin-top:8px"><small>決めた。あとは声</small>なんて言う？</div><div class="chips" style="margin-top:8px">${v.map(x=>`<button class="chip" data-v="${x}">${x}</button>`).join('')}</div></div>`));
+  panel.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{S.voice=c.dataset.v;play()});
+}
+function pick(outcomes){const tot=outcomes.reduce((a,o)=>a+o.w,0);let r=Math.random()*tot;for(const o of outcomes){r-=o.w;if(r<=0)return o}return outcomes[0]}
+function nextBases(R,n){ // 走者を n 個進める（簡略）。戻り値：{runners, scored}
+  let scored=0;const order=['third','second','first'];let cur={...R};
+  for(let s=0;s<n;s++){if(cur.third)scored++;cur={first:null,second:cur.first,third:cur.second}}
+  return {runners:cur,scored};
+}
+async function play(){
+  S.phase='play';const sc=scene();const sit=sc.sit;const oc=pick(sc.outcomes);
+  const q=oc.kind==='ball'?sc.ball:sc.not;const choice=oc.kind==='ball'?S.plan.ball:S.plan.not;
+  const score=q.scores[choice]??0;
+  panel.innerHTML='';panel.append($(`<div class="card"><div class="q">${oc.play}</div></div>`));
+  const me=sc.role;const mePos=sc.role==='batter'?{x:HOME.x-12,y:HOME.y-4}:fielderPos(me,sit);
+  if(S.voice)S.anim.bubble={x:mePos.x,y:mePos.y,t:S.voice};
+  // 投球
+  S.anim.ball={...MOUND};draw();await sleep(250);
+  await tween(MOUND,{x:HOME.x,y:HOME.y-6},420,p=>{S.anim.ball=p;draw()});
+  // 打球
+  const area=AREA[oc.area]||AREA.home;
+  await tween({x:HOME.x,y:HOME.y-6},area,oc.kind==='ball'&&['right','center','left'].includes(oc.area)?900:650,p=>{S.anim.ball=p;draw()});
+  S.anim.bubble=null;
+  // 走者スタート
+  const R={...sit.runners};
+  // 自分の動き
+  if(sc.role==='batter'){
+    await tween(mePos,{x:FIRST.x+8,y:FIRST.y+6},700,p=>{S.anim.me=p;draw()});
+    // センターの送球
+    await tween(area,{x:HOME.x,y:HOME.y-8},700,p=>{S.anim.ball=p;draw()});
+    if(choice==='run-second'){S.anim.faces={me:SECOND};await tween({x:FIRST.x+8,y:FIRST.y+6},{x:SECOND.x+12,y:SECOND.y+8},700,p=>{S.anim.me=p;draw()});flash('セーフ！')}
+    else if(choice==='round-first'){await tween({x:FIRST.x+8,y:FIRST.y+6},{x:FIRST.x+10,y:FIRST.y+4},400,p=>{S.anim.me=p;draw()});flash('一塁')}
+    else{flash('止まった')}
+  } else {
+    const fast=score===3;
+    if(oc.kind==='ball'){
+      await tween(mePos,area,fast?350:600,p=>{S.anim[me]=p;draw()});
+      if(choice==='hold'){await sleep(700)}
+      else if(choice==='chase'||choice==='tag'){await tween(area,{x:area.x+14,y:area.y-12},600,p=>{S.anim[me]=p;S.anim.ball=p;draw()})}
+      else if(choice==='stepthird'){await tween(area,THIRD,400,p=>{S.anim[me]=p;S.anim.ball=p;draw()})}
+      else {const to=SPOT[choice];await sleep(fast?80:420);S.anim.line={x1:area.x,y1:area.y,x2:to.x,y2:to.y};await tween(area,to,fast?380:520,p=>{S.anim.ball=p;draw()});S.anim.line=null}
+    } else {
+      const to=choice==='stay'?mePos:choice==='chase'?area:SPOT[choice];
+      await tween(mePos,to,fast?450:700,p=>{S.anim[me]=p;draw()});
+      // 自分以外が処理した打球は、一塁へ送球される（そらした球・ファウルは除く）
+      if(!oc.noOut){S.anim.line={x1:area.x,y1:area.y,x2:FIRST.x,y2:FIRST.y};await tween(area,FIRST,480,p=>{S.anim.ball=p;draw()});S.anim.line=null}
+      await sleep(300);
+    }
+    // 結果の走者処理
+    let outsAdd=0,adv=0,msg='';
+    if(score===3){outsAdd=1;adv=0;msg='アウト！'}
+    else if(score===1){adv=1;msg='セーフ…'}
+    else if(score===0){adv=1;msg='間に合わない'}
+    else {adv=2;msg='やられた！'}
+    if(oc.kind==='not'&&score===3&&oc.noOut){outsAdd=0;msg='止めた！'}
+    const nb=nextBases(R,adv);
+    if(adv>0){const moves=[];if(R.third)moves.push({id:'r3',from:{x:THIRD.x+11,y:THIRD.y+13},to:{x:HOME.x-6,y:HOME.y-2}});if(R.second)moves.push({id:'r2',from:{x:SECOND.x-12,y:SECOND.y+9},to:adv>=2?{x:HOME.x+6,y:HOME.y-2}:{x:THIRD.x+11,y:THIRD.y+13}});if(R.first)moves.push({id:'r1',from:{x:FIRST.x-12,y:FIRST.y-12},to:adv>=2?{x:THIRD.x+11,y:THIRD.y+13}:{x:SECOND.x-12,y:SECOND.y+9}});
+      S.anim.runners={first:null,second:null,third:null};S.anim.extraRunners={};S.anim.faces={};for(const m of moves){S.anim.extraRunners[m.id]=m.from;S.anim.faces[m.id]=m.to}
+      await Promise.all(moves.map(m=>tween(m.from,m.to,700,p=>{S.anim.extraRunners[m.id]=p;draw()})));
+    }
+    flash(msg);
+    S.outs+=outsAdd;S.runs+=nb.scored;
+  }
+  await sleep(900);
+  S.log.push({id:sc.id,score,kind:oc.kind,choice,key:sc.key});
+  showResult(oc,q,choice,score);
+}
+const TIER={3:['best','最善手！'],1:['ok','まあOK'],0:['poor','もったいない'],'-1':['fatal','試合が壊れる']};
+function showResult(oc,q,choice,score){
+  S.phase='result';const sc=scene();const [cls,label]=TIER[score];draw();
+  panel.innerHTML='';
+  panel.append($(`<div class="result ${cls}">${label}</div>`));
+  panel.append($(`<div class="key"><small>おぼえること</small>${sc.key}</div>`));
+  panel.append($(`<div class="card"><div class="why"><b>${SPOT[choice]?.l||BTN[choice]||choice}</b>：${q.fb[choice]||''}</div>
+    <details style="margin-top:8px"><summary>くわしく</summary><div class="why" style="margin-top:6px">${sc.why}</div>
+    <div class="why" style="margin-top:6px">${q.options.map(o=>`<div>・<b>${SPOT[o]?.l||BTN[o]||o}</b>（${q.scores[o]>0?'+':''}${q.scores[o]}）${q.fb[o]||''}</div>`).join('')}</div></details></div>`));
+  const done=S.outs>=3||S.i>=SCENES.length-1;
+  const b=$(`<button class="btn blue">${done?'このイニングの結果 ›':'次の打者 ›'}</button>`);
+  b.onclick=()=>{if(done)showSummary();else{S.i++;showIntro()}};panel.append(b);
+}
+function showSummary(){
+  S.phase='summary';draw();panel.innerHTML='';
+  const best=S.log.filter(l=>l.score===3).length;
+  panel.append($(`<div class="card" style="text-align:center"><div class="hint">このイニング</div><div class="big">失点 ${S.runs}</div><div style="font-weight:900;margin-top:4px">${S.outs>=3?'守り切った！':'打者が終わった'}　最善手 ${best} / ${S.log.length}</div></div>`));
+  panel.append($(`<div class="card"><div class="log">${S.log.map(l=>`<div><b style="color:${{3:'#15803d',1:'#0369a1',0:'#b45309','-1':'#b91c1c'}[l.score]}">${{3:'◎',1:'○',0:'△','-1':'✕'}[l.score]}</b><span>${l.key}</span></div>`).join('')}</div></div>`));
+  const b=$(`<button class="btn">もう1イニング ›</button>`);b.onclick=()=>{S.i=0;S.outs=0;S.runs=0;S.log=[];shuffle();showIntro()};panel.append(b);
+}
+function shuffle(){for(let i=SCENES.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[SCENES[i],SCENES[j]]=[SCENES[j],SCENES[i]]}
+  // 双子は a→b の順を保つ
+  const b=SCENES.splice(SCENES.findIndex(s=>s.id==='twin-third-b'),1)[0];
+  SCENES.splice(SCENES.findIndex(s=>s.id==='twin-third-a')+1,0,b)}
+shuffle();showIntro();
+</script>
+</body>
+</html>
