@@ -298,9 +298,6 @@ label.check { flex-direction: row; align-items: center; gap: 10px; font-size: 13
 .l-quiz .learn-art { background: linear-gradient(#5da5dd, #2f7cc0); box-shadow: 0 5px 0 #c5dbe9; }
 .l-quiz .learn-art span { font-family: var(--led); font-size: 62px; color: #fff; line-height: 1; text-shadow: 0 4px 0 #1f5f9a; }
 .l-form .learn-art { background: radial-gradient(circle at 50% 78%, #dcb886 0 34%, transparent 35%), linear-gradient(135deg, #56a661, #3b8a4c); }
-.l-form .learn-art::before, .l-form .learn-art::after { content: ""; position: absolute; }
-.l-form .learn-art::before { left: 18px; top: 22px; width: 40px; height: 3px; border-radius: 2px; background: #f5c941; transform: rotate(-24deg); box-shadow: 0 0 0 1.5px #fff8; }
-.l-form .learn-art::after { right: 16px; top: 34px; width: 28px; height: 3px; border-radius: 2px; background: var(--lime); transform: rotate(40deg); box-shadow: 0 0 0 1.5px #fff8; }
 .learn-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .learn-body small { font-family: ui-monospace, Menlo, monospace; font-size: 9.5px; letter-spacing: .22em; color: #5c88aa; font-weight: 700; }
 .learn-body h3 { font-size: 21px; color: var(--blue); letter-spacing: -.03em; }

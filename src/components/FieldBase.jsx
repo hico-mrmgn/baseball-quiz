@@ -106,12 +106,6 @@ export function FieldGround({ uid }) {
       <line x1={HOME.x} y1={HOME.y} x2={HOME.x - fx} y2={HOME.y - fy} stroke="white" strokeWidth="1.5" opacity="0.9" />
       <line x1={HOME.x} y1={HOME.y} x2={HOME.x + fx} y2={HOME.y - fy} stroke="white" strokeWidth="1.5" opacity="0.9" />
 
-      {/* ベースを結ぶ白ライン（うっすら） */}
-      <polygon
-        points={`${HOME.x},${HOME.y} ${FIRST.x},${FIRST.y} ${SECOND.x},${SECOND.y} ${THIRD.x},${THIRD.y}`}
-        fill="none" stroke="white" strokeWidth="1.2" opacity="0.4"
-      />
-
       {/* バッターボックス・キャッチャーボックス */}
       <rect x={HOME.x - 14} y={HOME.y - 12} width="10" height="22" rx="1" fill="none" stroke="white" strokeWidth="0.9" opacity="0.75" />
       <rect x={HOME.x + 4} y={HOME.y - 12} width="10" height="22" rx="1" fill="none" stroke="white" strokeWidth="0.9" opacity="0.75" />
