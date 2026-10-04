@@ -20,7 +20,11 @@ const fresh = () => ({
   events: [],     // { date, p, type, text }
   ranks: {},      // { p1: { pre: 'C', … } }
   sceneVideos: {},// { sceneId: { id, t } }
-  settings: { sound: true },
+  quiz: [],       // 知識クイズ { t, p, theme, diff, score, total }
+  quizWrong: {},  // まちがえた問題 { p1: [questionId] }
+  oldDays: [],    // まえのアプリで練習した日
+  legacy: null,   // まえのアプリからの引きつぎ { at, drills, days, quiz, wrong }
+  settings: { sound: true, pos: null },
 });
 
 let state = load();
@@ -29,11 +33,61 @@ const listeners = new Set();
 function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return fresh();
-    return { ...fresh(), ...JSON.parse(raw) };
+    const s = raw ? { ...fresh(), ...JSON.parse(raw) } : fresh();
+    if (!s.legacy && migrateLegacy(s)) localStorage.setItem(KEY, JSON.stringify(s));
+    return s;
   } catch {
     return fresh();
   }
+}
+
+/**
+ * まえのアプリ（つぎ、どうする？）がこの端末に残した記録を、1回だけ引きつぐ。
+ * 元の記録は消さない。自主練の数・練習した日・クイズの戦績・まちがえた問題を移す。
+ */
+function migrateLegacy(s) {
+  const out = { at: today(), drills: 0, days: 0, quiz: 0, wrong: 0 };
+  const read = (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+  const DRILL = { suburi: 'swing', tee: 'tee', shadow: 'shadow', kabeate: 'wall', nawatobi: 'rope', stretch: 'stretch' };
+  const isDate = (d) => /^\d{4}-\d\d-\d\d$/.test(d ?? '');
+  const days = new Set(s.oldDays);
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k?.startsWith('ichi.drill.v1.day.')) continue;
+    const d = read(k); const date = d?.date ?? k.slice('ichi.drill.v1.day.'.length);
+    if (!d || !isDate(date)) continue;
+    for (const [id, v] of Object.entries(d.values ?? {})) {
+      if (!DRILL[id] || !(v > 0)) continue;
+      // ストレッチは「やった」だけ。ほかは 10本中の数や回数なので、数ではなく値として置く
+      s.drillLog.push(id === 'stretch' ? { date, p: 'p1', drill: 'stretch', count: 1, old: true } : { date, p: 'p1', drill: DRILL[id], count: 0, value: v, old: true });
+      out.drills++;
+    }
+    if (typeof d.note === 'string' && d.note.trim()) s.events.push({ date, p: 'p1', type: 'note', text: `自主練メモ：${d.note.trim()}` });
+  }
+  Object.keys(read('baseball-quiz-daily')?.log ?? {}).filter(isDate).forEach((d) => days.add(d));
+  const hist = read('baseball-quiz-history');
+  if (Array.isArray(hist)) {
+    for (const e of hist) {
+      if (!(e?.id > 1e12) || !(e.total > 0)) continue;
+      const at = new Date(e.id); days.add(today(at));
+      // クイズの戦績だけを移す。場面やイニングの点数は数え方がちがうので、日付だけ残す
+      if (typeof e.score === 'number' && e.score <= e.total && !['daily', 'scenario', 'inning'].includes(e.theme)) {
+        s.quiz.push({ t: at.toISOString(), p: 'p1', theme: e.theme, diff: 'all', score: e.score, total: e.total, old: true });
+        out.quiz++;
+      }
+    }
+    s.quiz.sort((a, b) => a.t.localeCompare(b.t));
+  }
+  const wrong = read('baseball-quiz-wrong-answers');
+  if (Array.isArray(wrong)) {
+    const ids = wrong.filter((x) => typeof x === 'string');
+    s.quizWrong.p1 = [...new Set([...(s.quizWrong.p1 ?? []), ...ids])];
+    out.wrong = ids.length;
+  }
+  s.oldDays = [...days].sort(); out.days = s.oldDays.length;
+  s.drillLog.sort((a, b) => a.date.localeCompare(b.date));
+  s.legacy = out;
+  return true;
 }
 
 function save() {
@@ -103,14 +157,16 @@ export function importData(text, { replace = false } = {}) {
         if (mine) Object.assign(mine, p);
       });
     }
-    ['plays', 'drillLog', 'events'].forEach((k) => {
+    ['plays', 'drillLog', 'events', 'quiz'].forEach((k) => {
       if (Array.isArray(data[k]) && data[k].length) s[k] = [...s[k], ...data[k]];
     });
     if (data.daily) s.daily = { ...s.daily, ...data.daily };
     if (data.ranks) s.ranks = { ...s.ranks, ...data.ranks };
+    if (Array.isArray(data.oldDays)) s.oldDays = [...new Set([...s.oldDays, ...data.oldDays])].sort();
+    if (data.quizWrong) Object.entries(data.quizWrong).forEach(([p, ids]) => { s.quizWrong[p] = [...new Set([...(s.quizWrong[p] ?? []), ...ids])]; });
   });
   return summary(data);
 }
 const summary = (d) => ({ games: d.games?.length ?? 0, measures: d.measures?.length ?? 0, videos: Object.keys(d.sceneVideos ?? {}).length });
 
-export function resetAll() { state = fresh(); save(); }
+export function resetAll() { state = { ...fresh(), legacy: { at: today(), reset: true } }; save(); }

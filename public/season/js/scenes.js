@@ -13,7 +13,10 @@
 
 const R = (first, second, third) => ({ first: first || null, second: second || null, third: third || null });
 
-export const SCENES = [
+import { CLASSIC } from '../data/classic.js';
+
+/** 「来たら／来なかったら」を両方きめる、動きまで作りこんだ場面 */
+const RICH = [
   /* ───────── じっさいの試合 ───────── */
   {
     id: 'real-0913-bunt', role: 'third', side: 'def', real: true, src: '9/13 グランツ戦 4回ウラ',
@@ -488,4 +491,6 @@ export const SCENES = [
   },
 ];
 
+/** RICH に、旧アプリから移した判断の場面（data/classic.js）を足したもの */
+export const SCENES = [...RICH, ...CLASSIC];
 export const sceneById = Object.fromEntries(SCENES.map((s) => [s.id, s]));

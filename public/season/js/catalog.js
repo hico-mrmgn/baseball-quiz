@@ -27,8 +27,12 @@ export const DRILLS = [
   { id: 'steal',    name: '足の向きを見てスタート', how: 'セットから「ホームへ」「一塁へけん制」を混ぜてもらう。', unit: '本' },
   { id: 'flycharge',name: '後ろから前へ出て捕る', how: '「2アウト！」「1アウト三塁！」と声をかけてもらい、捕り方を変える。', unit: '本', measure: { label: '捕ってから投げるまで', unit: '秒', step: 0.01 } },
   { id: 'voice',    name: '外野から声を出す',     how: '1球ごとに、内野へ状況を声で伝える。', unit: '回' },
-  { id: 'swing',    name: '素振り',               how: '振り切る。数だけつける。', unit: '回' },
-  { id: 'wall',     name: 'かべ当て',             how: '捕って、すぐ投げる。', unit: '本' },
+  { id: 'swing',    name: '素振り',               how: 'テープを踏みこえない。振り切って、前足一本で3秒止まる。', unit: '回', measure: { label: '10本のうち止まれた数', unit: '本' } },
+  { id: 'tee',      name: 'ティー',               how: 'テープを踏みこえない。ネットの帯をねらう。', unit: '本', measure: { label: '10本のうち帯に入った数', unit: '本' } },
+  { id: 'shadow',   name: 'シャドーピッチング',   how: 'グラブのタオルを落とさない。フィニッシュで3秒止まる。', unit: '球', measure: { label: '10球のうち止まれた数', unit: '球' } },
+  { id: 'wall',     name: 'かべ当て',             how: '捕ってから2歩以内で投げる。', unit: '本', measure: { label: '30秒で何回', unit: '回' } },
+  { id: 'rope',     name: '二重跳び',             how: 'つづけて何回とべるか。', unit: '回', measure: { label: '連続で何回', unit: '回' } },
+  { id: 'stretch',  name: 'ストレッチ',           how: '最後にひとつ、いちばん伸びた形のまま力を入れる。', unit: '回' },
 ];
 
 /** 試合で出た課題 → 取り組む場面とドリルの組。同時に持つのは2つまで。 */

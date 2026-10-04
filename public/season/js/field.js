@@ -11,7 +11,13 @@ export const POS = {
   short: { x: 78, y: 85, l: 'SS' }, third: { x: 49, y: 117, l: '3B' },
   left: { x: 36, y: 46, l: 'LF' }, center: { x: 110, y: 26, l: 'CF' }, right: { x: 184, y: 46, l: 'RF' },
 };
-const SHIFT = { '前進守備': { first: 14, second: 16, short: 16, third: 14 }, 'バントシフト': { first: 26, third: 26 } };
+const SHIFT = {
+  '前進守備': { first: 14, second: 16, short: 16, third: 14 }, 'バントシフト': { first: 26, third: 26 },
+  '定位置より少し前': { first: 6, second: 7, short: 7, third: 6 }, 'やや後ろ': { left: -8, center: -6, right: -8 }, '外野は前進': { left: 12, center: 10, right: 12 },
+  'ファーストが牽制でベースについている': { first: 13 },
+};
+/** コーチャーズボックス */
+export const COACH = { coach1: { x: 192, y: 150 }, coach3: { x: 28, y: 150 } };
 
 /** 打球が行く場所 */
 export const AREA = {
@@ -19,7 +25,7 @@ export const AREA = {
   pitcher: { x: 110, y: 150 }, bunt3: { x: 94, y: 162 }, bunt1: { x: 126, y: 162 }, line3: { x: 58, y: 136 }, line1: { x: 160, y: 138 },
   home: { x: 110, y: 176 }, backstop: { x: 122, y: 208 },
   left: { x: 34, y: 44 }, leftFront: { x: 52, y: 66 }, center: { x: 110, y: 26 }, centerFront: { x: 110, y: 52 }, centerDeep: { x: 112, y: 16 },
-  right: { x: 180, y: 54 }, rightFront: { x: 168, y: 70 },
+  right: { x: 180, y: 54 }, rightFront: { x: 168, y: 70 }, leftCenter: { x: 66, y: 30 }, rightCenter: { x: 154, y: 30 },
 };
 
 /** タップで答えられる場所。l は「来たら／来なかったら」の欄に出す言葉。 */
@@ -85,6 +91,9 @@ function meSprite({ x, y, action = 'ready', label = 'YOU', scale = 1.25, flip = 
     ${pill(y, label, true)}</g>`;
 }
 
+/** 図の矢印の色。ball=打球へ、cover=カバー、base=ベースに入る、throw=送球 */
+export const ARROW = { ball: '#ff7a59', cover: '#7cc4ff', base: '#c7f35c', throw: '#f5c941' };
+
 function ground() {
   const len = Math.hypot(110, 127), fx = (FENCE_R * 110) / len, fy = (FENCE_R * 127) / len;
   let bands = ''; let k = 0;
@@ -93,6 +102,7 @@ function ground() {
     <image id="motionAtlas" width="768" height="512" href="img/motion.webp"/>
     <image id="playerAtlas" width="887" height="444" href="img/players.webp"/>
     <marker id="routeArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10Z" fill="#f5c941"/></marker>
+    ${Object.entries(ARROW).map(([k, c]) => `<marker id="arw-${k}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4.6" markerHeight="4.6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10Z" fill="${c}"/></marker>`).join('')}
     <clipPath id="fclip"><rect width="${W}" height="${H}" rx="12"/></clipPath>
     <clipPath id="ffence"><circle cx="${HOME.x}" cy="${HOME.y}" r="${FENCE_R}"/></clipPath>
     <radialGradient id="turf"><stop offset="0" stop-color="#72a258" stop-opacity=".15"/><stop offset="1" stop-color="#061f16" stop-opacity=".28"/></radialGradient>
@@ -143,6 +153,13 @@ export function renderField(view) {
   }
   actors.sort((a, b) => a.y - b.y).forEach((a) => { g += a.draw(); });
 
+  for (const a of view.arrows ?? []) {
+    const c = ARROW[a.k] ?? '#fff', dx = a.to.x - a.from.x, dy = a.to.y - a.from.y, len = Math.hypot(dx, dy) || 1;
+    // 矢印の先は、行き先の選手に重ならないよう少し手前で止める
+    const ex = a.to.x - (dx / len) * 5, ey = a.to.y - (dy / len) * 5;
+    g += `<line x1="${a.from.x}" y1="${a.from.y}" x2="${ex}" y2="${ey}" stroke="#0d3323" stroke-width="3.2" opacity=".35" stroke-linecap="round"/>
+      <line x1="${a.from.x}" y1="${a.from.y}" x2="${ex}" y2="${ey}" stroke="${c}" stroke-width="1.8" stroke-linecap="round" ${a.k === 'throw' ? 'stroke-dasharray="4 2.5"' : ''} marker-end="url(#arw-${a.k})" opacity="${a.dim ? 0.35 : 1}"/>`;
+  }
   if (view.route) {
     const { from: o, to: e } = view.route; const d = `M${o.x},${o.y} Q${(o.x + e.x) / 2 + 8},${(o.y + e.y) / 2 - 8} ${e.x},${e.y}`;
     g += `<path d="${d}" fill="none" stroke="#fff" stroke-width="3" opacity=".85"/><path d="${d}" fill="none" stroke="#f5c941" stroke-width="1.7" marker-end="url(#routeArrow)"/><circle cx="${e.x}" cy="${e.y}" r="8" fill="none" stroke="#f5c941" stroke-width="1.5"/>`;
