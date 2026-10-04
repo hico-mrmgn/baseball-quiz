@@ -373,6 +373,40 @@ i.k-ball { background: #ff7a59; } i.k-cover { background: #5aaeea; } i.k-base { 
 .points { margin: 4px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; } .points li::marker { color: var(--orange-2); }
 .tabs a { min-width: 0; }
 
+
+/* ── 能力レーダー・試合の評価・取り組みの成果 ── */
+.mini-ranks { display: flex; justify-content: space-between; gap: 2px; margin-top: 2px; }
+.mini-ranks span { display: flex; flex-direction: column; align-items: center; flex: 1; } .mini-ranks i { font-style: normal; font-size: 9.5px; font-weight: 900; color: var(--muted); }
+.mini-ranks b { font-size: 19px; color: var(--blue); line-height: 1.1; } .mini-ranks .none b { color: #b4c6d3; }
+.ability { padding: 0; overflow: hidden; } .ability > summary { list-style: none; cursor: pointer; } .ability > summary::-webkit-details-marker { display: none; }
+.ability .axis-rank { position: relative; } .ability[open] > summary { border-bottom: 2px solid #e6eff5; }
+.delta { margin-left: 8px; font-family: var(--led); font-size: 17px; } .delta.up { color: var(--good); } .delta.down { color: var(--bad); }
+.parts { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; background: #f8fbfd; }
+.part { display: grid; grid-template-columns: 44px minmax(0, 1.3fr) minmax(40px, 1fr) 28px; gap: 10px; align-items: center; }
+.part b { display: block; font-size: 13px; } .part small { font-size: 11px; color: var(--muted); font-weight: 700; } .part > .led { font-size: 19px; color: var(--blue); text-align: right; }
+.src { font-size: 9.5px; font-weight: 900; text-align: center; padding: 4px 0; border-radius: 6px; background: #e6eff5; color: #597183; }
+.src.s-game { background: #ffead4; color: #b36518; } .src.s-measure { background: var(--sky); color: var(--blue-2); } .src.s-app { background: #e0f1c5; color: #3d712b; } .src.s-drill { background: #f0e6fa; color: #7a4fa3; }
+.boost { margin-top: 4px; display: flex; flex-direction: column; gap: 8px; } .boost small { font-size: 10px; font-weight: 700; letter-spacing: .14em; color: #5c88aa; }
+.boost > div { display: flex; gap: 6px; flex-wrap: wrap; } .boost .btn { flex: 1 1 auto; }
+.effect { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 14px; background: #fff7ee; }
+.effect small { font-size: 11px; font-weight: 700; color: #9a6a3a; }
+.effect-row { display: flex; align-items: center; gap: 10px; color: #c9a57e; } .effect-row .led { font-size: 30px; color: #8a7a6a; line-height: 1.1; }
+.effect-row b.led { color: var(--ink); } .effect-row b.up { color: var(--good); } .effect-row b.down { color: var(--bad); }
+.effect-row .wait { font-style: normal; font-size: 12.5px; font-weight: 900; color: #b36518; }
+.tag { margin-left: auto; font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 999px; background: #eef4f8; color: #597183; } .tag.up { background: #e0f1c5; color: #3d712b; } .tag.down { background: #fbdcd5; color: #a94a3b; }
+.effect-work { font-size: 11.5px; font-weight: 700; color: var(--muted); }
+.judge { display: flex; flex-direction: column; gap: 10px; }
+.jrow { display: grid; grid-template-columns: 92px 1fr 64px; gap: 10px; align-items: center; } .jrow b { font-size: 13px; } .jrow .led { font-size: 18px; color: var(--blue); text-align: right; }
+.marks { display: flex; gap: 4px; flex: none; }
+.game > div:not(.marks):not(.game-score) { min-width: 0; } .game small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mark { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 8px; font-size: 10px; font-weight: 900; background: #eef4f8; color: #597183; } .mark b { font-size: 17px; line-height: 1.2; }
+.mark.rS, .mark.rA { background: #e0f1c5; color: #3d712b; } .mark.rB { background: var(--sky); color: var(--blue-2); } .mark.rC { background: #ffead4; color: #b36518; } .mark.rD { background: #fbdcd5; color: #a94a3b; }
+.gverdict { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 14px; background: #f4f9fd; margin: 10px 0 14px; }
+.gverdict > .led { flex: none; display: grid; place-items: center; width: 54px; height: 54px; border-radius: 14px; font-size: 40px; background: linear-gradient(135deg, var(--green-1), var(--green-2)); color: var(--lime); }
+.gverdict b { display: block; font-size: 17px; } .gverdict small { font-size: 11px; font-weight: 700; color: var(--muted); line-height: 1.7; }
+.gverdict.rC > .led { background: linear-gradient(#ffb44d, #ff9429); color: #fff; } .gverdict.rD > .led { background: linear-gradient(#e98672, #d36755); color: #fff; }
+.prep h3 + small { display: block; margin: 2px 0 10px; }
+
 /* ── 重ねもの ── */
 .modal { position: fixed; inset: 0; z-index: 60; background: #0f2a3f99; display: grid; place-items: center; padding: 20px; }
 .modal-card { width: min(420px, 100%); background: #fff; border: 3px solid #fff; border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 0 #c5dbe9, 0 30px 60px -20px #0009; }
@@ -386,14 +420,71 @@ i.k-ball { background: #ff7a59; } i.k-cover { background: #5aaeea; } i.k-base { 
 .toast { position: fixed; left: 50%; bottom: 100px; z-index: 70; transform: translate(-50%, 20px); opacity: 0; background: var(--blue); color: #fff; font-weight: 900; font-size: 13px; padding: 10px 18px; border-radius: 999px; transition: .25s; box-shadow: 0 4px 0 #0f4a85; }
 .toast.on { transform: translate(-50%, 0); opacity: 1; }
 
-/* ── 広い画面：左に球場、右にカード ── */
+/* ── 画面の大きさに合わせる ──
+   せまいスマホ：見出しを詰めて、球場と質問が1画面に近づくようにする
+   タブレット・横向き・PC：左に球場、右にカード。球場は画面の高さに収まる大きさまで
+   PC：一覧は2列、ホームは左右に分ける */
+.screen, section, .card { min-width: 0; }
+.tl li { grid-template-columns: 46px minmax(0, 1fr); } .tl b, .tl small { overflow-wrap: anywhere; }
+.strip.wide { gap: 3px; } .day { min-width: 0; }
+.field-wrap { max-width: max(250px, calc(100dvh - 300px)); margin-inline: auto; }
+.radar-card .radar { display: block; width: 100%; max-width: 440px; margin: 0 auto; }
+
+@media (max-width: 400px), (max-height: 700px) {
+  .s-play { padding-top: 10px; }
+  .sim-eyebrow { margin-bottom: 10px; padding-bottom: 6px; }
+  .simhead { margin-bottom: 8px; } .simtitle { font-size: 26px; } .simsub { display: none; }
+  .stagebar { margin-bottom: 8px; } .stagebar span { padding: 5px 0; }
+  .match-hud { padding: 2px 8px 8px; } .field-caption { padding: 8px 6px 2px; }
+  .position-caption { margin-top: 8px; padding: 9px 14px; }
+  .match-hud { gap: 6px; } .match-hud .inning { font-size: 0; } .match-hud .inning strong { font-size: 13px; white-space: nowrap; } .match-hud small { white-space: nowrap; }
+  .q { font-size: 21px; } .q.long { font-size: 17px; }
+}
+@media (max-width: 400px) {
+  .screen { padding-left: 14px; padding-right: 14px; }
+  .brand { font-size: 28px; } .hero h1 { font-size: 30px; }
+  th, td { padding: 7px 3px; } td { font-size: 17px; } table { font-size: 12px; }
+  .part { grid-template-columns: 40px minmax(0, 1.4fr) minmax(28px, .7fr) 24px; gap: 8px; }
+  .pospick > div { grid-template-columns: repeat(5, 1fr); }
+  .learn-art { width: 68px; height: 68px; } .l-quiz .learn-art span { font-size: 50px; }
+}
+
+@media (min-width: 700px), (min-width: 560px) and (orientation: landscape) {
+  .s-play { padding: 24px 28px 32px; }
+  .sim:not(.ended) { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); column-gap: 24px; align-items: start; }
+  .sim-eyebrow { grid-column: 1 / -1; }
+  .simleft { position: sticky; top: 16px; min-width: 0; }
+  .simpanel { padding-top: 0; }
+  .field-wrap { max-width: max(220px, calc(100dvh - 250px)); }
+}
+/* 横向きのスマホ：高さがないので、見出しをしまって球場を大きく取る */
+@media (max-height: 500px) and (orientation: landscape) {
+  .s-play { padding: 8px 16px 16px; }
+  .sim-eyebrow { margin-bottom: 8px; padding-bottom: 4px; }
+  .simhead, .stagebar, .position-caption { display: none; }
+  .field-wrap { max-width: max(200px, calc(100dvh - 136px)); padding: 5px; border-radius: 16px; }
+  .match-hud { padding: 0 6px 5px; gap: 2px; } .match-hud b { font-size: 20px; } .match-score { gap: 6px; } .field-caption { display: none; }
+  .formview .btn.replay { margin-top: 8px; min-height: 44px; }
+}
+
 @media (min-width: 900px) {
-  .s-play { padding: 32px 40px 40px; }
-  .sim:not(.ended) { display: grid; grid-template-columns: 1.15fr 1fr; column-gap: 32px; align-items: start; }
-  .sim-eyebrow { grid-column: 1 / -1; margin-bottom: 24px; padding-bottom: 14px; }
-  .simleft { position: sticky; top: 24px; }
-  .simtitle { font-size: 44px; } .field-wrap { border-radius: 28px; padding: 10px; } .field { border-radius: 20px; }
+  .screen { max-width: 980px; padding: 28px 32px 112px; }
+  .s-play { max-width: 1100px; padding: 32px 40px 40px; }
+  .sim:not(.ended) { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 32px; }
+  .sim-eyebrow { margin-bottom: 24px; padding-bottom: 14px; }
+  .simleft { top: 24px; }
+  .simtitle { font-size: 44px; } .field-wrap { border-radius: 28px; padding: 10px; max-width: max(260px, calc(100dvh - 330px)); } .field { border-radius: 20px; }
   .simpanel { padding-top: 75px; gap: 16px; } .card { padding: 24px; } .q { font-size: 28px; } .q.long { font-size: 21px; }
-  .formview .simpanel { padding-top: 0; } .formview .simtitle { font-size: 32px; }
+  .formview .simpanel { padding-top: 0; } .formview .simtitle { font-size: 32px; } .formview .field-wrap { max-width: max(260px, calc(100dvh - 300px)); }
+  .quiz { max-width: 720px; }
+  /* ホーム：左に今日の試合、右に取り組みとレーダー */
+  .s-home { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); column-gap: 28px; align-items: start; grid-auto-flow: dense; }
+  .s-home > header { grid-column: 1 / -1; } .s-home > .hero, .s-home > .strip { grid-column: 1; } .s-home > section:not(.hero):not(.strip) { grid-column: 2; }
+  .s-home > .hero { min-height: 300px; }
+  /* 一覧は2列 */
+  .axes, .games, .themes, .kinds, .forms, .drills { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+  .chipgrid { grid-template-columns: repeat(5, 1fr); }
+  .s-parent, .s-game { max-width: 720px; }
+  .tabs a { max-width: 150px; flex-direction: row; justify-content: center; gap: 8px; font-size: 13px; padding: 10px 8px; }
 }
 @media (prefers-reduced-motion: reduce) { .tgt-ring, .flash span, .rk.to { animation-duration: .01s; } .btn, .opt { transition: none; } }

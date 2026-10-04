@@ -1,5 +1,7 @@
 // 画面づくりの小道具。
 
+import { sfx } from './sound.js';
+
 export function h(html) {
   const t = document.createElement('template');
   t.innerHTML = html.trim();
@@ -50,6 +52,17 @@ export function flash(text, tone = '') {
   const el = h(`<div class="flash ${tone}"><span>${esc(text)}</span></div>`);
   document.body.append(el);
   setTimeout(() => el.remove(), 1100);
+}
+
+/** ランクが上がったことを、上がった数だけ順に知らせる */
+export function rankUpModal(ups) {
+  if (!ups?.length) return;
+  sfx.rank();
+  const u = ups[0];
+  modal(`<div class="rankup"><small>成長</small><h3>${esc(u.axis.name)}</h3>
+    <div class="rankrow"><span class="rk">${u.from}</span>${icon.right}<span class="rk to">${u.to}</span></div>
+    <p class="muted">${esc(u.axis.hint ?? '')}</p><button class="btn primary" data-close>やった</button></div>`,
+  { onClose: () => rankUpModal(ups.slice(1)) });
 }
 
 export const go = (hash) => { location.hash = hash; };
