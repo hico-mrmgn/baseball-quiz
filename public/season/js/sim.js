@@ -200,19 +200,21 @@ export function mountSim(root, set, { onExit }) {
 
   function ask(kind) {
     const sc = scene(); const q = sc[kind];
-    const spots = q.opts.filter(isSpot), btns = q.opts.filter((o) => !isSpot(o));
+    // 選択肢はぜんぶ下のボタンに並べる。場所を選ぶ手は、同じ記号をグラウンドにも置く（どちらを押してもいい）
+    const letter = (o) => 'ABCDEF'[q.opts.indexOf(o)];
+    const spots = q.opts.filter(isSpot);
     const lead = sc.classic ? (sc.play ? 'この打球になったら' : '投げる前に決めておく')
       : sc.side === 'off' ? '自分ならどうする' : kind === 'ball' ? '自分に来たら' : '自分に来なかったら';
     const text = q.q ?? (kind === 'ball' ? 'どこへ投げる？' : 'どこへ動く？');
-    view.targets = spots.map((o) => ({ id: o.id }));
+    view.targets = spots.map((o) => ({ id: o.id, mark: letter(o) }));
     const choose = (id) => { G.plan[kind] = q.opts.find((o) => o.id === id); view.targets = []; next(kind); };
     onTap = choose; paint(); header(kind === 'ball' && !G.plan.ball && sc.side === 'def' ? 1 : 1);
     panel.innerHTML = `${kind === 'ball' ? sitCard(sc) : ''}
       <div class="card ask">${planChips(sc)}
         ${sc.classic && sc.play ? `<div class="ifplay">${icon.ball}<span>${esc(sc.play)}</span></div>` : ''}
         <div class="q ${sc.classic ? 'long' : ''}"><small>${lead}</small>${esc(text)}</div>
-        ${spots.length ? `<p class="hint">${icon.ball} グラウンドの塁名をタップ</p>` : ''}
-        ${btns.length ? `<div class="opts ${sc.classic ? 'long' : ''}">${btns.map((o) => `<button class="opt" data-o="${o.id}">${esc(optLabel(o))}</button>`).join('')}</div>` : ''}
+        <div class="opts lettered ${sc.classic ? 'long' : ''}">${q.opts.map((o) => `<button class="opt" data-o="${o.id}"><i>${letter(o)}</i><span>${esc(optLabel(o))}</span></button>`).join('')}</div>
+        ${spots.length ? `<p class="hint">${icon.ball} グラウンドの同じ記号を押してもいい</p>` : ''}
       </div>`;
     panel.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { sfx.pick(); choose(b.dataset.o); }; });
     panel.scrollTop = 0;

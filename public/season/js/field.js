@@ -175,7 +175,7 @@ export function renderField(view) {
       <circle cx="${p.x}" cy="${p.y}" r="13" fill="transparent"/>
       <circle cx="${p.x}" cy="${p.y}" r="9" fill="none" stroke="#fff" stroke-width="2" class="tgt-ring"/>
       <circle cx="${p.x}" cy="${p.y}" r="9" fill="#c7f35c" stroke="#fff" stroke-width="1.5"/>
-      <text x="${p.x}" y="${p.y + 1.9}" font-size="5" font-weight="900" fill="#16281c" text-anchor="middle">${MARK(t.id)}</text></g>`;
+      <text x="${p.x}" y="${p.y + (t.mark ? 3.4 : 1.9)}" font-size="${t.mark ? 10 : 5}" font-weight="900" fill="#16281c" text-anchor="middle" ${t.mark ? 'font-family="Bebas Neue, Arial Narrow, sans-serif"' : ''}>${t.mark ?? MARK(t.id)}</text></g>`;
   }
   if (view.bubble) {
     const b = view.bubble, w = Math.max(34, b.t.length * 7.2 + 12);

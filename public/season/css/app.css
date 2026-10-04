@@ -177,8 +177,11 @@ body.playing .tabs { display: none; }
 .hint { display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 1.8; color: #6a8294; margin-bottom: 4px; }
 .opts { display: grid; gap: 10px; margin-top: 10px; }
 .opts.three { grid-template-columns: repeat(3, 1fr); }
+.opts.lettered .opt { display: flex; gap: 12px; align-items: center; }
+.opts.lettered.long .opt { align-items: flex-start; }
+.hint { margin-top: 10px; }
 .opt { min-height: 58px; padding: 14px 16px; border-radius: 12px; border: 2px solid #cfe2ef; background: #f4f9fd; color: #2d5a7b; font-weight: 900; font-size: 14.5px; text-align: left; line-height: 1.5; box-shadow: 0 3px 0 #d3e2ed; transition: background .2s; }
-.opts.three .opt { text-align: center; padding: 12px 6px; }
+.opts.three .opt { text-align: center; padding: 12px 2px; font-size: 13px; white-space: nowrap; }
 .opt:hover { background: #e5f3ff; border-color: #6aace0; }
 .opt:active { transform: translateY(2px); box-shadow: 0 1px 0 #d3e2ed; }
 .playcall, .live-card { border-color: #acd5f0; }
