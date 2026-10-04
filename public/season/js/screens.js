@@ -46,6 +46,8 @@ export function renderHome(root) {
   const played = stats.some((a) => a.n);
   const days = [...Array(7)].map((_, i) => addDays(date, i - 6));
   const drillDays = new Set(s.drillLog.filter((d) => d.p === me.id).map((d) => d.date));
+  // 場面の練習・知識クイズ・まえのアプリでの練習も「やった日」に数える
+  const studyDays = new Set([...s.plays.filter((p) => p.p === me.id).map((p) => today(new Date(p.t))), ...s.quiz.filter((q) => q.p === me.id).map((q) => today(new Date(q.t))), ...(me.id === 'p1' ? s.oldDays : [])]);
   const dn = new Date();
 
   root.innerHTML = `
@@ -72,10 +74,10 @@ export function renderHome(root) {
 
     <section class="strip" aria-label="この7日間">
       ${days.map((d) => {
-        const dd = new Date(`${d}T12:00:00`); const g = s.daily[d]?.[me.id]; const dr = drillDays.has(d);
+        const dd = new Date(`${d}T12:00:00`); const g = s.daily[d]?.[me.id] || studyDays.has(d); const dr = drillDays.has(d);
         return `<div class="day ${d === date ? 'today' : ''}"><span>${WEEK[dd.getDay()]}</span><i class="${g ? 'g' : ''}"></i><i class="${dr ? 'd' : ''}"></i></div>`;
       }).join('')}
-      <div class="strip-legend"><i class="g"></i>試合<i class="d"></i>自主練</div>
+      <div class="strip-legend"><i class="g"></i>場面・クイズ<i class="d"></i>自主練</div>
     </section>
 
     ${s.rx.length ? `<section><h2>いま取り組んでいること</h2>
@@ -94,9 +96,9 @@ export function renderHome(root) {
         ${played ? radar(stats, { size: 200, small: true }) : '<div class="empty-radar">試合をやると、ここに形ができる</div>'}
       </a>
       <div class="tiles">
-        <a class="card tile mini" href="#/play/free/real"><span class="tile-ic">${icon.video}</span><b>じっさいの試合</b><small>${SCENES.filter((x) => x.real).length}場面</small></a>
-        <a class="card tile mini" href="#/play/free/off"><span class="tile-ic off">${icon.ball}</span><b>走る・打つ</b><small>${SCENES.filter((x) => x.side === 'off').length}場面</small></a>
-        <a class="card tile mini" href="#/drills"><span class="tile-ic dr">${icon.drill}</span><b>きょうの自主練</b><small>数をつける</small></a>
+        <a class="card tile mini" href="#/learn/scenes"><span class="tile-ic">${icon.ball}</span><b>判断の場面</b><small>${SCENES.length}場面</small></a>
+        <a class="card tile mini" href="#/learn/quiz"><span class="tile-ic off">${icon.learn}</span><b>知識クイズ</b><small>1170問</small></a>
+        <a class="card tile mini" href="#/learn/form"><span class="tile-ic dr">${icon.growth}</span><b>フォーメーション</b><small>190パターン</small></a>
       </div>
     </section>`;
 
@@ -167,7 +169,14 @@ function timeline(s, me) {
     const key = today(dt); const w = weeks.get(key) ?? { days: new Set(), by: {} };
     w.days.add(d.date); w.by[d.drill] = (w.by[d.drill] ?? 0) + (d.count ?? 0); weeks.set(key, w);
   });
-  weeks.forEach((w, key) => items.push({ date: addDays(key, 6), type: 'drill', title: `自主練　${w.days.size}日`, sub: Object.entries(w.by).map(([id, n]) => `${drillById[id]?.name ?? id} ${n}`).join('、') }));
+  weeks.forEach((w, key) => items.push({ date: addDays(key, 6), type: 'drill', title: `自主練　${w.days.size}日`, sub: Object.entries(w.by).map(([id, n]) => `${drillById[id]?.name ?? id}${n ? ` ${n}` : ''}`).join('、') }));
+  // 知識クイズの週まとめ
+  const qw = new Map();
+  s.quiz.filter((q) => q.p === me.id).forEach((q) => {
+    const dt = new Date(q.t); dt.setHours(12); dt.setDate(dt.getDate() - dt.getDay());
+    const key = today(dt); const w = qw.get(key) ?? { n: 0, right: 0, total: 0 }; w.n++; w.right += q.score; w.total += q.total; qw.set(key, w);
+  });
+  qw.forEach((w, key) => items.push({ date: addDays(key, 6), type: 'play', title: `知識クイズ　${w.n}回`, sub: `${w.total}問のうち正解 ${w.right}` }));
   // 試合（シミュ）の週まとめ
   const pw = new Map();
   s.plays.filter((p) => p.p === me.id).forEach((p) => {
@@ -315,10 +324,16 @@ export function renderParent(root, editId) {
 
     <section class="card form" id="gameform"><h3>${edit ? '試合をなおす' : '試合を入れる'}</h3>${gameForm(edit)}</section>
 
+    ${s.legacy && !s.legacy.reset && (s.legacy.drills || s.legacy.days || s.legacy.quiz || s.legacy.wrong) ? `<section class="card form"><h3>まえのアプリからの引きつぎ</h3>
+      <p class="muted">この端末に残っていた「つぎ、どうする？」の記録を、${fmtDate(s.legacy.at)}に移しました。</p>
+      <ul class="mini-list"><li>練習した日 <b>${s.legacy.days}日</b></li><li>自主練の記録 <b>${s.legacy.drills}件</b></li><li>クイズの戦績 <b>${s.legacy.quiz}回</b></li><li>まちがえた問題 <b>${s.legacy.wrong}問</b></li></ul>
+    </section>` : ''}
+
     <section class="card form"><h3>データの持ち運び</h3>
       <p class="muted">試合の成績や実測値は個人のデータなので、アプリには入れずにこの端末に保存しています。別の端末へはファイルで移します。</p>
       <div class="row"><button class="btn ghost" data-export>書き出す</button><label class="btn ghost filebtn">読みこむ<input type="file" accept="application/json,.json" data-import hidden></label></div>
       <button class="link danger" data-reset>この端末の記録をぜんぶ消す</button>
+      <a class="link" href="/?classic">まえのアプリ（つぎ、どうする？）をひらく</a>
     </section>`;
 
   root.querySelectorAll('[data-pname]').forEach((el) => { el.onchange = () => update((st) => { st.profiles[+el.dataset.pname].name = el.value.trim() || 'じぶん'; }); });

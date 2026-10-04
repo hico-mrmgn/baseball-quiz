@@ -7,7 +7,7 @@ import { get, update, profile, otherProfiles, today, seeded } from './store.js';
 import { collectRankUps } from './growth.js';
 import { sfx } from './sound.js';
 import {
-  renderField, fielderPos, POS, AREA, SPOT, RUNTO, LEAD, BATBOX, HOME, FIRST, SECOND, THIRD, MOUND,
+  renderField, fielderPos, POS, AREA, SPOT, RUNTO, LEAD, BATBOX, COACH, HOME, FIRST, SECOND, THIRD, MOUND,
   optLabel, isSpot, tween, sleep, W, H,
 } from './field.js';
 import { h, esc, icon, flash, modal, go } from './ui.js';
@@ -34,14 +34,16 @@ export function buildDaily(date) {
   const rand = seeded(`daily-${date}`);
   const rxScenes = new Set(get().rx.flatMap((r) => ISSUES.find((i) => i.id === r.issue)?.scenes ?? []));
   const weight = (g) => (g.some((s) => rxScenes.has(s.id)) ? 1 : 0);
-  const pickGroups = (side, n) => {
-    const groups = shuffle(groupsOf(SCENES.filter((s) => s.side === side)), rand)
+  // 動きまで作りこんだ場面（rich）と、4つの手から選ぶ判断の場面（classic）を混ぜる
+  const pickGroups = (side, n, classic) => {
+    const groups = shuffle(groupsOf(SCENES.filter((s) => s.side === side && Boolean(s.classic) === classic)), rand)
       .map((g, i) => ({ g, i, w: weight(g) })).sort((a, b) => b.w - a.w || a.i - b.i).map((x) => x.g);
     const out = [];
     for (const g of groups) { if (out.flat().length + g.length > n) continue; out.push(g); if (out.flat().length >= n) break; }
-    return shuffle(out, rand);
+    return out;
   };
-  const def = pickGroups('def', 5), off = pickGroups('off', 2);
+  const def = shuffle([...pickGroups('def', 3, false), ...pickGroups('def', 2, true)], rand);
+  const off = shuffle([...pickGroups('off', 1, false), ...pickGroups('off', 1, true)], rand);
   const seq = [];
   def.forEach((g, i) => { seq.push(...g); if ((i === 1 || i === 3) && off.length) seq.push(...off.shift()); });
   off.forEach((g) => seq.push(...g));
@@ -53,7 +55,13 @@ export function buildFree(kind) {
   let pool = SCENES;
   let title = 'ぜんぶの場面';
   if (kind === 'real') { pool = SCENES.filter((s) => s.real || SCENES.some((x) => x.pair && x.pair === s.pair && x.real)); title = 'じっさいの試合'; }
+  else if (kind === 'rich') { pool = SCENES.filter((s) => !s.classic); title = '先に動け'; }
   else if (kind === 'off') { pool = SCENES.filter((s) => s.side === 'off'); title = '走る・打つ'; }
+  else if (kind === 'def') { pool = SCENES.filter((s) => s.side === 'def'); title = '守る'; }
+  else if (kind === 'score') { pool = SCENES.filter((s) => s.pair || (s.axes?.ball ?? []).includes('score')); title = '点差で変わる判断'; }
+  else if (kind === 'pre') { pool = SCENES.filter((s) => s.pre || s.not); title = '投げる前に決める'; }
+  else if (kind === 'select') { pool = SCENES.filter((s) => s.level === 'select'); title = 'セレクション級'; }
+  else if (kind?.startsWith('role:')) { const r = kind.slice(5); pool = SCENES.filter((s) => roleGroup(s.role) === r); title = ROLE_GROUPS[r] ?? 'ポジション別'; }
   else if (kind?.startsWith('rx:')) {
     const issue = ISSUES.find((i) => i.id === kind.slice(3));
     pool = (issue?.scenes ?? []).map((id) => sceneById[id]).filter(Boolean);
@@ -65,6 +73,22 @@ export function buildFree(kind) {
   const scenes = [];
   for (const g of groups) { if (scenes.length + g.length > 8) continue; scenes.push(...g); }
   return { title, opp: null, scenes, daily: null };
+}
+
+/** ポジション別の出題に使うまとめ方 */
+export const ROLE_GROUPS = { pitcher: 'ピッチャー', catcher: 'キャッチャー', first: 'ファースト', second: 'セカンド', third: 'サード', short: 'ショート', outfield: '外野', runner: 'ランナー', batter: 'バッター', coach: 'コーチャー' };
+export const roleGroup = (role) => (['left', 'center', 'right'].includes(role) ? 'outfield' : /^r\d$/.test(role) ? 'runner' : role.startsWith('coach') ? 'coach' : role);
+export const countFree = (kind) => buildFreePool(kind).length;
+function buildFreePool(kind) {
+  if (kind === 'all') return SCENES;
+  if (kind === 'real') return SCENES.filter((s) => s.real);
+  if (kind === 'off') return SCENES.filter((s) => s.side === 'off');
+  if (kind === 'def') return SCENES.filter((s) => s.side === 'def');
+  if (kind === 'score') return SCENES.filter((s) => s.pair || (s.axes?.ball ?? []).includes('score'));
+  if (kind === 'pre') return SCENES.filter((s) => s.pre || s.not);
+  if (kind === 'select') return SCENES.filter((s) => s.level === 'select');
+  if (kind.startsWith('role:')) return SCENES.filter((s) => roleGroup(s.role) === kind.slice(5));
+  return [];
 }
 
 /* ───────── 画面 ───────── */
@@ -118,7 +142,7 @@ export function mountSim(root, set, { onExit }) {
     svg.querySelectorAll('.tgt').forEach((el) => el.addEventListener('click', () => { sfx.pick(); onTap?.(el.dataset.t); }));
   }
 
-  const ROLE = { pitcher: 'ピッチャー', catcher: 'キャッチャー', first: 'ファースト', second: 'セカンド', third: 'サード', short: 'ショート', left: 'レフト', center: 'センター', right: 'ライト', batter: 'バッター', r1: '一塁ランナー', r2: '二塁ランナー', r3: '三塁ランナー' };
+  const ROLE = { pitcher: 'ピッチャー', catcher: 'キャッチャー', first: 'ファースト', second: 'セカンド', third: 'サード', short: 'ショート', left: 'レフト', center: 'センター', right: 'ライト', batter: 'バッター', r1: '一塁ランナー', r2: '二塁ランナー', r3: '三塁ランナー', coach1: '一塁コーチャー', coach3: '三塁コーチャー' };
   function header(phase) {
     const sc = scene(), sit = sc.sit;
     root.querySelector('.prog').textContent = `${G.i + 1} / ${set.scenes.length}`;
@@ -128,12 +152,13 @@ export function mountSim(root, set, { onExit }) {
     root.querySelector('.poslabel').textContent = ROLE[sc.role] ?? '';
     // 攻めの場面では、緑の野手は相手、赤いランナーが味方
     root.querySelector('.field-caption').innerHTML = sc.side === 'off'
-      ? '<span><i class="dot"></i> 自分（ランナー）</span><span><i class="dot red"></i> 味方のランナー</span><span><i class="dot white"></i> 相手の守備</span>'
+      ? `<span><i class="dot"></i> 自分（${sc.role === 'batter' ? 'バッター' : COACH[sc.role] ? 'コーチャー' : 'ランナー'}）</span><span><i class="dot red"></i> 味方のランナー</span><span><i class="dot white"></i> 相手の守備</span>`
       : '<span><i class="dot"></i> 自分</span><span><i class="dot white"></i> 味方</span><span><i class="dot red"></i> 相手のランナー</span>';
     const has = sit.us !== null && sit.us !== undefined;
     root.querySelector('.match-hud').innerHTML = `<div class="inning">GAME SITUATION<strong>${sit.inning}回 ${sit.half === '表' ? 'オモテ' : 'ウラ'}</strong></div>
       <div class="match-score"><div><small>自分のチーム</small><b>${has ? sit.us : '—'}</b></div><em>:</em><div><small>相手チーム</small><b>${has ? sit.them + (G.sceneRuns ?? 0) : '—'}</b></div></div>
       <div class="outcount">OUT<div>${[0, 1, 2].map((o) => `<i class="${o < (view?.outs ?? sit.outs) ? 'lit' : ''}"></i>`).join('')}</div></div>`;
+    root.querySelector('.stagebar').lastElementChild.textContent = sc.side === 'def' && !sc.classic ? '03 声を出す' : '03 結果を見る';
     if (phase !== undefined) root.querySelectorAll('.stagebar span').forEach((el, i) => el.classList.toggle('active', i === phase));
   }
 
@@ -145,6 +170,7 @@ export function mountSim(root, set, { onExit }) {
     }));
     // 打席の打者。自分が打者の場面は自分に輪をつける
     runners.push({ id: 'bat', ...BATBOX, bat: true, me: sc.role === 'batter', action: 'ready' });
+    if (COACH[sc.role]) runners.push({ id: 'coach', ...COACH[sc.role], me: true, action: 'ready' });
     return { sit, role: sc.role, fielders, runners, outs: sit.outs, targets: [], action: 'ready' };
   }
 
@@ -164,6 +190,7 @@ export function mountSim(root, set, { onExit }) {
   }
 
   const planChips = (sc) => {
+    if (sc.classic) return '';
     const chip = (label, key) => {
       const o = G.plan[key];
       return `<span class="plan ${o ? 'on' : ''}">${label}<b>${o ? esc(optLabel(o)) : '？'}</b></span>`;
@@ -174,16 +201,18 @@ export function mountSim(root, set, { onExit }) {
   function ask(kind) {
     const sc = scene(); const q = sc[kind];
     const spots = q.opts.filter(isSpot), btns = q.opts.filter((o) => !isSpot(o));
-    const lead = sc.side === 'off' ? '自分ならどうする' : kind === 'ball' ? '自分に来たら' : '自分に来なかったら';
+    const lead = sc.classic ? (sc.play ? 'この打球になったら' : '投げる前に決めておく')
+      : sc.side === 'off' ? '自分ならどうする' : kind === 'ball' ? '自分に来たら' : '自分に来なかったら';
     const text = q.q ?? (kind === 'ball' ? 'どこへ投げる？' : 'どこへ動く？');
     view.targets = spots.map((o) => ({ id: o.id }));
     const choose = (id) => { G.plan[kind] = q.opts.find((o) => o.id === id); view.targets = []; next(kind); };
     onTap = choose; paint(); header(kind === 'ball' && !G.plan.ball && sc.side === 'def' ? 1 : 1);
     panel.innerHTML = `${kind === 'ball' ? sitCard(sc) : ''}
       <div class="card ask">${planChips(sc)}
-        <div class="q"><small>${lead}</small>${esc(text)}</div>
+        ${sc.classic && sc.play ? `<div class="ifplay">${icon.ball}<span>${esc(sc.play)}</span></div>` : ''}
+        <div class="q ${sc.classic ? 'long' : ''}"><small>${lead}</small>${esc(text)}</div>
         ${spots.length ? `<p class="hint">${icon.ball} グラウンドの塁名をタップ</p>` : ''}
-        ${btns.length ? `<div class="opts">${btns.map((o) => `<button class="opt" data-o="${o.id}">${esc(optLabel(o))}</button>`).join('')}</div>` : ''}
+        ${btns.length ? `<div class="opts ${sc.classic ? 'long' : ''}">${btns.map((o) => `<button class="opt" data-o="${o.id}">${esc(optLabel(o))}</button>`).join('')}</div>` : ''}
       </div>`;
     panel.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { sfx.pick(); choose(b.dataset.o); }; });
     panel.scrollTop = 0;
@@ -192,7 +221,7 @@ export function mountSim(root, set, { onExit }) {
   function next(kind) {
     const sc = scene();
     if (kind === 'ball' && sc.not) return ask('not');
-    if (sc.side === 'def') return askVoice();
+    if (sc.side === 'def' && !sc.classic) return askVoice();
     return play();
   }
 
@@ -226,7 +255,8 @@ export function mountSim(root, set, { onExit }) {
     await moveBall(MOUND, { x: HOME.x, y: HOME.y - 6 }, 420);
     const area = AREA[oc.area] ?? AREA.home;
     let result;
-    if (sc.side === 'def') result = await playDefense(sc, oc, opt, area, myKey);
+    if (sc.classic) result = await playClassic(sc, oc, opt, myKey);
+    else if (sc.side === 'def') result = await playDefense(sc, oc, opt, area, myKey);
     else result = await playOffense(sc, oc, opt, area);
     view.bubble = null; view.line = null; paint();
 
@@ -236,7 +266,8 @@ export function mountSim(root, set, { onExit }) {
     G.us += result.gain ?? 0; G.them += result.runs ?? 0; G.sceneRuns = result.runs ?? 0;
     view.action = opt.s === 3 ? 'cheer' : 'ready'; view.runners.forEach((r) => { if (r.me) r.action = opt.s === 3 ? 'cheer' : 'ready'; }); paint();
 
-    const both = sc.side === 'def' && sc.not ? G.plan.ball.s === 3 && G.plan.not.s === 3 : null;
+    // 「先に決める」の軸：来たら／来なかったらを両方当てたか。判断の場面では、投球前に決める問題だけを数える
+    const both = sc.classic ? (sc.pre ? opt.s === 3 : null) : sc.side === 'def' && sc.not ? G.plan.ball.s === 3 && G.plan.not.s === 3 : null;
     const rec = { t: new Date().toISOString(), p: me.id, scene: sc.id, kind, score: opt.s, both, axes: sc.axes?.[kind] ?? [] };
     update((s) => { s.plays.push(rec); });
     G.log[G.i] = { ...rec, key: sc.key };
@@ -325,6 +356,26 @@ export function mountSim(root, set, { onExit }) {
     return { msg: r.msg, runs, tone: opt.s === 3 ? 'good' : opt.s < 0 ? 'bad' : '' };
   }
 
+  /** 4つの手から選ぶ判断の場面。打球までを見せて、結果は言葉で返す（選んだ手ごとの動きは作っていない） */
+  async function playClassic(sc, oc, opt, myKey) {
+    const good = opt.s === 3;
+    if (oc.pitchOnly) {
+      if (oc.steal && runnerOf('r1')) await moveRunner('r1', RUNTO.second, 900); else await sleep(380);
+    } else {
+      sfx.bat();
+      const area = AREA[oc.area];
+      await moveBall({ x: HOME.x, y: HOME.y - 6 }, area, oc.fly ? 1100 : 600, oc.fly ? 26 : 0);
+      const dist = (k) => Math.hypot(view.fielders[k].x - area.x, view.fielders[k].y - area.y);
+      const by = oc.by ?? Object.keys(POS).sort((a, b) => dist(a) - dist(b))[0];
+      if (by === myKey) { view.action = 'run'; view.flip = area.x < view.fielders[by].x; }
+      await moveFielder(by, area, 460); sfx.catch();
+      if (by === myKey) view.action = 'catch';
+      paint(); await sleep(320);
+    }
+    const msg = good ? 'ナイス判断！' : opt.s === 1 ? 'わるくない' : opt.s === 0 ? 'もったいない…' : 'あぶない！';
+    return { msg, runs: sc.side === 'def' && opt.s < 0 ? 1 : 0, gain: sc.side === 'off' && good ? 1 : 0, tone: good ? 'good' : opt.s < 0 ? 'bad' : '' };
+  }
+
   async function playOffense(sc, oc, opt, area) {
     const meId = sc.role === 'batter' ? 'bat' : sc.role;
     const dest = RUNTO[opt.to] ?? RUNTO.first;
@@ -360,15 +411,15 @@ export function mountSim(root, set, { onExit }) {
       <div class="verdict ${cls}"><span>${label}</span></div>
       <div class="keycard"><small>おぼえること</small>${esc(sc.key)}</div>
       <div class="card why">
-        <p><b>${esc(optLabel(opt))}</b>　${esc(opt.fb ?? '')}</p>
+        <p><b>${esc(optLabel(opt))}</b>${sc.classic ? '<br>' : '　'}${esc(opt.fb ?? '')}</p>
         ${other ? `<p class="also">${oc.kind === 'ball' ? '来なかったら' : '来たら'}の「${esc(optLabel(other))}」は <b class="t${other.s}">${TIER[other.s][1].replace('！', '')}</b></p>` : ''}
         <details><summary>くわしく</summary>
-          <p>${esc(sc.why)}</p>
+          <p>${esc(sc.why)}</p>${sc.drill ? `<p class="drilltip"><b>練習するなら</b>　${esc(sc.drill)}</p>` : ''}
           <ul class="fbs">${q.opts.map((o) => `<li><b class="t${o.s}">${o.s > 0 ? '+' : ''}${o.s}</b><span><b>${esc(optLabel(o))}</b>　${esc(o.fb ?? '')}</span></li>`).join('')}</ul>
         </details>
         ${vid ? `<a class="btn ghost small" href="https://www.youtube.com/watch?v=${encodeURIComponent(vid.id)}&t=${vid.t | 0}s" target="_blank" rel="noopener">${icon.video} じっさいの動画で見る</a>` : ''}
       </div>
-      ${sc.side === 'def' ? `<div class="route-legend"><i></i> 黄色のルート＝正しい動き</div><button class="btn replay" data-replay>${icon.play} 正しい動きを見る</button>` : ''}
+      ${sc.side === 'def' && !sc.classic ? `<div class="route-legend"><i></i> 黄色のルート＝正しい動き</div><button class="btn replay" data-replay>${icon.play} 正しい動きを見る</button>` : ''}
       <button class="btn primary" data-next>${last ? '試合の結果 ' : '次の場面 '}${icon.right}</button>`;
     showRoute(sc, oc);
     const rp = panel.querySelector('[data-replay]'); if (rp) rp.onclick = () => { sfx.tap(); replayBest(sc, oc, opt, result); };
@@ -378,7 +429,7 @@ export function mountSim(root, set, { onExit }) {
 
   /** 正しい動きを黄色い矢印で残す */
   function showRoute(sc, oc) {
-    if (sc.side !== 'def' || !view) return;
+    if (sc.side !== 'def' || sc.classic || !view) return;
     const q = sc[oc.kind]; const best = q.opts.find((o) => o.s === 3); const area = AREA[oc.area] ?? AREA.home;
     const from = oc.kind === 'ball' ? area : fielderPos(sc.role, sc.sit); const to = SPOT[best.to ?? best.id];
     view.route = to && (to.x !== from.x || to.y !== from.y) ? { from, to } : null; paint();

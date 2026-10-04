@@ -11,6 +11,7 @@ const I = (d, extra = '') => `<svg class="ic" viewBox="0 0 24 24" fill="none" st
 export const icon = {
   home: I('<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'),
   growth: I('<path d="M12 3l8.5 6.2-3.2 10H6.7l-3.2-10z"/><path d="M12 8l3.6 2.6-1.4 4.2H9.8l-1.4-4.2z"/>'),
+  learn: I('<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M20 18v3H6.5"/><path d="M9 8h6"/>'),
   drill: I('<path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/>'),
   season: I('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'),
   gear: I('<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.3l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2.2-1.3L14 3h-4l-.4 2.4a7 7 0 0 0-2.2 1.3l-2.3-.9-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .9.1 1.3l-2 1.5 2 3.4 2.3-.9c.6.6 1.4 1 2.2 1.3L10 21h4l.4-2.4c.8-.3 1.6-.7 2.2-1.3l2.3.9 2-3.4-2-1.5c.1-.4.1-.9.1-1.3z"/>'),

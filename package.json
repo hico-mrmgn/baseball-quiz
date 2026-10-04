@@ -11,7 +11,8 @@
     "audit:questions": "node scripts/audit-questions.mjs",
     "audit:explanations": "node scripts/audit-explanations.mjs",
     "audit:viewpoint": "node scripts/audit-viewpoint.mjs",
-    "audit:field": "node scripts/audit-field.mjs"
+    "audit:field": "node scripts/audit-field.mjs",
+    "season:data": "node scripts/build-season-data.mjs"
   },
   "dependencies": {
     "react": "^19.2.4",
