@@ -199,3 +199,52 @@ export function tween(from, to, ms, set, { arc = 0 } = {}) {
     requestAnimationFrame(f);
   });
 }
+
+/* ── 連動：打球に合わせて、ボールを持たない野手がどこへ動くか ──
+   場面ごとに書くのではなく、基本の約束から決める。
+   ゴロ：打球の逆側の二遊間が二塁へ、投手は一塁側なら一塁カバー、捕手は走者がいなければ一塁の後ろへ、外野は送球の後ろへ。
+   外野への打球：近い外野手が後ろへ回り、打球側の二遊間が中継、反対側が二塁、一塁手は本塁へのカット（得点圏に走者）、投手は本塁か三塁の後ろへ。 */
+const BACK = { first: { x: 197, y: 112 }, third: { x: 23, y: 112 }, home: { x: 110, y: 213 }, second: { x: 110, y: 48 } };
+export function teamMoves({ areaKey, area, by, sit, throwTo, fielders, skip = [], avoid = null }) {
+  const on = (b) => Boolean(sit.runners[b]);
+  const scoring = on('second') || on('third');
+  const m = {};
+  const put = (k, p) => { if (k !== by && !skip.includes(k) && !m[k]) m[k] = p; };
+  const d = (k) => Math.hypot(fielders[k].x - area.x, fielders[k].y - area.y);
+  if (areaKey === 'backstop') { put('pitcher', { x: HOME.x - 4, y: HOME.y - 6 }); put('first', { x: FIRST.x - 3, y: FIRST.y - 2 }); put('third', { x: THIRD.x + 3, y: THIRD.y - 2 }); }
+  else if (area.y < 78) {
+    const left = area.x < 96, right = area.x > 124;
+    const other = ['left', 'center', 'right'].filter((k) => k !== by).sort((a, b) => d(a) - d(b))[0];
+    put(other, { x: area.x + (fielders[other].x < area.x ? -24 : 24), y: Math.max(12, area.y - 12) });
+    const relay = right ? 'second' : 'short', cover = right ? 'short' : 'second';
+    put(relay, { x: (area.x + SECOND.x) / 2, y: (area.y + SECOND.y) / 2 + 5 });
+    put(cover, { x: SECOND.x + (cover === 'short' ? -3 : 3), y: SECOND.y + 3 });
+    put('third', { x: THIRD.x + 3, y: THIRD.y - 2 });
+    put('first', scoring ? { x: 110 + (right ? 16 : left ? -16 : 0), y: 114 } : { x: FIRST.x - 3, y: FIRST.y - 2 });
+    put('pitcher', scoring ? BACK.home : on('first') ? BACK.third : { x: 110, y: 158 });
+  } else {
+    const bunt = area.y > 146 && Math.abs(area.x - 110) < 30;
+    const rightSide = area.x > 112;
+    const shift = sit.defense === 'バントシフト';
+    if (bunt && shift) {
+      put('first', { x: 134, y: 156 }); put('third', { x: 86, y: 156 });
+      put('second', { x: FIRST.x - 2, y: FIRST.y - 2 }); put('short', on('second') ? { x: THIRD.x + 3, y: THIRD.y - 2 } : { x: SECOND.x - 2, y: SECOND.y + 3 });
+    } else if (by === 'first') {
+      put('pitcher', { x: FIRST.x - 3, y: FIRST.y - 1 }); put('second', { x: 184, y: 112 }); put('short', { x: SECOND.x - 2, y: SECOND.y + 3 });
+    } else {
+      put('first', { x: FIRST.x - 3, y: FIRST.y - 2 });
+      if (rightSide || bunt) { put('short', { x: SECOND.x - 2, y: SECOND.y + 3 }); put('second', bunt ? { x: 184, y: 112 } : { x: 150, y: 96 }); }
+      else { put('second', { x: SECOND.x + 2, y: SECOND.y + 3 }); put('short', by === 'third' ? { x: area.x + 12, y: area.y - 18 } : { x: 92, y: 84 }); }
+    }
+    put('third', { x: THIRD.x + 3, y: THIRD.y - 2 });
+    put('pitcher', throwTo === 'home' || on('third') ? BACK.home : rightSide ? { x: 142, y: 138 } : { x: 110, y: 150 });
+    if (!scoring && !on('first')) put('catcher', { x: 172, y: 164 });
+    // 外野は、内野の後ろへ数歩つめる（送球やはじいた打球の後ろ）
+    put('left', rightSide ? { x: 46, y: 52 } : { x: Math.min(64, Math.max(30, area.x - 16)), y: 62 });
+    put('center', { x: 110 + (rightSide ? 8 : -8), y: 40 });
+    put('right', rightSide ? { x: 176, y: 62 } : { x: 190, y: 78 });
+  }
+  // 自分の仕事（正しい行き先）を、味方が先に取らないようにする
+  if (avoid) for (const k of Object.keys(m)) if (Math.hypot(m[k].x - avoid.x, m[k].y - avoid.y) < 9) delete m[k];
+  return m;
+}

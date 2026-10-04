@@ -8,7 +8,7 @@ import { collectRankUps } from './growth.js';
 import { sfx } from './sound.js';
 import {
   renderField, fielderPos, POS, AREA, SPOT, RUNTO, LEAD, BATBOX, COACH, HOME, FIRST, SECOND, THIRD, MOUND,
-  optLabel, isSpot, tween, sleep, W, H,
+  optLabel, isSpot, tween, sleep, teamMoves, W, H,
 } from './field.js';
 import { h, esc, icon, flash, modal, go } from './ui.js';
 
@@ -240,6 +240,17 @@ export function mountSim(root, set, { onExit }) {
   const runnerOf = (id) => view.runners.find((r) => r.id === id);
   const moveRunner = (id, to, ms = 700) => { const r = runnerOf(id); if (!r) return Promise.resolve(); r.bat = false; r.action = 'run'; r.flip = to.x < r.x; return tween({ x: r.x, y: r.y }, to, ms, (p) => { r.x = p.x; r.y = p.y; paint(); }); };
   const moveBall = (from, to, ms, arc = 0) => tween(from, to, ms, (p) => { view.ball = p; paint(); }, { arc });
+  /** ボールを持たない野手を、まとめて動かす（連動） */
+  const moveTeam = (moves, ms = 900) => {
+    const keys = Object.keys(moves); if (!keys.length) return Promise.resolve();
+    const from = Object.fromEntries(keys.map((k) => [k, { ...view.fielders[k] }]));
+    return tween({ x: 0, y: 0 }, { x: 1, y: 0 }, ms, (p) => {
+      keys.forEach((k) => { view.fielders[k] = { x: from[k].x + (moves[k].x - from[k].x) * p.x, y: from[k].y + (moves[k].y - from[k].y) * p.x }; });
+      paint();
+    });
+  };
+  const bestSpot = (sc, kind) => { const b = sc[kind]?.opts.find((o) => o.s === 3); return b ? SPOT[b.to ?? b.id] ?? null : null; };
+  const nearest = (area) => Object.keys(POS).sort((a, b) => Math.hypot(view.fielders[a].x - area.x, view.fielders[a].y - area.y) - Math.hypot(view.fielders[b].x - area.x, view.fielders[b].y - area.y))[0];
   const moveFielder = (key, to, ms) => { const f = view.fielders[key]; return tween({ ...f }, to, ms, (p) => { view.fielders[key] = { x: p.x, y: p.y }; paint(); }); };
 
   async function play() {
@@ -286,10 +297,12 @@ export function mountSim(root, set, { onExit }) {
       : opt.s === 1 ? { out: 0, adv: 1, msg: 'セーフ…' } : opt.s === 0 ? { out: 0, adv: 1, msg: '間に合わない' } : { out: 0, adv: 2, msg: 'やられた！' });
     const inPlay = !oc.noOut;
     if (inPlay) sfx.bat();
-    // 打球
+    // 打球。同時に、ほかの野手もそれぞれの仕事へ動き出す
+    const fielder = oc.kind === 'ball' ? myKey : oc.by;
+    const team = moveTeam(teamMoves({ areaKey: oc.area, area, by: fielder, sit, throwTo: opt.to ?? opt.id, fielders: view.fielders, skip: [myKey], avoid: oc.kind === 'not' ? bestSpot(sc, 'not') : null }), 1000);
     await moveBall({ x: HOME.x, y: HOME.y - 6 }, area, oc.fly ? 1100 : 600, oc.fly ? 26 : 0);
     view.bubble = null;
-    const jobs = [];
+    const jobs = [team];
     // 打者は一塁へ
     if (inPlay) jobs.push(moveRunner('bat', RUNTO.first, 1500));
     const mePos = { ...view.fielders[myKey] };
@@ -367,12 +380,14 @@ export function mountSim(root, set, { onExit }) {
       sfx.bat();
       const area = AREA[oc.area];
       await moveBall({ x: HOME.x, y: HOME.y - 6 }, area, oc.fly ? 1100 : 600, oc.fly ? 26 : 0);
-      const dist = (k) => Math.hypot(view.fielders[k].x - area.x, view.fielders[k].y - area.y);
-      const by = oc.by ?? Object.keys(POS).sort((a, b) => dist(a) - dist(b))[0];
+      const by = oc.by ?? nearest(area);
+      const team = sc.side === 'def'
+        ? moveTeam(teamMoves({ areaKey: oc.area, area, by, sit: sc.sit, fielders: view.fielders, skip: by === myKey ? [] : [myKey] }), 1000)
+        : moveTeam(teamMoves({ areaKey: oc.area, area, by, sit: sc.sit, fielders: view.fielders }), 1000);
       if (by === myKey) { view.action = 'run'; view.flip = area.x < view.fielders[by].x; }
       await moveFielder(by, area, 460); sfx.catch();
       if (by === myKey) view.action = 'catch';
-      paint(); await sleep(320);
+      await team; paint(); await sleep(320);
     }
     const msg = good ? 'ナイス判断！' : opt.s === 1 ? 'わるくない' : opt.s === 0 ? 'もったいない…' : 'あぶない！';
     return { msg, runs: sc.side === 'def' && opt.s < 0 ? 1 : 0, gain: sc.side === 'off' && good ? 1 : 0, tone: good ? 'good' : opt.s < 0 ? 'bad' : '' };
@@ -386,6 +401,10 @@ export function mountSim(root, set, { onExit }) {
     } else {
       sfx.bat();
       const hit = moveBall({ x: HOME.x, y: HOME.y - 6 }, area, oc.fly ? 1200 : 650, oc.fly ? 28 : 0);
+      // 相手の守備も動く：近い野手が打球へ、ほかはカバーと中継へ
+      const by = nearest(area);
+      moveFielder(by, area, oc.fly ? 1150 : 800);
+      moveTeam(teamMoves({ areaKey: oc.area, area, by, sit: sc.sit, throwTo: oc.throwTo, fielders: view.fielders }), 1100);
       const others = view.runners.filter((r) => r.id !== meId && r.id !== 'bat');
       const jobs = [hit];
       if (sc.role === 'batter') {
@@ -447,6 +466,11 @@ export function mountSim(root, set, { onExit }) {
     panel.innerHTML = `<div class="card live-card"><div class="q"><small>お手本プレー</small>${oc.kind === 'ball' ? '自分に来たら' : '自分に来なかったら'}</div><div class="live-action">まず自分の位置を確認</div></div>`;
     panel.scrollTop = 0; paint(); await sleep(600);
     view.ball = { ...area }; const to = SPOT[best.to ?? best.id];
+    // お手本では、味方の動きも青い矢印で見せる
+    const tm = teamMoves({ areaKey: oc.area, area, by: oc.kind === 'ball' ? myKey : oc.by, sit: sc.sit, throwTo: best.to ?? best.id, fielders: view.fielders, skip: [myKey], avoid: oc.kind === 'not' ? to : null });
+    view.arrows = Object.entries(tm).map(([k, p]) => ({ from: { ...view.fielders[k] }, to: p, k: 'cover' }));
+    if (oc.by && oc.kind === 'not') tm[oc.by] = area;
+    const team = moveTeam(tm, 1100);
     if (oc.kind === 'ball') {
       view.action = 'run'; view.flip = area.x < from.x; say('自分のボールを捕りに行く');
       await moveFielder(myKey, area, 700); view.action = 'catch'; say('しっかり捕る'); paint(); sfx.catch(); await sleep(500);
@@ -458,7 +482,7 @@ export function mountSim(root, set, { onExit }) {
       view.action = 'run'; view.flip = to.x < from.x; say(`ボールを追わず、${optLabel(best)}`);
       await moveFielder(myKey, to, 1100);
     } else { view.action = 'ready'; say(optLabel(best)); paint(); await sleep(1100); }
-    view.action = 'cheer'; say('これが、自分の仕事！'); paint(); await sleep(800);
+    await team; view.action = 'cheer'; say('全員が動いて、ひとつのアウトになる'); paint(); await sleep(1100);
     view.outs = keepOuts; G.busy = false;
     showResult(sc, oc, opt, result);
   }
