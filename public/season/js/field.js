@@ -118,7 +118,6 @@ function ground() {
     <polygon points="${HOME.x},${HOME.y - 14} ${FIRST.x - 14},${FIRST.y} ${SECOND.x},${SECOND.y + 14} ${THIRD.x + 14},${THIRD.y}" fill="#56a661" stroke="#56a661" stroke-width="8" stroke-linejoin="round"/>
     <line x1="${HOME.x}" y1="${HOME.y}" x2="${HOME.x - fx}" y2="${HOME.y - fy}" stroke="#fff" stroke-width="1.5" opacity=".9"/>
     <line x1="${HOME.x}" y1="${HOME.y}" x2="${HOME.x + fx}" y2="${HOME.y - fy}" stroke="#fff" stroke-width="1.5" opacity=".9"/>
-    <polygon points="${HOME.x},${HOME.y} ${FIRST.x},${FIRST.y} ${SECOND.x},${SECOND.y} ${THIRD.x},${THIRD.y}" fill="none" stroke="#fff" stroke-width="1.2" opacity=".4"/>
     <ellipse cx="${MOUND.x}" cy="${MOUND.y}" rx="10" ry="8" fill="url(#mound)"/><rect x="${MOUND.x - 4}" y="${MOUND.y - 1.5}" width="8" height="3" rx=".6" fill="#fff"/>
     ${[FIRST, SECOND, THIRD].map((p) => `<rect x="${p.x - 5}" y="${p.y - 5}" width="10" height="10" fill="#fff" transform="rotate(45 ${p.x} ${p.y})"/>`).join('')}
     <polygon points="${HOME.x},${HOME.y + 6} ${HOME.x - 6},${HOME.y} ${HOME.x - 4},${HOME.y - 5} ${HOME.x + 4},${HOME.y - 5} ${HOME.x + 6},${HOME.y}" fill="#fff"/>
