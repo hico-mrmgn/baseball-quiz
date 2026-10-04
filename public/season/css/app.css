@@ -373,6 +373,40 @@ i.k-ball { background: #ff7a59; } i.k-cover { background: #5aaeea; } i.k-base { 
 .points { margin: 4px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; } .points li::marker { color: var(--orange-2); }
 .tabs a { min-width: 0; }
 
+
+/* ── 能力レーダー・試合の評価・取り組みの成果 ── */
+.mini-ranks { display: flex; justify-content: space-between; gap: 2px; margin-top: 2px; }
+.mini-ranks span { display: flex; flex-direction: column; align-items: center; flex: 1; } .mini-ranks i { font-style: normal; font-size: 9.5px; font-weight: 900; color: var(--muted); }
+.mini-ranks b { font-size: 19px; color: var(--blue); line-height: 1.1; } .mini-ranks .none b { color: #b4c6d3; }
+.ability { padding: 0; overflow: hidden; } .ability > summary { list-style: none; cursor: pointer; } .ability > summary::-webkit-details-marker { display: none; }
+.ability .axis-rank { position: relative; } .ability[open] > summary { border-bottom: 2px solid #e6eff5; }
+.delta { margin-left: 8px; font-family: var(--led); font-size: 17px; } .delta.up { color: var(--good); } .delta.down { color: var(--bad); }
+.parts { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; background: #f8fbfd; }
+.part { display: grid; grid-template-columns: 44px minmax(0, 1.3fr) minmax(40px, 1fr) 28px; gap: 10px; align-items: center; }
+.part b { display: block; font-size: 13px; } .part small { font-size: 11px; color: var(--muted); font-weight: 700; } .part > .led { font-size: 19px; color: var(--blue); text-align: right; }
+.src { font-size: 9.5px; font-weight: 900; text-align: center; padding: 4px 0; border-radius: 6px; background: #e6eff5; color: #597183; }
+.src.s-game { background: #ffead4; color: #b36518; } .src.s-measure { background: var(--sky); color: var(--blue-2); } .src.s-app { background: #e0f1c5; color: #3d712b; } .src.s-drill { background: #f0e6fa; color: #7a4fa3; }
+.boost { margin-top: 4px; display: flex; flex-direction: column; gap: 8px; } .boost small { font-size: 10px; font-weight: 700; letter-spacing: .14em; color: #5c88aa; }
+.boost > div { display: flex; gap: 6px; flex-wrap: wrap; } .boost .btn { flex: 1 1 auto; }
+.effect { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 14px; background: #fff7ee; }
+.effect small { font-size: 11px; font-weight: 700; color: #9a6a3a; }
+.effect-row { display: flex; align-items: center; gap: 10px; color: #c9a57e; } .effect-row .led { font-size: 30px; color: #8a7a6a; line-height: 1.1; }
+.effect-row b.led { color: var(--ink); } .effect-row b.up { color: var(--good); } .effect-row b.down { color: var(--bad); }
+.effect-row .wait { font-style: normal; font-size: 12.5px; font-weight: 900; color: #b36518; }
+.tag { margin-left: auto; font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 999px; background: #eef4f8; color: #597183; } .tag.up { background: #e0f1c5; color: #3d712b; } .tag.down { background: #fbdcd5; color: #a94a3b; }
+.effect-work { font-size: 11.5px; font-weight: 700; color: var(--muted); }
+.judge { display: flex; flex-direction: column; gap: 10px; }
+.jrow { display: grid; grid-template-columns: 92px 1fr 64px; gap: 10px; align-items: center; } .jrow b { font-size: 13px; } .jrow .led { font-size: 18px; color: var(--blue); text-align: right; }
+.marks { display: flex; gap: 4px; flex: none; }
+.game > div:not(.marks):not(.game-score) { min-width: 0; } .game small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mark { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 8px; font-size: 10px; font-weight: 900; background: #eef4f8; color: #597183; } .mark b { font-size: 17px; line-height: 1.2; }
+.mark.rS, .mark.rA { background: #e0f1c5; color: #3d712b; } .mark.rB { background: var(--sky); color: var(--blue-2); } .mark.rC { background: #ffead4; color: #b36518; } .mark.rD { background: #fbdcd5; color: #a94a3b; }
+.gverdict { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 14px; background: #f4f9fd; margin: 10px 0 14px; }
+.gverdict > .led { flex: none; display: grid; place-items: center; width: 54px; height: 54px; border-radius: 14px; font-size: 40px; background: linear-gradient(135deg, var(--green-1), var(--green-2)); color: var(--lime); }
+.gverdict b { display: block; font-size: 17px; } .gverdict small { font-size: 11px; font-weight: 700; color: var(--muted); line-height: 1.7; }
+.gverdict.rC > .led { background: linear-gradient(#ffb44d, #ff9429); color: #fff; } .gverdict.rD > .led { background: linear-gradient(#e98672, #d36755); color: #fff; }
+.prep h3 + small { display: block; margin: 2px 0 10px; }
+
 /* ── 重ねもの ── */
 .modal { position: fixed; inset: 0; z-index: 60; background: #0f2a3f99; display: grid; place-items: center; padding: 20px; }
 .modal-card { width: min(420px, 100%); background: #fff; border: 3px solid #fff; border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 0 #c5dbe9, 0 30px 60px -20px #0009; }

@@ -1,14 +1,14 @@
 // ホーム・成長・ドリル・シーズン・保護者メニュー。
 
-import { AXES, ISSUES, DRILLS, MEASURES, GAME_KINDS, GRADES } from './catalog.js';
+import { ISSUES, DRILLS, MEASURES, GAME_KINDS, GRADES, RANK_WORD } from './catalog.js';
 import { SCENES, sceneById } from './scenes.js';
 import {
   get, update, profile, today, addDays, fmtDate, exportData, importData, resetAll,
 } from './store.js';
-import { axisStats, battingLine, pitchingLine, fmtAvg, fmt1 } from './growth.js';
+import { axisStats, abilityStats, battingScore, pitchingScore, scoreOf, rxEffect, prepFor, checkRankUps, battingLine, pitchingLine, fmtAvg, fmt1 } from './growth.js';
 import { buildDaily } from './sim.js';
 import { sfx } from './sound.js';
-import { h, esc, icon, toast, modal, go } from './ui.js';
+import { h, esc, icon, toast, modal, go, rankUpModal } from './ui.js';
 
 const issueById = Object.fromEntries(ISSUES.map((i) => [i.id, i]));
 const drillById = Object.fromEntries(DRILLS.map((d) => [d.id, d]));
@@ -26,12 +26,12 @@ export function radar(stats, { size = 260, ghost = null, small = false } = {}) {
     const [x, y] = pt(i, small ? 1.3 : 1.28);
     const rk = s.n ? `${s.firm ? '' : '仮'}${s.rank}` : '—';
     return small
-      ? `<text x="${x}" y="${y + 3}" text-anchor="middle" font-size="${size * 0.05}" font-weight="900" fill="#526d7f">${esc(s.name)}</text>`
+      ? `<text x="${x}" y="${y + 3}" text-anchor="middle" font-size="${size * 0.05}" font-weight="900" fill="#526d7f">${esc(s.name.replace(/力$/, ''))}</text>`
       : `<text x="${x}" y="${y - 2}" text-anchor="middle" font-size="12.5" font-weight="900" fill="#233c52">${esc(s.name)}</text>
          <text x="${x}" y="${y + 14}" text-anchor="middle" font-size="13" class="led" fill="${s.n ? '#1762aa' : '#a9c0d1'}">${rk}${s.n ? `  ${s.value}` : ''}</text>`;
   }).join('');
   const dots = stats.map((s, i) => { const [x, y] = pt(i, Math.max(0.04, s.value / 100)); return `<circle cx="${x}" cy="${y}" r="${small ? 2.4 : 3.6}" fill="#368ad2" stroke="#fff" stroke-width="1.2"/>`; }).join('');
-  return `<svg viewBox="0 0 ${size} ${size}" class="radar" role="img" aria-label="判断のレーダー">
+  return `<svg viewBox="0 0 ${size} ${size}" class="radar" role="img" aria-label="能力のレーダー">
     ${rings}${spokes}
     ${ghost ? `<polygon points="${poly(ghost.map((s) => s.value))}" fill="rgba(35,60,82,.06)" stroke="#89a2b4" stroke-width="1.2" stroke-dasharray="4 3"/>` : ''}
     <polygon points="${poly(stats.map((s) => s.value))}" fill="rgba(54,138,210,.24)" stroke="#368ad2" stroke-width="2.2" stroke-linejoin="round"/>
@@ -42,7 +42,7 @@ export function radar(stats, { size = 260, ghost = null, small = false } = {}) {
 export function renderHome(root) {
   const s = get(), me = profile(), date = today();
   const set = buildDaily(date); const done = s.daily[date]?.[me.id];
-  const stats = axisStats(me.id);
+  const stats = abilityStats(me.id);
   const played = stats.some((a) => a.n);
   const days = [...Array(7)].map((_, i) => addDays(date, i - 6));
   const drillDays = new Set(s.drillLog.filter((d) => d.p === me.id).map((d) => d.date));
@@ -84,6 +84,7 @@ export function renderHome(root) {
       ${s.rx.map((r) => { const is = issueById[r.issue]; if (!is) return ''; return `
         <div class="card rx">
           <div class="rx-head"><span class="rx-flag">${icon.flag}</span><div><b>${esc(is.name)}</b><small>${fmtDate(r.since)}から</small></div></div>
+          ${effectRow(rxEffect(r.issue, r.since))}
           <div class="row">
             ${is.scenes.length ? `<a class="btn ghost small" href="#/play/free/rx:${is.id}">${icon.play} 場面で練習</a>` : ''}
             ${is.drills.length ? `<a class="btn ghost small" href="#/drills">${icon.drill} 自主練ドリル</a>` : ''}
@@ -92,8 +93,8 @@ export function renderHome(root) {
 
     <section class="two">
       <a class="card tile" href="#/growth">
-        <h3>判断のレーダー</h3>
-        ${played ? radar(stats, { size: 200, small: true }) : '<div class="empty-radar">試合をやると、ここに形ができる</div>'}
+        <h3>能力レーダー</h3>
+        ${played ? `${radar(stats, { size: 200, small: true })}<div class="mini-ranks">${stats.map((a) => `<span class="${a.n ? '' : 'none'}"><i>${a.name.slice(0, 2)}</i><b class="led">${a.n ? a.rank : '—'}</b></span>`).join('')}</div>` : '<div class="empty-radar">試合・計測・練習を入れると、ここに形ができる</div>'}
       </a>
       <div class="tiles">
         <a class="card tile mini" href="#/learn/scenes"><span class="tile-ic">${icon.ball}</span><b>判断の場面</b><small>${SCENES.length}場面</small></a>
@@ -110,31 +111,73 @@ export function renderHome(root) {
 }
 
 /* ───────── 成長 ───────── */
+const SRC = { game: '試合', measure: '計測', app: 'アプリ', drill: '自主練' };
+const BOOST = {
+  bat: [['#/play/free/role:batter', '打席の場面'], ['#/quiz/batting/all', 'バッティングのクイズ'], ['#/drills', '素振り・ティー']],
+  pit: [['#/play/free/role:pitcher', 'ピッチャーの場面'], ['#/quiz/pitcher/all', 'ピッチャーのクイズ'], ['#/drills', 'シャドー・低めへ']],
+  fld: [['#/play/free/def', '守りの場面'], ['#/learn/form', 'フォーメーション'], ['#/drills', '持ちかえ・かべ当て']],
+  run: [['#/play/free/off', '走塁の場面'], ['#/quiz/baserun/all', '走塁のクイズ'], ['#/drills', 'スタートの練習']],
+  iq: [['#/play/daily', '今日の試合'], ['#/learn/scenes', '判断の場面'], ['#/learn/quiz', '知識クイズ']],
+};
+
+/** 取り組みの成果：取り組む前の試合の数字 → 取り組んでからの数字 */
+function effectRow(e) {
+  const work = [e.work.plays ? `場面 ${e.work.plays}回` : '', e.work.drillDays ? `自主練 ${e.work.drillDays}日` : ''].filter(Boolean).join('・');
+  if (!e.label) return work ? `<p class="effect-work">取り組み：${work}</p>` : '';
+  const after = e.after === null ? '<em class="wait">次の試合で確かめる</em>' : `<b class="led ${e.better === true ? 'up' : e.better === false ? 'down' : ''}">${e.after}</b>`;
+  const word = e.after === null ? '' : e.better === true ? '<span class="tag up">よくなった</span>' : e.better === false ? '<span class="tag down">まだ出ていない</span>' : '<span class="tag">変わらず</span>';
+  return `<div class="effect"><small>${esc(e.label)}${e.after !== null ? `（取り組んでから ${e.n}${e.unit}）` : ''}</small>
+    <div class="effect-row"><span class="led">${e.before ?? '—'}</span>${icon.right}${after}${word}</div>
+    ${work ? `<p class="effect-work">取り組み：${work}</p>` : ''}</div>`;
+}
+
 export function renderGrowth(root) {
   const s = get(), me = profile();
-  const stats = axisStats(me.id);
-  const firstPlay = s.plays.find((p) => p.p === me.id);
+  const stats = abilityStats(me.id);
   const ghostDate = addDays(today(), -30);
-  const ghost = firstPlay && firstPlay.t.slice(0, 10) <= ghostDate ? axisStats(me.id, ghostDate) : null;
+  const past = abilityStats(me.id, ghostDate);
+  const ghost = past.some((a) => a.n) ? past : null;
+  const judge = axisStats(me.id);
 
   root.innerHTML = `
     <header class="top"><div><div class="brand">成長</div><div class="brand-sub">${esc(me.name)}</div></div></header>
     <section class="card radar-card">
       ${radar(stats, { size: 340, ghost })}
-      <p class="muted center">直近${20}プレーの最善手率。数をこなすだけでは動かない。${ghost ? '点線は30日前。' : ''}</p>
+      <p class="muted center">試合の成績・実測値・アプリでの練習から出している。Sは、ジュニア選考で通用する目安。${ghost ? '点線は30日前。' : ''}</p>
     </section>
-    <section><h2>6つの力</h2>
-      <div class="axes">${stats.map((a) => `
-        <div class="card axis">
-          <div class="axis-rank ${a.n ? '' : 'none'}">${a.n ? a.rank : '—'}${a.n && !a.firm ? '<small>仮</small>' : ''}</div>
-          <div class="axis-body"><b>${esc(a.name)}</b><small>${esc(a.hint)}</small>
-            <div class="bar"><i style="width:${a.value}%"></i></div></div>
-          <div class="axis-val led">${a.n ? a.value : ''}</div>
-        </div>`).join('')}</div>
+    <section><h2>5つの力</h2>
+      <div class="axes">${stats.map((a, i) => {
+        const d = ghost && past[i].n && a.n ? a.value - past[i].value : 0;
+        return `<details class="card ability">
+          <summary class="axis">
+            <div class="axis-rank ${a.n ? '' : 'none'}">${a.n ? a.rank : '—'}${a.n && !a.firm ? '<small>仮</small>' : ''}</div>
+            <div class="axis-body"><b>${esc(a.name)}</b>${d ? `<span class="delta ${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : ''}${d}</span>` : ''}<small>${esc(a.hint)}</small>
+              <div class="bar"><i style="width:${a.value}%"></i></div></div>
+            <div class="axis-val led">${a.n ? a.value : ''}</div>
+          </summary>
+          <div class="parts">
+            ${a.parts.length ? a.parts.map((p) => `<div class="part"><span class="src s-${p.src}">${SRC[p.src]}</span><div><b>${esc(p.label)}</b><small>${esc(p.text)}</small></div><div class="bar"><i style="width:${p.score}%"></i></div><span class="led">${p.score}</span></div>`).join('')
+              : `<p class="muted">${me.id === 'p1' ? 'まだ材料がない。試合か実測値を入れると出る。' : '試合と実測値は、選手本人のぶんだけを数えている。'}</p>`}
+            <div class="boost"><small>ここを伸ばす</small><div>${BOOST[a.id].map(([href, name]) => `<a class="btn ghost small" href="${href}">${name}</a>`).join('')}</div></div>
+          </div>
+        </details>`; }).join('')}</div>
+    </section>
+    ${s.rx.length ? `<section><h2>取り組みの成果</h2>${s.rx.map((r) => { const is = issueById[r.issue]; if (!is) return ''; return `<div class="card rx"><div class="rx-head"><span class="rx-flag">${icon.flag}</span><div><b>${esc(is.name)}</b><small>${fmtDate(r.since)}から</small></div></div>${effectRow(rxEffect(r.issue, r.since))}</div>`; }).join('')}</section>` : ''}
+    <section><h2>判断力のうちわけ</h2>
+      <div class="card judge">${judge.map((a) => `<div class="jrow"><b>${esc(a.name)}</b><div class="bar"><i style="width:${a.value}%"></i></div><span class="led">${a.n ? `${a.firm ? '' : '仮'}${a.rank} ${a.value}` : '—'}</span></div>`).join('')}
+        <p class="muted">場面の直近20プレーの最善手率。しばらくやらないと少し下がる。</p></div>
     </section>
     <section><h2>体の記録</h2>${bodyCards(s)}</section>
     <section><h2>シーズンの歩み</h2>${timeline(s, me)}</section>`;
 }
+
+/** 1試合の評価（打つ・投げる）。ランクと言葉で返す */
+function gameMarks(g) {
+  const b = g.bat?.pa >= 2 ? scoreOf(battingScore([g])) : null; // 1打席だけの試合は評価しない
+  const p = g.pit?.outs && !g.excluded ? scoreOf(pitchingScore([g])) : null;
+  return { b, p };
+}
+const markChips = (g) => { const { b, p } = gameMarks(g); return `${b ? `<span class="mark r${b.rank}">打<b class="led">${b.rank}</b></span>` : ''}${p ? `<span class="mark r${p.rank}">投<b class="led">${p.rank}</b></span>` : ''}`; };
 
 function bodyCards(s) {
   const cards = MEASURES.map((m) => {
@@ -222,6 +265,7 @@ export function renderDrills(root) {
         if (cur + n < 0) return;
         sfx.tap();
         update((st) => { st.drillLog.push({ date, p: me.id, drill: id, count: n }); });
+        rankUpModal(checkRankUps(me.id));
         card.querySelector('.drill-total .led').textContent = cur + n;
       };
     });
@@ -267,6 +311,7 @@ export function renderSeason(root) {
       <a class="card game" href="#/game/${g.id}">
         <time>${fmtDate(g.date)}</time>
         <div><b>${esc(g.opp)}</b><small>${esc(kindName(g.kind))}${g.pos ? `　${esc(g.pos)}` : ''}</small></div>
+        <div class="marks">${markChips(g)}</div>
         <div class="game-score led">${g.us !== null && g.us !== undefined ? `${g.us}-${g.them}` : ''}</div>${icon.right}
       </a>`).join('')}</div></section>`;
 }
@@ -277,6 +322,8 @@ export function renderGame(root, id) {
   const s = get(); const g = s.games.find((x) => x.id === id);
   if (!g) { root.innerHTML = '<div class="card">この試合は見つかりません。</div>'; return; }
   const b = g.bat, p = g.pit;
+  const mk = gameMarks(g), prep = prepFor(g);
+  const verdict = (m, res) => (m ? `<div class="gverdict r${m.rank}"><span class="led">${m.rank}</span><div><b>${RANK_WORD[m.rank]}</b><small>${res.parts.map((x) => `${x.label} ${x.score}`).join('　')}</small></div></div>` : '');
   const ip = p ? `${Math.floor(p.outs / 3)}${p.outs % 3 ? `.${p.outs % 3}` : ''}` : '';
   root.innerHTML = `
     <header class="top"><a class="iconbtn" href="#/season" aria-label="もどる">${icon.left}</a><div><div class="brand">${esc(g.opp)}戦</div><div class="brand-sub">${fmtDate(g.date)}　${esc(kindName(g.kind))}</div></div></header>
@@ -285,8 +332,10 @@ export function renderGame(root, id) {
       ${g.pos ? `<p class="center"><b>${esc(g.pos)}</b></p>` : ''}
       ${g.excluded ? '<p class="muted center">この試合の投球は、成績の集計から外している。</p>' : ''}
     </section>
-    ${b ? `<section class="card"><h3>打つ</h3><div class="stats">${stat('打席', b.pa)}${stat('安打', b.h)}${stat('四球', b.bb)}${stat('三振', b.so)}${stat('盗塁', b.sb)}${stat('打点', b.rbi)}</div>${b.text ? `<p class="note">${esc(b.text)}</p>` : ''}</section>` : ''}
-    ${p ? `<section class="card"><h3>投げる</h3><div class="stats">${stat('回', ip)}${stat('球数', p.p)}${stat('三振', p.k)}${stat('四球', p.bb)}${stat('安打', p.h)}${stat('失点', p.r)}</div></section>` : ''}
+    ${b ? `<section class="card"><h3>打つ</h3>${verdict(mk.b, battingScore([g]))}<div class="stats">${stat('打席', b.pa)}${stat('安打', b.h)}${stat('四球', b.bb)}${stat('三振', b.so)}${stat('盗塁', b.sb)}${stat('打点', b.rbi)}</div>${b.text ? `<p class="note">${esc(b.text)}</p>` : ''}</section>` : ''}
+    ${p ? `<section class="card"><h3>投げる</h3>${verdict(mk.p, pitchingScore([g]))}<div class="stats">${stat('回', ip)}${stat('球数', p.p)}${stat('三振', p.k)}${stat('四球', p.bb)}${stat('安打', p.h)}${stat('失点', p.r)}</div></section>` : ''}
+    ${prep.plays || prep.quiz || prep.drillDays ? `<section class="card prep"><h3>この試合までにやったこと</h3><small class="muted">${fmtDate(prep.from)}〜${fmtDate(g.date)}</small>
+      <div class="stats">${stat('場面', prep.plays)}${stat('最善手', prep.best)}${stat('クイズ', prep.quiz)}${stat('自主練の日', prep.drillDays)}</div></section>` : ''}
     ${g.memo ? `<section class="card"><h3>メモ</h3><p class="note">${esc(g.memo)}</p></section>` : ''}
     ${(g.issues ?? []).length ? `<section><h2>次にやること</h2>${g.issues.map((i) => { const is = issueById[i]; if (!is) return ''; return `<div class="card rx"><div class="rx-head"><span class="rx-flag">${icon.flag}</span><div><b>${esc(is.name)}</b></div></div>
       <div class="row">${is.scenes.length ? `<a class="btn ghost small" href="#/play/free/rx:${is.id}">${icon.play} 場面で練習</a>` : ''}${is.drills.length ? `<a class="btn ghost small" href="#/drills">${icon.drill} ドリル</a>` : ''}</div></div>`; }).join('')}</section>` : ''}
@@ -350,7 +399,7 @@ export function renderParent(root, editId) {
     const date = root.querySelector('[data-mdate]').value, id = root.querySelector('[data-mid]').value, v = root.querySelector('[data-mval]').value;
     if (!date || v === '') { toast('日付と値を入れてください'); return; }
     update((st) => { st.measures = st.measures.filter((m) => !(m.date === date && m.id === id)); st.measures.push({ date, id, value: Number(v) }); st.measures.sort((a, b) => a.date.localeCompare(b.date)); });
-    toast('入れました'); renderParent(root, editId);
+    toast('入れました'); renderParent(root, editId); rankUpModal(checkRankUps('p1'));
   };
   root.querySelectorAll('[data-mdel]').forEach((b) => { b.onclick = () => { const [date, id] = b.dataset.mdel.split('|'); update((st) => { st.measures = st.measures.filter((m) => !(m.date === date && m.id === id)); }); renderParent(root, editId); }; });
   bindGameForm(root, edit);
@@ -360,7 +409,7 @@ export function renderParent(root, editId) {
   };
   root.querySelector('[data-import]').onchange = async (e) => {
     const f = e.target.files[0]; if (!f) return;
-    try { const r = importData(await f.text()); toast(`読みこみました：試合${r.games}　計測${r.measures}`); renderParent(root); }
+    try { const r = importData(await f.text()); toast(`読みこみました：試合${r.games}　計測${r.measures}`); renderParent(root); rankUpModal(checkRankUps('p1')); }
     catch { toast('読みこめませんでした。ファイルを確かめてください'); }
   };
   root.querySelector('[data-reset]').onclick = () => {
@@ -413,7 +462,7 @@ function bindGameForm(root, edit) {
       memo: f('memo').value.trim(),
     };
     update((st) => { st.games = st.games.filter((x) => x.id !== g.id); st.games.push(g); st.games.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id)); });
-    toast(edit ? '上書きしました' : '入れました'); go(`#/game/${g.id}`);
+    toast(edit ? '上書きしました' : '入れました'); go(`#/game/${g.id}`); setTimeout(() => rankUpModal(checkRankUps('p1')), 300);
   };
   const del = root.querySelector('[data-gdel]');
   if (del) del.onclick = () => { update((st) => { st.games = st.games.filter((x) => x.id !== edit.id); }); toast('消しました'); go('#/season'); };

@@ -6,7 +6,8 @@ import { SCENES } from './scenes.js';
 import { countFree, ROLE_GROUPS } from './sim.js';
 import { renderField, fielderPos, POS, LEAD, HOME, ARROW, tween, sleep, W, H } from './field.js';
 import { sfx } from './sound.js';
-import { esc, icon, go } from './ui.js';
+import { esc, icon, go, rankUpModal } from './ui.js';
+import { checkRankUps } from './growth.js';
 
 const cache = {};
 const loadJSON = (path) => (cache[path] ??= fetch(new URL(`../data/${path}`, import.meta.url)).then((r) => {
@@ -210,6 +211,7 @@ export async function renderQuiz(root, theme, diff = 'all') {
 
   function finish() {
     update((s) => { s.quiz.push({ t: new Date().toISOString(), p: me.id, theme, diff, score: G.right, total: qs.length }); });
+    const ups = checkRankUps(me.id);
     const missed = qs.filter((_, i) => !G.log[i]);
     G.i = -1;
     frame(`
@@ -219,6 +221,7 @@ export async function renderQuiz(root, theme, diff = 'all') {
       ${missed.length ? `<div class="card"><h4>もう一度見ておく</h4><ul class="missed">${missed.map((q) => `<li><b>${esc(q.q)}</b><span>${esc(q.c[q.a])}</span></li>`).join('')}</ul></div>` : ''}
       <div class="row"><button class="btn ghost" data-again>もう${QUIZ_LEN}問</button><a class="btn primary" href="#/learn/quiz">テーマをえらぶ</a></div>`);
     root.querySelector('[data-again]').onclick = () => renderQuiz(root, theme, diff);
+    if (ups.length) setTimeout(() => rankUpModal(ups), 400);
   }
   ask();
 }
