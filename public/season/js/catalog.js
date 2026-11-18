@@ -48,13 +48,47 @@ export const DRILLS = [
   { ab: 'run', id: 'steal',    name: '足の向きを見てスタート', how: 'セットから「ホームへ」「一塁へけん制」を混ぜてもらう。', unit: '本' },
   { ab: 'fld', id: 'flycharge',name: '後ろから前へ出て捕る', how: '「2アウト！」「1アウト三塁！」と声をかけてもらい、捕り方を変える。', unit: '本', measure: { label: '捕ってから投げるまで', unit: '秒', step: 0.01 } },
   { ab: 'iq', id: 'voice',    name: '外野から声を出す',     how: '1球ごとに、内野へ状況を声で伝える。', unit: '回' },
-  { ab: 'bat', id: 'swing',    name: '素振り',               how: 'テープを踏みこえない。振り切って、前足一本で3秒止まる。', unit: '回', measure: { label: '10本のうち止まれた数', unit: '本' } },
+  { ab: 'bat', id: 'swing',    name: '素振り',               how: 'テープを踏みこえない。振り切って、前足一本で3秒止まる。', unit: '回', steps: [1, 10, 50], measure: { label: '10本のうち止まれた数', unit: '本' } },
   { ab: 'bat', id: 'tee',      name: 'ティー',               how: 'テープを踏みこえない。ネットの帯をねらう。', unit: '本', measure: { label: '10本のうち帯に入った数', unit: '本' } },
   { ab: 'pit', id: 'shadow',   name: 'シャドーピッチング',   how: 'グラブのタオルを落とさない。フィニッシュで3秒止まる。', unit: '球', measure: { label: '10球のうち止まれた数', unit: '球' } },
   { ab: 'fld', id: 'wall',     name: 'かべ当て',             how: '捕ってから2歩以内で投げる。', unit: '本', measure: { label: '30秒で何回', unit: '回' } },
   { ab: 'run', id: 'rope',     name: '二重跳び',             how: 'つづけて何回とべるか。', unit: '回', measure: { label: '連続で何回', unit: '回' } },
+  // 体づくり。能力レーダーには数えない（ab なし）。目標とくらべる数だけをつける
+  { id: 'squat',    name: 'スクワット',           how: 'ひざがつま先より前に出ない。太ももが床と平行まで下げる。', unit: '回', steps: [1, 5, 10] },
+  { id: 'pushup',   name: '腕立て伏せ',           how: '頭からかかとまで一直線のまま、胸を床に近づける。', unit: '回', steps: [1, 5, 10] },
+  { id: 'situp',    name: '腹筋',                 how: 'ひざを立てて、おへそをのぞきこむように起きる。', unit: '回', steps: [1, 5, 10] },
+  { id: 'plank',    name: 'プランク',             how: 'ひじとつま先で体を一直線に。おしりを上げない。', unit: '秒', steps: [10, 30, 60] },
+  { id: 'hip',      name: '股関節',               how: '四股・開脚・股関節回しをゆっくり。', unit: '分', steps: [1, 3, 5] },
   { id: 'stretch',  name: 'ストレッチ',           how: '最後にひとつ、いちばん伸びた形のまま力を入れる。', unit: '回' },
 ];
+
+/**
+ * 自主練の目標の初期値（1日・週・月）。保護者メニューで変えられる。
+ * 0 や空にした目標は出さない。ここに無い種目は、目標を入れるまでダッシュボードに出ない。
+ */
+export const DEFAULT_GOALS = {
+  swing:   { day: 100, week: 500, month: 2000 },
+  squat:   { day: 20, week: 100, month: 400 },
+  pushup:  { day: 20, week: 100, month: 400 },
+  situp:   { day: 20, week: 100, month: 400 },
+  plank:   { day: 60, week: 300, month: 1200 },
+  hip:     { day: 3, week: 15, month: 60 },
+  stretch: { day: 1, week: 5, month: 20 },
+};
+
+/** 自主練ポイントでつく称号。pt はこの値以上 */
+export const TITLES = [
+  { pt: 0, name: 'ルーキー' },
+  { pt: 500, name: '期待のルーキー' },
+  { pt: 1200, name: 'レギュラー候補' },
+  { pt: 2000, name: 'レギュラー' },
+  { pt: 3500, name: 'チームの柱' },
+  { pt: 5000, name: 'エース' },
+  { pt: 8000, name: 'キャプテン' },
+  { pt: 12000, name: 'レジェンド' },
+];
+/** レベルは 500pt ごとに1つ上がる */
+export const PT_PER_LEVEL = 500;
 
 /** 試合で出た課題 → 取り組む場面とドリルの組。同時に持つのは2つまで。 */
 export const ISSUES = [

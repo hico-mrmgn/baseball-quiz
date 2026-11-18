@@ -42,7 +42,7 @@ function route() {
   else if (name === 'drills') renderDrills(app);
   else if (name === 'season') renderSeason(app);
   else if (name === 'game') renderGame(app, a);
-  else if (name === 'parent') renderParent(app, a === 'game' ? b : null);
+  else if (name === 'parent') renderParent(app, a === 'game' ? b : null, a === 'game' ? null : a);
   else renderHome(app);
 }
 
