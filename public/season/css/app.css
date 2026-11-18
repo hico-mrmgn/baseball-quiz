@@ -661,3 +661,17 @@ i.k-ball { background: #ff7a59; } i.k-cover { background: #5aaeea; } i.k-base { 
   .dash-grid { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); }
   .dash-photos { min-height: 220px; }
 }
+
+/* 季節のセット */
+.setbox { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 14px; background: #f4f9fd; border: 1.5px solid #dbe9f3; }
+.setbox h4 { margin: 0; }
+.setchips { display: flex; flex-wrap: wrap; gap: 8px; }
+.setchip { display: inline-flex; align-items: stretch; border-radius: 12px; border: 2px solid #cfe2ef; background: #fff; box-shadow: 0 3px 0 #d3e2ed; overflow: hidden; }
+.setchip > button { display: inline-flex; align-items: center; gap: 6px; min-height: 42px; padding: 0 12px; border: 0; background: none; font-size: 14px; font-weight: 900; color: #2d5a7b; }
+.setchip small { font-size: 10.5px; font-weight: 700; color: var(--muted); }
+.setchip .setdel { padding: 0 10px; border-left: 1.5px solid #e3edf4; color: #a9bccb; }
+.setchip.on { border-color: var(--blue-2); background: var(--sky); box-shadow: 0 3px 0 #b9d6ee; } .setchip.on > button:first-child { color: var(--blue); }
+.setsave { flex-wrap: nowrap; } .setsave input { flex: 1 1 auto; min-width: 0; } .setsave .btn { flex: 0 0 auto; }
+.setbar { flex-direction: row; align-items: center; gap: 10px; } .setbar > small { flex: none; font-size: 11px; font-weight: 900; color: #5c88aa; letter-spacing: .1em; }
+.setbar .setchips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+.setbar .setchip > button { min-height: 38px; white-space: nowrap; }

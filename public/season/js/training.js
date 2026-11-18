@@ -8,7 +8,7 @@
 
 import { DRILLS, DEFAULT_GOALS, TITLES, PT_PER_LEVEL, ISSUES } from './catalog.js';
 import { get, update, profile, today, addDays } from './store.js';
-import { esc, icon, toast } from './ui.js';
+import { esc, icon, toast, modal } from './ui.js';
 
 const drillById = Object.fromEntries(DRILLS.map((d) => [d.id, d]));
 const WEEK = ['日', '月', '火', '水', '木', '金', '土'];
@@ -43,6 +43,58 @@ export function setShown(pid, id, shown) {
 export function goalDrills(pid) {
   const g = goalsOf(pid), hidden = hiddenOf(pid);
   return DRILLS.filter((d) => g[d.id]?.day > 0 && !hidden.has(d.id)).map((d) => d.id);
+}
+
+/* ───────── 季節のセット ───────── */
+// 「冬」「シーズン中」のように、表示する種目と目標をひと組にして名前をつけて残す。
+// 押すとその組に切りかわる。いまの設定と同じ組には ✓ をつける（どれを選んだかは保存せず、くらべて決める）。
+
+const snapshot = (pid) => ({
+  hidden: [...hiddenOf(pid)].sort(),
+  goals: Object.fromEntries(Object.entries(structuredClone(goalsOf(pid))).sort(([a], [b]) => a.localeCompare(b))),
+});
+const sameSnap = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+export function setsOf(pid) {
+  return get().drillSets?.[pid] ?? [];
+}
+/** いまの設定と同じセット（なければ null） */
+export function currentSet(pid) {
+  const now = snapshot(pid);
+  return setsOf(pid).find((x) => sameSnap({ hidden: x.hidden, goals: x.goals }, now)) ?? null;
+}
+/** いまの表示と目標を、名前をつけて残す。同じ名前があれば上書き */
+export function saveSet(pid, name) {
+  const snap = snapshot(pid);
+  update((s) => {
+    s.drillSets ??= {};
+    const list = (s.drillSets[pid] ??= []);
+    const i = list.findIndex((x) => x.name === name);
+    const item = { name, ...snap };
+    if (i >= 0) list[i] = item; else list.push(item);
+  });
+}
+export function applySet(pid, name) {
+  const set = setsOf(pid).find((x) => x.name === name);
+  if (!set) return false;
+  update((s) => {
+    s.hiddenDrills ??= {}; s.goals ??= {};
+    s.hiddenDrills[pid] = [...set.hidden];
+    s.goals[pid] = structuredClone(set.goals);
+  });
+  return true;
+}
+export function deleteSet(pid, name) {
+  update((s) => { if (s.drillSets?.[pid]) s.drillSets[pid] = s.drillSets[pid].filter((x) => x.name !== name); });
+}
+
+/** セットを切りかえるチップの列。manage のときは消すボタンもつける */
+export function setChipsHTML(pid, { manage = false } = {}) {
+  const list = setsOf(pid), cur = currentSet(pid);
+  if (!list.length) return manage ? '<p class="muted">まだセットはありません。下の表を整えてから、名前をつけて保存します。</p>' : '';
+  return `<div class="setchips">${list.map((x) => `<span class="setchip ${cur?.name === x.name ? 'on' : ''}">
+    <button data-applyset="${esc(x.name)}">${cur?.name === x.name ? icon.check : ''}${esc(x.name)}<small>${DRILLS.length - x.hidden.length}種目</small></button>
+    ${manage ? `<button class="setdel" data-delset="${esc(x.name)}" aria-label="${esc(x.name)}を消す">${icon.x}</button>` : ''}</span>`).join('')}</div>`;
 }
 
 export function setGoal(pid, drill, period, value) {
@@ -327,6 +379,12 @@ export function goalSettingsHTML() {
   const rx = new Set(get().rx.flatMap((r) => ISSUES.find((i) => i.id === r.issue)?.drills ?? []));
   return `<section class="card form" id="goals"><h3>自主練の種目と目標（${esc(me.name)}）</h3>
     <p class="muted">季節や取り組む課題に合わせて、やる種目だけに「表示」のチェックを入れます。かくした種目の記録は消えません。1日の目標を入れた種目がダッシュボードに並びます。</p>
+    <div class="setbox"><h4>季節のセット</h4>
+      <div data-sets>${setChipsHTML(me.id, { manage: true })}</div>
+      <div class="row setsave"><input type="text" maxlength="12" placeholder="例：冬・シーズン中" data-setname value="${esc(currentSet(me.id)?.name ?? '')}" aria-label="セットの名前">
+        <button class="btn blue small" data-saveset>いまの内容を保存</button></div>
+      <p class="muted">表示する種目と1日・週・月の目標をひと組にして残します。セットを押すと、その内容に切りかわります。</p>
+    </div>
     <div class="row gt-quick"><button class="btn ghost small" data-showall>ぜんぶ表示</button><button class="btn ghost small" data-showgoal>目標がある種目だけ</button></div>
     <div class="goaltable">
       <div class="gt-head"><span>表示</span><span>種目</span>${PERIODS.map(([, l]) => `<span>${l}</span>`).join('')}</div>
@@ -351,8 +409,30 @@ export function photoSettingsHTML() {
 /** 保護者メニューの目標・写真の操作をつなぐ。rerender は写真を変えたあとに画面を描き直す関数 */
 export function bindTrainingSettings(root, rerender) {
   const me = profile();
+  // 表や目標を手で変えたら、どのセットと同じかを付け直す
+  const refreshSets = () => { const box = root.querySelector('[data-sets]'); if (box) { box.innerHTML = setChipsHTML(me.id, { manage: true }); bindSets(); } };
+  const bindSets = () => {
+    root.querySelectorAll('[data-applyset]').forEach((b) => {
+      b.onclick = () => { if (applySet(me.id, b.dataset.applyset)) { toast(`「${b.dataset.applyset}」にしました`); rerender('goals'); } };
+    });
+    root.querySelectorAll('[data-delset]').forEach((b) => {
+      b.onclick = () => {
+        const m = modal(`<h3>「${esc(b.dataset.delset)}」を消す？</h3><p class="muted">セットだけを消します。いまの表示と目標、記録はそのままです。</p>
+          <div class="row"><button class="btn ghost" data-close>やめる</button><button class="btn danger" data-yes>消す</button></div>`);
+        m.el.querySelector('[data-yes]').onclick = () => { deleteSet(me.id, b.dataset.delset); m.close(); refreshSets(); };
+      };
+    });
+  };
+  bindSets();
+  root.querySelector('[data-saveset]').onclick = () => {
+    const name = root.querySelector('[data-setname]').value.trim();
+    if (!name) { toast('セットの名前を入れてください'); return; }
+    const over = setsOf(me.id).some((x) => x.name === name);
+    saveSet(me.id, name); refreshSets();
+    toast(over ? `「${name}」を上書きしました` : `「${name}」を保存しました`);
+  };
   root.querySelectorAll('[data-show]').forEach((el) => {
-    el.onchange = () => { setShown(me.id, el.dataset.show, el.checked); el.closest('.gt-row').classList.toggle('off', !el.checked); };
+    el.onchange = () => { setShown(me.id, el.dataset.show, el.checked); el.closest('.gt-row').classList.toggle('off', !el.checked); refreshSets(); };
   });
   const showOnly = (keep) => {
     update((s) => { s.hiddenDrills ??= {}; s.hiddenDrills[me.id] = DRILLS.map((d) => d.id).filter((id) => !keep(id)); });
@@ -364,7 +444,7 @@ export function bindTrainingSettings(root, rerender) {
     el.onchange = () => {
       const [drill, period] = el.dataset.goal.split('|');
       setGoal(me.id, drill, period, Math.max(0, Math.round(Number(el.value) || 0)));
-      toast('目標を変えました');
+      toast('目標を変えました'); refreshSets();
     };
   });
   root.querySelectorAll('[data-photo]').forEach((el) => {

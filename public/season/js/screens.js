@@ -9,7 +9,7 @@ import { axisStats, abilityStats, battingScore, pitchingScore, scoreOf, rxEffect
 import { buildDaily } from './sim.js';
 import { sfx } from './sound.js';
 import { h, esc, icon, toast, modal, go, rankUpModal } from './ui.js';
-import { mountDashboard, goalDrills, hiddenOf, goalSettingsHTML, photoSettingsHTML, bindTrainingSettings } from './training.js';
+import { mountDashboard, goalDrills, hiddenOf, setChipsHTML, applySet, goalSettingsHTML, photoSettingsHTML, bindTrainingSettings } from './training.js';
 
 const issueById = Object.fromEntries(ISSUES.map((i) => [i.id, i]));
 const drillById = Object.fromEntries(DRILLS.map((d) => [d.id, d]));
@@ -263,12 +263,16 @@ export function renderDrills(root) {
   root.innerHTML = `
     <header class="top"><div><div class="brand">自主練</div><div class="brand-sub">やった数を、自分でつける</div></div>
       <a class="iconbtn" href="#/parent/goals" aria-label="目標と写真を変える">${icon.gear}</a></header>
+    ${setChipsHTML(me.id) ? `<section class="setbar" aria-label="季節のセット"><small>セット</small>${setChipsHTML(me.id)}</section>` : ''}
     <section class="dash" data-dash aria-label="自主練ダッシュボード"></section>
     <h2>記録する</h2>
     <section class="strip wide" aria-label="この2週間">${days.map((d) => `<div class="day ${d === date ? 'today' : ''}"><span>${+d.slice(8)}</span><i class="${doneDays.has(d) ? 'd' : ''}"></i></div>`).join('')}</section>
     <section class="drills">${shown.map(card).join('')}</section>
     ${folded.length ? `<details class="folded"><summary>かくしている種目（${folded.length}）<a href="#/parent/goals">表示を変える</a></summary><section class="drills">${folded.map(card).join('')}</section></details>` : ''}`;
 
+  root.querySelectorAll('[data-applyset]').forEach((b) => {
+    b.onclick = () => { sfx.tap(); applySet(me.id, b.dataset.applyset); toast(`「${b.dataset.applyset}」にしました`); renderDrills(root); };
+  });
   const dash = root.querySelector('[data-dash]');
   mountDashboard(dash);
 
