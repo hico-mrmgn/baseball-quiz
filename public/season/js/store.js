@@ -25,6 +25,7 @@ const fresh = () => ({
   oldDays: [],    // まえのアプリで練習した日
   legacy: null,   // まえのアプリからの引きつぎ { at, drills, days, quiz, wrong }
   goals: {},      // 自主練の目標 { p1: { swing: { day, week, month } } }。無いプレーヤーは DEFAULT_GOALS
+  hiddenDrills: {},// 自主練でかくしている種目 { p1: ['tee', …] }
   settings: { sound: true, pos: null },
 });
 
@@ -161,6 +162,7 @@ export function importData(text, { replace = false } = {}) {
     ['plays', 'drillLog', 'events', 'quiz'].forEach((k) => {
       if (Array.isArray(data[k]) && data[k].length) s[k] = [...s[k], ...data[k]];
     });
+    if (data.hiddenDrills) s.hiddenDrills = { ...s.hiddenDrills, ...data.hiddenDrills };
     if (data.goals) s.goals = { ...s.goals, ...data.goals };
     if (data.daily) s.daily = { ...s.daily, ...data.daily };
     if (data.ranks) s.ranks = { ...s.ranks, ...data.ranks };

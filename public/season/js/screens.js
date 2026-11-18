@@ -9,7 +9,7 @@ import { axisStats, abilityStats, battingScore, pitchingScore, scoreOf, rxEffect
 import { buildDaily } from './sim.js';
 import { sfx } from './sound.js';
 import { h, esc, icon, toast, modal, go, rankUpModal } from './ui.js';
-import { mountDashboard, goalDrills, goalSettingsHTML, photoSettingsHTML, bindTrainingSettings } from './training.js';
+import { mountDashboard, goalDrills, hiddenOf, goalSettingsHTML, photoSettingsHTML, bindTrainingSettings } from './training.js';
 
 const issueById = Object.fromEntries(ISSUES.map((i) => [i.id, i]));
 const drillById = Object.fromEntries(DRILLS.map((d) => [d.id, d]));
@@ -242,9 +242,23 @@ export function renderDrills(root) {
   // 取り組み中の課題のドリル → 目標がある種目 → そのほか
   const goals = goalDrills(me.id).filter((id) => !rxDrills.includes(id));
   const order = [...rxDrills, ...goals, ...DRILLS.map((d) => d.id).filter((id) => !rxDrills.includes(id) && !goals.includes(id))];
+  // 保護者メニューでかくした種目は、いちばん下にたたんでおく
+  const hidden = hiddenOf(me.id);
+  const shown = order.filter((id) => !hidden.has(id)), folded = order.filter((id) => hidden.has(id));
   const todays = (id) => s.drillLog.filter((d) => d.p === me.id && d.date === date && d.drill === id);
   const days = [...Array(14)].map((_, i) => addDays(date, i - 13));
   const doneDays = new Set(s.drillLog.filter((d) => d.p === me.id).map((d) => d.date));
+
+  const card = (id) => {
+    const d = drillById[id]; const logs = todays(id); const total = logs.reduce((a, x) => a + (x.count ?? 0), 0);
+    const val = [...logs].reverse().find((x) => x.value !== undefined && x.value !== null)?.value;
+    return `<div class="card drill ${rxDrills.includes(id) ? 'rxd' : ''}" data-id="${id}">
+      <div class="drill-head"><div><b>${esc(d.name)}</b>${rxDrills.includes(id) ? '<span class="chip src">いま取り組み中</span>' : ''}<p>${esc(d.how)}</p></div>
+        <div class="drill-total"><span class="led">${total}</span>${esc(d.unit)}</div></div>
+      <div class="row steps">${(d.steps ?? [1, 5, 10]).map((n) => `<button class="step" data-add="${n}">+${n}</button>`).join('')}<button class="step undo" data-add="-1" aria-label="1へらす">${icon.minus}</button></div>
+      ${d.measure ? `<label class="measure"><span>${esc(d.measure.label)}</span><input type="number" inputmode="decimal" step="${d.measure.step ?? 1}" value="${val ?? ''}" placeholder="—" data-val><em>${esc(d.measure.unit)}</em></label>` : ''}
+    </div>`;
+  };
 
   root.innerHTML = `
     <header class="top"><div><div class="brand">自主練</div><div class="brand-sub">やった数を、自分でつける</div></div>
@@ -252,15 +266,8 @@ export function renderDrills(root) {
     <section class="dash" data-dash aria-label="自主練ダッシュボード"></section>
     <h2>記録する</h2>
     <section class="strip wide" aria-label="この2週間">${days.map((d) => `<div class="day ${d === date ? 'today' : ''}"><span>${+d.slice(8)}</span><i class="${doneDays.has(d) ? 'd' : ''}"></i></div>`).join('')}</section>
-    <section class="drills">${order.map((id) => {
-      const d = drillById[id]; const logs = todays(id); const total = logs.reduce((a, x) => a + (x.count ?? 0), 0);
-      const val = [...logs].reverse().find((x) => x.value !== undefined && x.value !== null)?.value;
-      return `<div class="card drill ${rxDrills.includes(id) ? 'rxd' : ''}" data-id="${id}">
-        <div class="drill-head"><div><b>${esc(d.name)}</b>${rxDrills.includes(id) ? '<span class="chip src">いま取り組み中</span>' : ''}<p>${esc(d.how)}</p></div>
-          <div class="drill-total"><span class="led">${total}</span>${esc(d.unit)}</div></div>
-        <div class="row steps">${(d.steps ?? [1, 5, 10]).map((n) => `<button class="step" data-add="${n}">+${n}</button>`).join('')}<button class="step undo" data-add="-1" aria-label="1へらす">${icon.minus}</button></div>
-        ${d.measure ? `<label class="measure"><span>${esc(d.measure.label)}</span><input type="number" inputmode="decimal" step="${d.measure.step ?? 1}" value="${val ?? ''}" placeholder="—" data-val><em>${esc(d.measure.unit)}</em></label>` : ''}
-      </div>`; }).join('')}</section>`;
+    <section class="drills">${shown.map(card).join('')}</section>
+    ${folded.length ? `<details class="folded"><summary>かくしている種目（${folded.length}）<a href="#/parent/goals">表示を変える</a></summary><section class="drills">${folded.map(card).join('')}</section></details>` : ''}`;
 
   const dash = root.querySelector('[data-dash]');
   mountDashboard(dash);
@@ -416,7 +423,7 @@ export function renderParent(root, editId, anchor = null) {
   };
   root.querySelectorAll('[data-mdel]').forEach((b) => { b.onclick = () => { const [date, id] = b.dataset.mdel.split('|'); update((st) => { st.measures = st.measures.filter((m) => !(m.date === date && m.id === id)); }); renderParent(root, editId); }; });
   bindGameForm(root, edit);
-  bindTrainingSettings(root, () => renderParent(root, editId, 'photos'));
+  bindTrainingSettings(root, (anchor) => renderParent(root, editId, anchor));
   root.querySelector('[data-export]').onclick = () => {
     const blob = new Blob([exportData()], { type: 'application/json' });
     const a = h(`<a download="season-${today()}.json"></a>`); a.href = URL.createObjectURL(blob); document.body.append(a); a.click(); a.remove();

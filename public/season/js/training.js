@@ -3,8 +3,10 @@
 // 数えるのは「やった数」だけ（出来ばえは採点しない、という自主練の約束はそのまま）。
 // ポイントとバッジは保存せず、自主練の記録と目標から毎回計算する。
 // そのため目標を変えると、過去のポイントもその目標で数え直される。
+// かくした種目も、目標があれば過去の達成はポイントに数える（季節で切りかえても、ためた分は減らない）。
+// 「その日の目標をぜんぶ達成」と今日の達成率は、表示している種目だけで見る。
 
-import { DRILLS, DEFAULT_GOALS, TITLES, PT_PER_LEVEL } from './catalog.js';
+import { DRILLS, DEFAULT_GOALS, TITLES, PT_PER_LEVEL, ISSUES } from './catalog.js';
 import { get, update, profile, today, addDays } from './store.js';
 import { esc, icon, toast } from './ui.js';
 
@@ -19,10 +21,28 @@ export function goalsOf(pid) {
   return get().goals?.[pid] ?? DEFAULT_GOALS;
 }
 
-/** 1日の目標がある種目を、DRILLS の並び順で返す */
+/* ───────── 表示する種目 ───────── */
+// 季節や取り組む課題で、やる種目は変わる。かくした種目はダッシュボードにも記録の一覧にも出さない
+// （記録の一覧では「かくしている種目」にたたんでおく）。記録と目標は消さずに残す。
+
+export function hiddenOf(pid) {
+  return new Set(get().hiddenDrills?.[pid] ?? []);
+}
+export const isShown = (pid, id) => !hiddenOf(pid).has(id);
+
+export function setShown(pid, id, shown) {
+  update((s) => {
+    s.hiddenDrills ??= {};
+    const set = new Set(s.hiddenDrills[pid] ?? []);
+    if (shown) set.delete(id); else set.add(id);
+    s.hiddenDrills[pid] = DRILLS.map((d) => d.id).filter((x) => set.has(x));
+  });
+}
+
+/** 1日の目標があって、表示している種目を、DRILLS の並び順で返す */
 export function goalDrills(pid) {
-  const g = goalsOf(pid);
-  return DRILLS.filter((d) => g[d.id]?.day > 0).map((d) => d.id);
+  const g = goalsOf(pid), hidden = hiddenOf(pid);
+  return DRILLS.filter((d) => g[d.id]?.day > 0 && !hidden.has(d.id)).map((d) => d.id);
 }
 
 export function setGoal(pid, drill, period, value) {
@@ -303,12 +323,16 @@ export function mountDashboard(el) {
 /* ───────── 保護者メニュー：目標と写真 ───────── */
 
 export function goalSettingsHTML() {
-  const me = profile(), g = goalsOf(me.id);
-  return `<section class="card form" id="goals"><h3>自主練の目標（${esc(me.name)}）</h3>
-    <p class="muted">1日の目標を入れた種目が、自主練のダッシュボードに並びます。空にすると出しません。</p>
+  const me = profile(), g = goalsOf(me.id), hidden = hiddenOf(me.id);
+  const rx = new Set(get().rx.flatMap((r) => ISSUES.find((i) => i.id === r.issue)?.drills ?? []));
+  return `<section class="card form" id="goals"><h3>自主練の種目と目標（${esc(me.name)}）</h3>
+    <p class="muted">季節や取り組む課題に合わせて、やる種目だけに「表示」のチェックを入れます。かくした種目の記録は消えません。1日の目標を入れた種目がダッシュボードに並びます。</p>
+    <div class="row gt-quick"><button class="btn ghost small" data-showall>ぜんぶ表示</button><button class="btn ghost small" data-showgoal>目標がある種目だけ</button></div>
     <div class="goaltable">
-      <div class="gt-head"><span>種目</span>${PERIODS.map(([, l]) => `<span>${l}</span>`).join('')}</div>
-      ${DRILLS.map((d) => `<div class="gt-row"><span>${esc(d.name)}<small>${esc(d.unit)}</small></span>
+      <div class="gt-head"><span>表示</span><span>種目</span>${PERIODS.map(([, l]) => `<span>${l}</span>`).join('')}</div>
+      ${DRILLS.map((d) => `<div class="gt-row ${hidden.has(d.id) ? 'off' : ''}">
+        <input type="checkbox" data-show="${d.id}" ${hidden.has(d.id) ? '' : 'checked'} aria-label="${esc(d.name)}を表示">
+        <span>${esc(d.name)}<small>${esc(d.unit)}</small>${rx.has(d.id) ? '<em>取り組み中</em>' : ''}</span>
         ${PERIODS.map(([k]) => `<input type="number" inputmode="numeric" min="0" data-goal="${d.id}|${k}" value="${g[d.id]?.[k] || ''}" placeholder="—" aria-label="${esc(d.name)}の${k}">`).join('')}</div>`).join('')}
     </div></section>`;
 }
@@ -327,6 +351,15 @@ export function photoSettingsHTML() {
 /** 保護者メニューの目標・写真の操作をつなぐ。rerender は写真を変えたあとに画面を描き直す関数 */
 export function bindTrainingSettings(root, rerender) {
   const me = profile();
+  root.querySelectorAll('[data-show]').forEach((el) => {
+    el.onchange = () => { setShown(me.id, el.dataset.show, el.checked); el.closest('.gt-row').classList.toggle('off', !el.checked); };
+  });
+  const showOnly = (keep) => {
+    update((s) => { s.hiddenDrills ??= {}; s.hiddenDrills[me.id] = DRILLS.map((d) => d.id).filter((id) => !keep(id)); });
+    rerender('goals'); toast('表示する種目を変えました');
+  };
+  root.querySelector('[data-showall]').onclick = () => showOnly(() => true);
+  root.querySelector('[data-showgoal]').onclick = () => { const g = goalsOf(me.id); showOnly((id) => g[id]?.day > 0); };
   root.querySelectorAll('[data-goal]').forEach((el) => {
     el.onchange = () => {
       const [drill, period] = el.dataset.goal.split('|');
@@ -340,11 +373,11 @@ export function bindTrainingSettings(root, rerender) {
       try {
         const url = await shrinkImage(f);
         if (!setPhoto(me.id, +el.dataset.photo, url)) { toast('保存できませんでした。ほかの写真を消してください'); return; }
-        toast('写真を入れました'); rerender();
+        toast('写真を入れました'); rerender('photos');
       } catch { toast('この写真は読みこめませんでした'); }
     };
   });
   root.querySelectorAll('[data-photodel]').forEach((b) => {
-    b.onclick = () => { setPhoto(me.id, +b.dataset.photodel, null); rerender(); };
+    b.onclick = () => { setPhoto(me.id, +b.dataset.photodel, null); rerender('photos'); };
   });
 }

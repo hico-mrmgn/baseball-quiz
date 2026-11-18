@@ -628,10 +628,17 @@ i.k-ball { background: #ff7a59; } i.k-cover { background: #5aaeea; } i.k-base { 
 
 /* 保護者メニュー：目標と写真 */
 .goaltable { display: grid; gap: 4px; }
-.gt-head, .gt-row { display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: 6px; align-items: center; }
-.gt-head { font-size: 11px; font-weight: 900; color: var(--muted); } .gt-head span:not(:first-child) { text-align: center; }
+.gt-head, .gt-row { display: grid; grid-template-columns: 34px minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: 6px; align-items: center; }
+.gt-row input[type="checkbox"] { width: 24px; height: 24px; min-height: 0; margin: 0 auto; accent-color: var(--blue); }
+.gt-row.off > span { color: #a9bccb; } .gt-row.off input[type="number"] { opacity: .45; }
+.gt-row em { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: #ffead4; color: #b36518; font-style: normal; font-size: 10px; font-weight: 900; }
+.gt-quick .btn { flex: 0 1 auto; }
+.gt-head { font-size: 11px; font-weight: 900; color: var(--muted); } .gt-head span:not(:nth-child(2)) { text-align: center; }
+.folded summary { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px 4px; font-size: 13px; font-weight: 900; color: var(--ink-2); }
+.folded summary a { margin-left: auto; font-size: 12px; color: var(--blue-2); text-decoration: underline; }
+.folded[open] summary { margin-bottom: 8px; }
 .gt-row > span { font-size: 13px; font-weight: 700; } .gt-row small { margin-left: 4px; font-size: 10.5px; color: var(--muted); }
-.gt-row input { width: 100%; min-width: 0; min-height: 40px; padding: 6px 4px; text-align: center; }
+.gt-row input[type="number"] { width: 100%; min-width: 0; min-height: 40px; padding: 6px 2px; font-size: 14px; text-align: center; letter-spacing: -.02em; }
 .photoset { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .pslot { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .pprev { width: 100%; aspect-ratio: 3 / 4; border-radius: 12px; overflow: hidden; background: #eef4f9; border: 2px dashed #cfe2ef; display: grid; place-items: center; color: #a9bccb; font-family: var(--led); font-size: 28px; }
