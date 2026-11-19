@@ -1,17 +1,15 @@
-// ホーム・成長・ドリル・シーズン・保護者メニュー。
+// 選手の画面：ホーム・成長・自主練・シーズン。保護者の設定は管理画面（admin.js）にある。
 
 import { ISSUES, DRILLS, MEASURES, GAME_KINDS, GRADES, RANK_WORD } from './catalog.js';
 import { SCENES, sceneById } from './scenes.js';
-import {
-  get, update, profile, today, addDays, fmtDate, exportData, importData, resetAll,
-} from './store.js';
+import { get, update, profile, today, addDays, fmtDate } from './store.js';
 import { axisStats, abilityStats, battingScore, pitchingScore, scoreOf, rxEffect, prepFor, checkRankUps, battingLine, pitchingLine, fmtAvg, fmt1 } from './growth.js';
 import { buildDaily } from './sim.js';
 import { sfx } from './sound.js';
-import { h, esc, icon, toast, modal, go, rankUpModal } from './ui.js';
+import { esc, icon, toast, rankUpModal } from './ui.js';
 import { cloud, signedIn, isChild } from './cloud.js';
-import { accountSectionHTML, bindAccount, kidMenu, addPlayer } from './account.js';
-import { mountDashboard, goalDrills, hiddenOf, setChipsHTML, applySet, goalSettingsHTML, photoSettingsHTML, bindTrainingSettings } from './training.js';
+import { kidMenu } from './account.js';
+import { mountDashboard, goalDrills, hiddenOf } from './training.js';
 
 const issueById = Object.fromEntries(ISSUES.map((i) => [i.id, i]));
 const drillById = Object.fromEntries(DRILLS.map((d) => [d.id, d]));
@@ -61,7 +59,7 @@ export function renderHome(root) {
           ? `<button class="who" data-kid aria-label="アカウント"><span class="num">${esc(me.number ?? '')}</span>${esc(me.name)}${icon.cloud}</button>`
           : `<button class="who" data-switch aria-label="プレーヤーを切りかえる"><span class="num">${esc(me.number ?? '')}</span>${esc(me.name)}${icon.swap}</button>
              ${cloud().enabled && !signedIn() ? `<a class="btn ghost small loginbtn" href="#/login">ログイン</a>` : ''}
-             <a class="iconbtn ${signedIn() ? `synced-${cloud().status}` : ''}" href="#/parent" aria-label="保護者メニュー">${icon.gear}</a>`}
+             <a class="iconbtn ${signedIn() ? `synced-${cloud().status}` : ''}" href="admin/" aria-label="保護者の管理画面">${icon.gear}</a>`}
       </div>
     </header>
 
@@ -269,17 +267,13 @@ export function renderDrills(root) {
 
   root.innerHTML = `
     <header class="top"><div><div class="brand">自主練</div><div class="brand-sub">やった数を、自分でつける</div></div>
-      ${isChild() ? '' : `<a class="iconbtn" href="#/parent/goals" aria-label="目標と写真を変える">${icon.gear}</a>`}</header>
-    ${!isChild() && setChipsHTML(me.id) ? `<section class="setbar" aria-label="季節のセット"><small>セット</small>${setChipsHTML(me.id)}</section>` : ''}
+</header>
     <section class="dash" data-dash aria-label="自主練ダッシュボード"></section>
     <h2>記録する</h2>
     <section class="strip wide" aria-label="この2週間">${days.map((d) => `<div class="day ${d === date ? 'today' : ''}"><span>${+d.slice(8)}</span><i class="${doneDays.has(d) ? 'd' : ''}"></i></div>`).join('')}</section>
     <section class="drills">${shown.map(card).join('')}</section>
-    ${folded.length ? `<details class="folded"><summary>かくしている種目（${folded.length}）${isChild() ? '' : '<a href="#/parent/goals">表示を変える</a>'}</summary><section class="drills">${folded.map(card).join('')}</section></details>` : ''}`;
+    ${folded.length ? `<details class="folded"><summary>かくしている種目（${folded.length}）</summary><section class="drills">${folded.map(card).join('')}</section></details>` : ''}`;
 
-  root.querySelectorAll('[data-applyset]').forEach((b) => {
-    b.onclick = () => { sfx.tap(); applySet(me.id, b.dataset.applyset); toast(`「${b.dataset.applyset}」にしました`); renderDrills(root); };
-  });
   const dash = root.querySelector('[data-dash]');
   mountDashboard(dash);
 
@@ -311,8 +305,8 @@ export function renderSeason(root) {
   const s = get(); const games = [...s.games].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
   if (!games.length) {
     root.innerHTML = `<header class="top"><div><div class="brand">シーズン</div><div class="brand-sub">じっさいの試合の記録</div></div></header>
-      <div class="card empty"><h3>まだ試合が入っていません</h3><p>試合の記録は、この端末の中だけに置きます。保護者メニューから、1試合ずつ入れるか、ファイルを読みこんでください。</p>
-      <a class="btn primary" href="#/parent">保護者メニューへ</a></div>`;
+      <div class="card empty"><h3>まだ試合が入っていません</h3><p>試合の記録は、おうちの人が管理画面で入れます。</p>
+      ${isChild() ? '' : `<a class="btn primary" href="admin/#/games">管理画面へ</a>`}</div>`;
     return;
   }
   const withScore = games.filter((g) => g.us !== null && g.us !== undefined);
@@ -370,138 +364,6 @@ export function renderGame(root, id) {
     ${(g.scenes ?? []).length ? `<section><h2>この試合の場面</h2>${g.scenes.map((sid) => { const sc = sceneById[sid]; if (!sc) return ''; const v = s.sceneVideos[sid];
       return `<div class="card scene-row"><div><b>${esc(sc.key)}</b><small>${esc(sc.src)}</small></div>
         <div class="row"><a class="btn ghost small" href="#/play/free/one:${sid}">${icon.play} やってみる</a>${v ? `<a class="btn ghost small" target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=${encodeURIComponent(v.id)}&t=${v.t | 0}s">${icon.video} 動画</a>` : ''}</div></div>`; }).join('')}</section>` : ''}
-    <div class="row"><a class="btn ghost" href="#/parent/game/${g.id}">${icon.pen} なおす</a></div>`;
+    ${isChild() ? '' : `<div class="row"><a class="btn ghost" href="admin/#/games/${encodeURIComponent(g.id)}">${icon.pen} 管理画面でなおす</a></div>`}`;
 }
 const stat = (l, v) => `<div><span class="led">${v ?? 0}</span><small>${l}</small></div>`;
-
-/* ───────── 保護者メニュー ───────── */
-export function renderParent(root, editId, anchor = null) {
-  const s = get();
-  const edit = editId ? s.games.find((g) => g.id === editId) : null;
-  root.innerHTML = `
-    <header class="top"><a class="iconbtn" href="#/home" aria-label="もどる">${icon.left}</a><div><div class="brand">保護者メニュー</div><div class="brand-sub">記録はこの端末の中だけに保存されます</div></div></header>
-
-    ${accountSectionHTML()}
-
-    <section class="card form"><h3>プレーヤー</h3>
-      ${s.profiles.map((p, i) => `<div class="frow"><label>名前<input data-pname="${i}" value="${esc(p.name)}" maxlength="10"></label><label class="narrow">背番号<input data-pnum="${i}" type="number" value="${esc(p.number ?? '')}"></label></div>`).join('')}
-      <button class="btn ghost small" data-addp>${icon.plus} プレーヤーを足す</button>
-      <label class="check"><input type="checkbox" data-sound ${s.settings.sound ? 'checked' : ''}> 音を出す</label>
-    </section>
-
-    ${goalSettingsHTML()}
-    ${photoSettingsHTML()}
-
-    <section class="card form"><h3>いま取り組むこと（2つまで）</h3>
-      <div class="picks">${ISSUES.map((i) => `<label class="pick"><input type="checkbox" data-rx="${i.id}" ${s.rx.some((r) => r.issue === i.id) ? 'checked' : ''}><span>${esc(i.name)}</span></label>`).join('')}</div>
-      <p class="muted">えらんだ課題の場面が「今日の試合」に多めに出て、ドリルが自主練の先頭に並びます。</p>
-    </section>
-
-    <section class="card form"><h3>実測値を入れる</h3>
-      <div class="frow"><label>日付<input type="date" data-mdate value="${today()}"></label>
-        <label>項目<select data-mid>${MEASURES.map((m) => `<option value="${m.id}">${esc(m.name)}（${esc(m.unit)}）</option>`).join('')}</select></label>
-        <label class="narrow">値<input type="number" inputmode="decimal" step="0.01" data-mval></label></div>
-      <button class="btn ghost" data-madd>${icon.plus} 入れる</button>
-      ${s.measures.length ? `<ul class="mini-list">${[...s.measures].reverse().slice(0, 8).map((m) => { const d = MEASURES.find((x) => x.id === m.id); return `<li>${fmtDate(m.date)}　${esc(d?.name ?? m.id)} <b>${m.value}${esc(d?.unit ?? '')}</b><button class="link" data-mdel="${m.date}|${m.id}">消す</button></li>`; }).join('')}</ul>` : ''}
-    </section>
-
-    <section class="card form" id="gameform"><h3>${edit ? '試合をなおす' : '試合を入れる'}</h3>${gameForm(edit)}</section>
-
-    ${s.legacy && !s.legacy.reset && (s.legacy.drills || s.legacy.days || s.legacy.quiz || s.legacy.wrong) ? `<section class="card form"><h3>まえのアプリからの引きつぎ</h3>
-      <p class="muted">この端末に残っていた「つぎ、どうする？」の記録を、${fmtDate(s.legacy.at)}に移しました。</p>
-      <ul class="mini-list"><li>練習した日 <b>${s.legacy.days}日</b></li><li>自主練の記録 <b>${s.legacy.drills}件</b></li><li>クイズの戦績 <b>${s.legacy.quiz}回</b></li><li>まちがえた問題 <b>${s.legacy.wrong}問</b></li></ul>
-    </section>` : ''}
-
-    <section class="card form"><h3>データの持ち運び</h3>
-      <p class="muted">試合の成績や実測値は個人のデータなので、アプリには入れずにこの端末に保存しています。別の端末へはファイルで移します。</p>
-      <div class="row"><button class="btn ghost" data-export>書き出す</button><label class="btn ghost filebtn">読みこむ<input type="file" accept="application/json,.json" data-import hidden></label></div>
-      <button class="link danger" data-reset>この端末の記録をぜんぶ消す</button>
-      <a class="link" href="/?classic">まえのアプリ（つぎ、どうする？）をひらく</a>
-    </section>`;
-
-  root.querySelectorAll('[data-pname]').forEach((el) => { el.onchange = () => update((st) => { st.profiles[+el.dataset.pname].name = el.value.trim() || 'じぶん'; }); });
-  root.querySelectorAll('[data-pnum]').forEach((el) => { el.onchange = () => update((st) => { st.profiles[+el.dataset.pnum].number = el.value === '' ? '' : +el.value; }); });
-  root.querySelector('[data-sound]').onchange = (e) => update((st) => { st.settings.sound = e.target.checked; });
-  root.querySelectorAll('[data-rx]').forEach((el) => {
-    el.onchange = () => {
-      const id = el.dataset.rx;
-      if (el.checked && get().rx.length >= 2) { el.checked = false; toast('2つまでです'); return; }
-      update((st) => { st.rx = el.checked ? [...st.rx, { issue: id, since: today() }] : st.rx.filter((r) => r.issue !== id); });
-    };
-  });
-  root.querySelector('[data-madd]').onclick = () => {
-    const date = root.querySelector('[data-mdate]').value, id = root.querySelector('[data-mid]').value, v = root.querySelector('[data-mval]').value;
-    if (!date || v === '') { toast('日付と値を入れてください'); return; }
-    update((st) => { st.measures = st.measures.filter((m) => !(m.date === date && m.id === id)); st.measures.push({ date, id, value: Number(v) }); st.measures.sort((a, b) => a.date.localeCompare(b.date)); });
-    toast('入れました'); renderParent(root, editId); rankUpModal(checkRankUps('p1'));
-  };
-  root.querySelectorAll('[data-mdel]').forEach((b) => { b.onclick = () => { const [date, id] = b.dataset.mdel.split('|'); update((st) => { st.measures = st.measures.filter((m) => !(m.date === date && m.id === id)); }); renderParent(root, editId); }; });
-  bindGameForm(root, edit);
-  bindTrainingSettings(root, (anchor) => renderParent(root, editId, anchor));
-  bindAccount(root, (anchor) => renderParent(root, editId, anchor));
-  root.querySelector('[data-addp]').onclick = () => { addPlayer(); toast('プレーヤーを足しました'); renderParent(root, editId); };
-  root.querySelector('[data-export]').onclick = () => {
-    const blob = new Blob([exportData()], { type: 'application/json' });
-    const a = h(`<a download="season-${today()}.json"></a>`); a.href = URL.createObjectURL(blob); document.body.append(a); a.click(); a.remove();
-  };
-  root.querySelector('[data-import]').onchange = async (e) => {
-    const f = e.target.files[0]; if (!f) return;
-    try { const r = importData(await f.text()); toast(`読みこみました：試合${r.games}　計測${r.measures}`); renderParent(root); rankUpModal(checkRankUps('p1')); }
-    catch { toast('読みこめませんでした。ファイルを確かめてください'); }
-  };
-  root.querySelector('[data-reset]').onclick = () => {
-    const m = modal(`<h3>ぜんぶ消す？</h3><p class="muted">この端末の試合・練習・計測の記録がすべて消えます。先に「書き出す」で残しておけます。</p>
-      <div class="row"><button class="btn ghost" data-close>やめる</button><button class="btn danger" data-yes>消す</button></div>`);
-    m.el.querySelector('[data-yes]').onclick = () => { resetAll(); m.close(); toast('消しました'); go('#/home'); };
-  };
-  if (edit) root.querySelector('#gameform').scrollIntoView();
-  else if (anchor && root.querySelector(`#${anchor}`)) root.querySelector(`#${anchor}`).scrollIntoView();
-}
-
-function gameForm(g) {
-  const b = g?.bat ?? {}, p = g?.pit ?? {};
-  const num = (name, label, v) => `<label class="narrow">${label}<input type="number" inputmode="numeric" min="0" data-f="${name}" value="${v ?? ''}"></label>`;
-  return `
-    <div class="frow"><label>日付<input type="date" data-f="date" value="${g?.date ?? today()}"></label>
-      <label>相手<input data-f="opp" value="${esc(g?.opp ?? '')}" placeholder="チーム名"></label></div>
-    <div class="frow"><label>区分<select data-f="kind">${GAME_KINDS.map((k) => `<option value="${k.id}" ${g?.kind === k.id ? 'selected' : ''}>${k.name}</option>`).join('')}</select></label>
-      <label>相手の学年<select data-f="grade"><option value="">—</option>${GRADES.map((k) => `<option value="${k.id}" ${g?.grade === k.id ? 'selected' : ''}>${k.name}</option>`).join('')}</select></label></div>
-    <div class="frow">${num('us', '得点', g?.us)}${num('them', '失点', g?.them)}<label>打順・守備<input data-f="pos" value="${esc(g?.pos ?? '')}" placeholder="6番 投→右"></label></div>
-    <h4>打つ</h4>
-    <div class="frow six">${num('b.pa', '打席', b.pa)}${num('b.ab', '打数', b.ab)}${num('b.h', '安打', b.h)}${num('b.bb', '四球', b.bb)}${num('b.so', '三振', b.so)}${num('b.sh', '犠打', b.sh)}${num('b.rbi', '打点', b.rbi)}${num('b.sb', '盗塁', b.sb)}${num('b.r', '得点', b.r)}${num('b.e', '失策', b.e)}</div>
-    <label>打席の内容<input data-f="b.text" value="${esc(b.text ?? '')}" placeholder="四球・右ゴロ"></label>
-    <h4>投げる（投げた試合だけ）</h4>
-    <div class="frow six">${num('p.outs', 'アウト数', p.outs)}${num('p.p', '球数', p.p)}${num('p.k', '三振', p.k)}${num('p.bb', '四球', p.bb)}${num('p.h', '安打', p.h)}${num('p.r', '失点', p.r)}${num('p.er', '自責', p.er)}</div>
-    <label class="check"><input type="checkbox" data-f="excluded" ${g?.excluded ? 'checked' : ''}> この試合の投球は集計から外す</label>
-    <h4>次にやること</h4>
-    <div class="picks">${ISSUES.map((i) => `<label class="pick"><input type="checkbox" data-issue="${i.id}" ${(g?.issues ?? []).includes(i.id) ? 'checked' : ''}><span>${esc(i.name)}</span></label>`).join('')}</div>
-    <h4>この試合の場面</h4>
-    <div class="picks">${SCENES.filter((x) => x.real && !x.whatIf).map((x) => `<label class="pick"><input type="checkbox" data-scene="${x.id}" ${(g?.scenes ?? []).includes(x.id) ? 'checked' : ''}><span>${esc(x.src)}　${esc(x.key)}</span></label>`).join('')}</div>
-    <label>メモ<textarea data-f="memo" rows="2" placeholder="起きたことを、事実で">${esc(g?.memo ?? '')}</textarea></label>
-    <div class="row"><button class="btn primary" data-gsave>${g ? '上書きする' : '入れる'}</button>${g ? '<button class="link danger" data-gdel>この試合を消す</button>' : ''}</div>`;
-}
-
-function bindGameForm(root, edit) {
-  const f = (name) => root.querySelector(`[data-f="${name}"]`);
-  const n = (name) => { const v = f(name).value; return v === '' ? null : Number(v); };
-  root.querySelector('[data-gsave]').onclick = () => {
-    const date = f('date').value, opp = f('opp').value.trim();
-    if (!date || !opp) { toast('日付と相手を入れてください'); return; }
-    const bat = {}; ['pa', 'ab', 'h', 'bb', 'so', 'sh', 'rbi', 'sb', 'r', 'e'].forEach((k) => { bat[k] = n(`b.${k}`) ?? 0; });
-    bat.text = f('b.text').value.trim();
-    const pit = {}; ['outs', 'p', 'k', 'bb', 'h', 'r', 'er'].forEach((k) => { pit[k] = n(`p.${k}`) ?? 0; });
-    const g = {
-      id: edit?.id ?? `g${date}-${Date.now().toString(36)}`, date, opp, kind: f('kind').value, grade: f('grade').value || null,
-      us: n('us'), them: n('them'), pos: f('pos').value.trim(),
-      bat: bat.pa || bat.text ? bat : null, pit: pit.outs || pit.p ? pit : null,
-      excluded: f('excluded').checked,
-      issues: [...root.querySelectorAll('[data-issue]:checked')].map((x) => x.dataset.issue),
-      scenes: [...root.querySelectorAll('[data-scene]:checked')].map((x) => x.dataset.scene),
-      memo: f('memo').value.trim(),
-    };
-    update((st) => { st.games = st.games.filter((x) => x.id !== g.id); st.games.push(g); st.games.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id)); });
-    toast(edit ? '上書きしました' : '入れました'); go(`#/game/${g.id}`); setTimeout(() => rankUpModal(checkRankUps('p1')), 300);
-  };
-  const del = root.querySelector('[data-gdel]');
-  if (del) del.onclick = () => { update((st) => { st.games = st.games.filter((x) => x.id !== edit.id); }); toast('消しました'); go('#/season'); };
-}

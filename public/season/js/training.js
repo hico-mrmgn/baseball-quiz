@@ -9,7 +9,7 @@
 import { DRILLS, DEFAULT_GOALS, TITLES, PT_PER_LEVEL, ISSUES } from './catalog.js';
 import { get, update, profile, today, addDays } from './store.js';
 import { esc, icon, toast, modal } from './ui.js';
-import { savePhoto, signedIn, isChild } from './cloud.js';
+import { savePhoto, signedIn } from './cloud.js';
 
 const drillById = Object.fromEntries(DRILLS.map((d) => [d.id, d]));
 const WEEK = ['日', '月', '火', '水', '木', '金', '土'];
@@ -268,7 +268,7 @@ const pctOf = (v, g) => (g > 0 ? Math.round((v / g) * 100) : 0);
 const bar = (p, tone = '') => `<span class="bar ${tone}"><i style="width:${Math.min(100, p)}%"></i></span>`;
 
 function photoPanel(src, i, me) {
-  const add = isChild() ? '' : `<a class="ph-add" href="#/parent/photos">${icon.plus}写真</a>`;
+  const add = '';  // 写真は管理画面で入れる
   if (src) return `<figure class="ph"><img src="${src}" alt="写真${i + 1}"></figure>`;
   if (i === 0) {
     // 1枚目が空のときは背番号のユニフォームを出す

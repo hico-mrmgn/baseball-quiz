@@ -8,36 +8,39 @@ import {
 import { esc, icon, toast, modal, go } from './ui.js';
 
 /** ホームを描き直す（すでにホームにいても） */
-const home = () => { if (location.hash === '#/home') window.dispatchEvent(new HashChangeEvent('hashchange')); else go('#/home'); };
+const home = () => { if (location.hash === '#/home' || document.body.classList.contains('admin')) window.dispatchEvent(new HashChangeEvent('hashchange')); else go('#/home'); };
 
 const STATUS = { off: '', syncing: '同期中…', synced: '同期ずみ', offline: 'オフライン（つながったら送ります）', error: 'うまく同期できていません' };
 
 /* ───────── ログイン画面 ───────── */
 
-export function renderLogin(root, mode = 'parent') {
+/**
+ * ログイン画面。
+ *   選手の画面（/season/#/login）… 選手のログインID＋パスワード
+ *   管理画面（/season/admin/）     … 保護者のメール＋パスワード（登録・再設定もここ）
+ */
+export function renderLogin(root, { admin = false } = {}) {
   const C = cloud();
-  if (signedIn()) { go('#/home'); return; }
+  if (signedIn() && !admin) { go('#/home'); return; }
+  const done = () => { if (admin) window.dispatchEvent(new HashChangeEvent('hashchange')); else go('#/home'); };
   root.innerHTML = `
-    <header class="top"><a class="iconbtn" href="#/home" aria-label="もどる">${icon.left}</a><div><div class="brand">ログイン</div><div class="brand-sub">記録を、家族のどの端末でも見られるようにする</div></div></header>
-    ${C.enabled ? `
-    <div class="seg login-seg" role="tablist">
-      <a href="#/login/parent" class="${mode === 'parent' ? 'on' : ''}" role="tab">保護者</a>
-      <a href="#/login/kid" class="${mode === 'kid' ? 'on' : ''}" role="tab">選手</a>
-    </div>
-    ${mode === 'kid' ? `
-    <form class="card form" data-kid>
-      <label>ログインID<input name="loginid" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
-      <label>パスワード<input name="pw" type="password" autocomplete="current-password" required></label>
-      <button class="btn">ログイン</button>
-      <p class="muted">ログインIDとパスワードは、おうちの人が保護者メニューで作ります。</p>
-    </form>` : `
+    <header class="top">${admin ? '' : `<a class="iconbtn" href="#/home" aria-label="もどる">${icon.left}</a>`}<div><div class="brand">${admin ? '管理画面' : 'ログイン'}</div><div class="brand-sub">${admin ? '保護者のアカウントでログインします' : 'おうちの人からもらったIDで入る'}</div></div></header>
+    ${C.enabled ? (admin ? `
     <form class="card form" data-parent>
       <label>メールアドレス<input name="email" type="email" autocomplete="email" required></label>
       <label>パスワード（6文字以上）<input name="pw" type="password" autocomplete="current-password" minlength="6" required></label>
       <div class="row"><button class="btn" data-act="in">ログイン</button><button class="btn ghost" data-act="up" type="button">はじめて登録</button></div>
       <button class="link" type="button" data-forgot>パスワードを忘れた</button>
       <p class="muted">登録すると確認のメールが届きます。メールのリンクを押してから、ログインしてください。この端末にある記録は、ログインしたときにそのまま引きつぎます。</p>
-    </form>`}`
+    </form>
+    <a class="link" href="../#/home">選手の画面へ</a>` : `
+    <form class="card form" data-kid>
+      <label>ログインID<input name="loginid" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
+      <label>パスワード<input name="pw" type="password" autocomplete="current-password" required></label>
+      <button class="btn">ログイン</button>
+      <p class="muted">ログインIDとパスワードは、おうちの人が管理画面で作ります。</p>
+    </form>
+    <a class="link" href="admin/">保護者の方は、管理画面からログイン</a>`)
     : `<div class="card"><p class="muted">${C.ready ? 'ログインの準備（サーバーの設定）がまだです。いまは、記録はこの端末の中だけに保存されます。' : '読みこみ中…'}</p></div>`}`;
 
   if (!C.enabled) return;
@@ -47,7 +50,7 @@ export function renderLogin(root, mode = 'parent') {
   if (kid) kid.onsubmit = async (e) => {
     e.preventDefault();
     busy(kid, true);
-    try { await signInKid(kid.loginid.value, kid.pw.value); toast(`${profile().name}でログインしました`); go('#/home'); }
+    try { await signInKid(kid.loginid.value, kid.pw.value); toast(`${profile().name}でログインしました`); done(); }
     catch (err) { toast(err.message); busy(kid, false); }
   };
 
@@ -67,7 +70,8 @@ export function renderLogin(root, mode = 'parent') {
       } else {
         await signIn(form.email.value.trim(), form.pw.value);
       }
-      toast('ログインしました'); go('#/home');
+      if (isChild()) { toast('選手のアカウントでは管理画面を使えません'); busy(form, false); return; }
+      toast('ログインしました'); done();
     } catch (err) { toast(err.message); busy(form, false); }
   };
   form.onsubmit = (e) => { e.preventDefault(); submit('in'); };
@@ -110,7 +114,7 @@ export function accountSectionHTML() {
   if (!signedIn()) {
     return `<section class="card form" id="account"><h3>アカウント</h3>
       <p class="muted">ログインすると、記録・目標・写真を家族のほかの端末でも見られます。選手用のログインIDも作れます。</p>
-      <a class="btn" href="#/login">${icon.right} ログイン・登録</a></section>`;
+      <a class="btn" href="#/overview" data-gologin>${icon.right} ログイン・登録</a></section>`;
   }
   const s = get();
   return `<section class="card form" id="account"><h3>アカウント</h3>
@@ -119,7 +123,7 @@ export function accountSectionHTML() {
     <div class="row"><button class="btn ghost small" data-syncnow>いま同期する</button><button class="btn ghost small" data-logout>ログアウト</button></div>
 
     <h4>選手のログインID</h4>
-    <p class="muted">選手が自分の端末でログインすると、そのプレーヤーの記録だけを使えます（保護者メニューは開けません）。</p>
+    <p class="muted">選手は選手の画面で「ログイン」から、このIDで入ります。そのプレーヤーの記録だけを使え、管理画面は開けません。</p>
     <ul class="kids" data-kids>${s.profiles.map((p) => `<li data-pid="${p.id}"><span class="num">${esc(p.number ?? '')}</span><b>${esc(p.name)}</b><small class="muted">読みこみ中…</small></li>`).join('')}</ul>
   </section>`;
 }
@@ -163,7 +167,7 @@ async function drawKids(root, rerender) {
     b.onclick = () => {
       const p = get().profiles.find((x) => x.id === b.dataset.kmake);
       ask(`${esc(p?.name ?? '')}のログインID`, `<label>ログインID（英小文字・数字・-・_ で3〜20文字）<input name="loginid" autocapitalize="off" spellcheck="false" pattern="[a-z0-9][a-z0-9_\\-]{2,19}" required></label>${pwField}
-        <p class="muted">選手はこのIDとパスワードで、「ログイン → 選手」から入ります。メモして渡してください。</p>`,
+        <p class="muted">選手は、選手の画面の「ログイン」からこのIDとパスワードで入ります。メモして渡してください。</p>`,
       async (f) => {
         await kidAction('create', { loginId: f.loginid.value.trim().toLowerCase(), password: f.pw.value, playerId: b.dataset.kmake });
         toast('ログインIDを作りました'); rerender('account');

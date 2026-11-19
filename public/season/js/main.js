@@ -1,8 +1,8 @@
 import { today } from './store.js';
 import { mountSim, buildDaily, buildFree } from './sim.js';
-import { renderHome, renderGrowth, renderDrills, renderSeason, renderGame, renderParent } from './screens.js';
+import { renderHome, renderGrowth, renderDrills, renderSeason, renderGame } from './screens.js';
 import { renderLearn, renderLearnScenes, renderQuizPick, renderQuiz, renderFormList, renderForm } from './learn.js';
-import { icon, h } from './ui.js';
+import { icon } from './ui.js';
 import { initCloud, onRemoteChange, onPasswordRecovery, isChild, onCloud } from './cloud.js';
 import { renderLogin, passwordRecoveryModal } from './account.js';
 
@@ -44,11 +44,14 @@ function route() {
   else if (name === 'drills') renderDrills(app);
   else if (name === 'season') renderSeason(app);
   else if (name === 'game') renderGame(app, a);
-  else if (name === 'login') renderLogin(app, a === 'kid' ? 'kid' : 'parent');
-  else if (name === 'parent' && isChild()) {
-    // 選手としてログインしているときは、保護者メニューを開かない
-    app.append(h(`<div class="card"><h3>保護者メニュー</h3><p class="muted">おうちの人のアカウントで開けます。</p><a class="btn ghost" href="#/home">もどる</a></div>`));
-  } else if (name === 'parent') renderParent(app, a === 'game' ? b : null, a === 'game' ? null : a);
+  else if (name === 'login') renderLogin(app);
+  else if (name === 'parent') {
+    // 保護者メニューは管理画面（/season/admin/）に移した。前のリンクから来たら、そちらへ送る
+    if (isChild()) { location.replace('#/home'); return; }
+    const to = a === 'game' && b ? `#/games/${b}` : a === 'photos' || a === 'goals' ? '#/drills' : '#/overview';
+    location.replace(`admin/${to}`);
+    return;
+  }
   else renderHome(app);
 }
 
