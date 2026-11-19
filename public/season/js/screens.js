@@ -9,6 +9,8 @@ import { axisStats, abilityStats, battingScore, pitchingScore, scoreOf, rxEffect
 import { buildDaily } from './sim.js';
 import { sfx } from './sound.js';
 import { h, esc, icon, toast, modal, go, rankUpModal } from './ui.js';
+import { cloud, signedIn, isChild } from './cloud.js';
+import { accountSectionHTML, bindAccount, kidMenu, addPlayer } from './account.js';
 import { mountDashboard, goalDrills, hiddenOf, setChipsHTML, applySet, goalSettingsHTML, photoSettingsHTML, bindTrainingSettings } from './training.js';
 
 const issueById = Object.fromEntries(ISSUES.map((i) => [i.id, i]));
@@ -55,8 +57,11 @@ export function renderHome(root) {
     <header class="top">
       <div><div class="brand">MY SEASON</div><div class="brand-sub">${dn.getMonth() + 1}月${dn.getDate()}日（${WEEK[dn.getDay()]}）</div></div>
       <div class="top-actions">
-        <button class="who" data-switch aria-label="プレーヤーを切りかえる"><span class="num">${esc(me.number ?? '')}</span>${esc(me.name)}${icon.swap}</button>
-        <a class="iconbtn" href="#/parent" aria-label="保護者メニュー">${icon.gear}</a>
+        ${isChild()
+          ? `<button class="who" data-kid aria-label="アカウント"><span class="num">${esc(me.number ?? '')}</span>${esc(me.name)}${icon.cloud}</button>`
+          : `<button class="who" data-switch aria-label="プレーヤーを切りかえる"><span class="num">${esc(me.number ?? '')}</span>${esc(me.name)}${icon.swap}</button>
+             ${cloud().enabled && !signedIn() ? `<a class="btn ghost small loginbtn" href="#/login">ログイン</a>` : ''}
+             <a class="iconbtn ${signedIn() ? `synced-${cloud().status}` : ''}" href="#/parent" aria-label="保護者メニュー">${icon.gear}</a>`}
       </div>
     </header>
 
@@ -104,7 +109,9 @@ export function renderHome(root) {
       </div>
     </section>`;
 
-  root.querySelector('[data-switch]').onclick = () => {
+  root.querySelector('[data-kid]')?.addEventListener('click', kidMenu);
+  const sw = root.querySelector('[data-switch]');
+  if (sw) sw.onclick = () => {
     sfx.tap();
     update((st) => { const i = st.profiles.findIndex((p) => p.id === st.active); st.active = st.profiles[(i + 1) % st.profiles.length].id; });
     renderHome(root);
@@ -262,13 +269,13 @@ export function renderDrills(root) {
 
   root.innerHTML = `
     <header class="top"><div><div class="brand">自主練</div><div class="brand-sub">やった数を、自分でつける</div></div>
-      <a class="iconbtn" href="#/parent/goals" aria-label="目標と写真を変える">${icon.gear}</a></header>
-    ${setChipsHTML(me.id) ? `<section class="setbar" aria-label="季節のセット"><small>セット</small>${setChipsHTML(me.id)}</section>` : ''}
+      ${isChild() ? '' : `<a class="iconbtn" href="#/parent/goals" aria-label="目標と写真を変える">${icon.gear}</a>`}</header>
+    ${!isChild() && setChipsHTML(me.id) ? `<section class="setbar" aria-label="季節のセット"><small>セット</small>${setChipsHTML(me.id)}</section>` : ''}
     <section class="dash" data-dash aria-label="自主練ダッシュボード"></section>
     <h2>記録する</h2>
     <section class="strip wide" aria-label="この2週間">${days.map((d) => `<div class="day ${d === date ? 'today' : ''}"><span>${+d.slice(8)}</span><i class="${doneDays.has(d) ? 'd' : ''}"></i></div>`).join('')}</section>
     <section class="drills">${shown.map(card).join('')}</section>
-    ${folded.length ? `<details class="folded"><summary>かくしている種目（${folded.length}）<a href="#/parent/goals">表示を変える</a></summary><section class="drills">${folded.map(card).join('')}</section></details>` : ''}`;
+    ${folded.length ? `<details class="folded"><summary>かくしている種目（${folded.length}）${isChild() ? '' : '<a href="#/parent/goals">表示を変える</a>'}</summary><section class="drills">${folded.map(card).join('')}</section></details>` : ''}`;
 
   root.querySelectorAll('[data-applyset]').forEach((b) => {
     b.onclick = () => { sfx.tap(); applySet(me.id, b.dataset.applyset); toast(`「${b.dataset.applyset}」にしました`); renderDrills(root); };
@@ -374,8 +381,11 @@ export function renderParent(root, editId, anchor = null) {
   root.innerHTML = `
     <header class="top"><a class="iconbtn" href="#/home" aria-label="もどる">${icon.left}</a><div><div class="brand">保護者メニュー</div><div class="brand-sub">記録はこの端末の中だけに保存されます</div></div></header>
 
+    ${accountSectionHTML()}
+
     <section class="card form"><h3>プレーヤー</h3>
       ${s.profiles.map((p, i) => `<div class="frow"><label>名前<input data-pname="${i}" value="${esc(p.name)}" maxlength="10"></label><label class="narrow">背番号<input data-pnum="${i}" type="number" value="${esc(p.number ?? '')}"></label></div>`).join('')}
+      <button class="btn ghost small" data-addp>${icon.plus} プレーヤーを足す</button>
       <label class="check"><input type="checkbox" data-sound ${s.settings.sound ? 'checked' : ''}> 音を出す</label>
     </section>
 
@@ -428,6 +438,8 @@ export function renderParent(root, editId, anchor = null) {
   root.querySelectorAll('[data-mdel]').forEach((b) => { b.onclick = () => { const [date, id] = b.dataset.mdel.split('|'); update((st) => { st.measures = st.measures.filter((m) => !(m.date === date && m.id === id)); }); renderParent(root, editId); }; });
   bindGameForm(root, edit);
   bindTrainingSettings(root, (anchor) => renderParent(root, editId, anchor));
+  bindAccount(root, (anchor) => renderParent(root, editId, anchor));
+  root.querySelector('[data-addp]').onclick = () => { addPlayer(); toast('プレーヤーを足しました'); renderParent(root, editId); };
   root.querySelector('[data-export]').onclick = () => {
     const blob = new Blob([exportData()], { type: 'application/json' });
     const a = h(`<a download="season-${today()}.json"></a>`); a.href = URL.createObjectURL(blob); document.body.append(a); a.click(); a.remove();

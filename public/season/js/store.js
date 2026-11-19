@@ -93,8 +93,90 @@ function migrateLegacy(s) {
   return true;
 }
 
+/* ───────── 端末をまたぐ同期のための印 ─────────
+   ログインしているときは、記録をサーバーにも置く（cloud.js）。2台で同時に書いても消えないよう、
+   項目ごとに混ぜ方を決めておく。
+     LOGS  … 足していくだけの記録。両方にあるものは1つにまとめ、片方にしかないものは足す
+     DAILY … 日付ごとの今日の試合。日付×プレーヤーで足し合わせる
+     その他 … 最後に変えたほうを使う。変えた時刻を _at に残す
+   active（いま選んでいるプレーヤー）と legacy（引きつぎの印）は端末ごとのものなので送らない。 */
+const LOGS = ['plays', 'drillLog', 'quiz', 'events'];
+const LOCAL_ONLY = ['active', 'legacy', '_at'];
+const lastSaved = {};
+const syncFields = (s) => Object.keys({ ...fresh(), ...s }).filter((k) => !LOCAL_ONLY.includes(k) && k !== 'v');
+
+/** 変わった項目に時刻を打つ。初回（読みこみ直後）は打たずに覚えるだけ */
+function stamp(s, { remember = false } = {}) {
+  s._at ??= {};
+  const now = Date.now();
+  for (const k of syncFields(s)) {
+    const str = JSON.stringify(s[k] ?? null);
+    if (!remember && lastSaved[k] !== undefined && lastSaved[k] !== str) s._at[k] = now;
+    lastSaved[k] = str;
+  }
+}
+
 function save() {
+  stamp(state);
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* 容量や設定で保存できなくても遊べるようにする */ }
+  listeners.forEach((fn) => fn(state));
+}
+stamp(state, { remember: true });
+
+/** 同じ中身の記録が、片方に n 個・もう片方に m 個あれば max(n, m) 個にする（並びは日付順） */
+function mergeLog(a = [], b = []) {
+  const count = new Map(), out = [];
+  for (const x of a) { const k = JSON.stringify(x); count.set(k, (count.get(k) ?? 0) + 1); out.push(x); }
+  const seen = new Map();
+  for (const x of b) {
+    const k = JSON.stringify(x); const n = (seen.get(k) ?? 0) + 1; seen.set(k, n);
+    if (n > (count.get(k) ?? 0)) out.push(x);
+  }
+  const at = (x) => x.t ?? x.date ?? '';
+  return out.map((x, i) => [x, i]).sort(([x, i], [y, j]) => String(at(x)).localeCompare(String(at(y))) || i - j).map(([x]) => x);
+}
+
+/** 2つの記録（この端末とサーバー）を1つにする。どちらも書きかえない */
+export function mergeStates(local, remote) {
+  const out = { ...fresh(), ...local, _at: { ...(local._at ?? {}) } };
+  const ra = remote._at ?? {};
+  for (const k of syncFields({ ...local, ...remote })) {
+    if (!(k in remote)) continue;
+    if (LOGS.includes(k)) out[k] = mergeLog(local[k], remote[k]);
+    else if (k === 'daily') {
+      out.daily = structuredClone(local.daily ?? {});
+      for (const [d, byP] of Object.entries(remote.daily ?? {})) out.daily[d] = { ...byP, ...(out.daily[d] ?? {}) };
+    } else if ((ra[k] ?? 0) >= (out._at[k] ?? 0) || !(k in local)) out[k] = structuredClone(remote[k]); // 同じ時刻ならサーバーのほう
+    out._at[k] = Math.max(out._at[k] ?? 0, ra[k] ?? 0);
+  }
+  return out;
+}
+
+/** サーバーに送る中身（端末ごとの項目をのぞく） */
+export function syncPayload() {
+  const out = {};
+  for (const k of syncFields(state)) out[k] = state[k];
+  out._at = state._at ?? {};
+  return out;
+}
+
+/** サーバーから来た中身にする。端末ごとの項目（いま選んでいるプレーヤーなど）は残す。
+    listeners には知らせるが、時刻は打ち直さない */
+export function replaceState(next, { notify = true } = {}) {
+  const keep = Object.fromEntries(LOCAL_ONLY.filter((k) => k !== '_at').map((k) => [k, state[k]]));
+  state = { ...fresh(), ...next, ...keep };
+  if (!state.profiles.some((p) => p.id === state.active)) state.active = state.profiles[0]?.id;
+  stamp(state, { remember: true });
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* 保存できなくても画面は続ける */ }
+  if (notify) listeners.forEach((fn) => fn(state));
+}
+
+/** ログアウトしたとき：この端末の記録を空にする（記録はサーバーに残っている） */
+export function clearLocal() {
+  state = { ...fresh(), legacy: { at: today(), reset: true } };
+  for (const k of Object.keys(lastSaved)) delete lastSaved[k];
+  stamp(state, { remember: true });
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* 同上 */ }
   listeners.forEach((fn) => fn(state));
 }
 
@@ -102,8 +184,13 @@ export const get = () => state;
 export const subscribe = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
 export function update(fn) { fn(state); save(); }
 
-export const profile = () => state.profiles.find((p) => p.id === state.active) ?? state.profiles[0];
-export const otherProfiles = () => state.profiles.filter((p) => p.id !== state.active);
+/** 選手としてログインしているときは、そのプレーヤーに固定する（cloud.js が決める） */
+let lockedPlayer = null;
+export function lockPlayer(pid) { lockedPlayer = pid; }
+export const lockedTo = () => lockedPlayer;
+
+export const profile = () => state.profiles.find((p) => p.id === (lockedPlayer ?? state.active)) ?? state.profiles[0];
+export const otherProfiles = () => state.profiles.filter((p) => p.id !== profile().id);
 
 export function today(d = new Date()) {
   const z = (n) => String(n).padStart(2, '0');
