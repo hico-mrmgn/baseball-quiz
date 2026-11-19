@@ -9,6 +9,7 @@
 import { DRILLS, DEFAULT_GOALS, TITLES, PT_PER_LEVEL, ISSUES } from './catalog.js';
 import { get, update, profile, today, addDays } from './store.js';
 import { esc, icon, toast, modal } from './ui.js';
+import { savePhoto, signedIn } from './cloud.js';
 
 const drillById = Object.fromEntries(DRILLS.map((d) => [d.id, d]));
 const WEEK = ['日', '月', '火', '水', '木', '金', '土'];
@@ -205,6 +206,7 @@ export function trainingStats(pid, date = today()) {
 
 /* ───────── 写真 ───────── */
 // 写真は大きいので、記録（season.v1）とは別のキーに置く。書き出しファイルにも入れない。
+// ログインしているときは、サーバーの別の表（family_photos）にも置き、ほかの端末でも見られるようにする。
 
 const PHOTO_KEY = 'season.photos.v1';
 export const PHOTO_SLOTS = 4;
@@ -216,11 +218,12 @@ export function photosOf(pid) {
   const list = readPhotos()[pid] ?? [];
   return [...Array(PHOTO_SLOTS)].map((_, i) => list[i] ?? null);
 }
-/** 写真を1枚置く（null で消す）。保存できたら true */
+/** 写真を1枚置く（null で消す）。ログインしていればサーバーにも置く。端末に保存できたら true */
 export function setPhoto(pid, slot, dataUrl) {
   const all = readPhotos();
   const list = photosOf(pid); list[slot] = dataUrl;
   all[pid] = list;
+  savePhoto(pid, slot, dataUrl).then((ok) => { if (!ok) toast('写真をサーバーに置けませんでした'); });
   try { localStorage.setItem(PHOTO_KEY, JSON.stringify(all)); return true; } catch { return false; }
 }
 
@@ -265,15 +268,16 @@ const pctOf = (v, g) => (g > 0 ? Math.round((v / g) * 100) : 0);
 const bar = (p, tone = '') => `<span class="bar ${tone}"><i style="width:${Math.min(100, p)}%"></i></span>`;
 
 function photoPanel(src, i, me) {
+  const add = '';  // 写真は管理画面で入れる
   if (src) return `<figure class="ph"><img src="${src}" alt="写真${i + 1}"></figure>`;
   if (i === 0) {
     // 1枚目が空のときは背番号のユニフォームを出す
     return `<figure class="ph ph-jersey"><svg viewBox="0 0 120 120" aria-hidden="true">
       <path d="M40 14l-26 14 10 22 10-5v61h52V45l10 5 10-22-26-14c-3 8-11 12-20 12s-17-4-20-12z" fill="#e2453b" stroke="#a52822" stroke-width="2.5" stroke-linejoin="round"/>
       <text x="60" y="86" text-anchor="middle" font-family="Bebas Neue, Impact, sans-serif" font-size="42" fill="#fff" stroke="#a52822" stroke-width="1.5">${esc(me.number ?? '')}</text></svg>
-      <a class="ph-add" href="#/parent/photos">${icon.plus}写真</a></figure>`;
+      ${add}</figure>`;
   }
-  return `<figure class="ph ph-empty"><span>${icon.ball}</span><a class="ph-add" href="#/parent/photos">${icon.plus}写真</a></figure>`;
+  return `<figure class="ph ph-empty"><span>${icon.ball}</span>${add}</figure>`;
 }
 
 function ring(rate) {
@@ -398,7 +402,7 @@ export function goalSettingsHTML() {
 export function photoSettingsHTML() {
   const me = profile(), list = photosOf(me.id);
   return `<section class="card form" id="photos"><h3>自主練ページの写真（${esc(me.name)}）</h3>
-    <p class="muted">ダッシュボードの上に並ぶ ${PHOTO_SLOTS}枚です。写真はこの端末の中だけに置き、書き出しファイルには入りません。</p>
+    <p class="muted">ダッシュボードの上に並ぶ ${PHOTO_SLOTS}枚です。${signedIn() ? 'ログインしている家族の端末で見られます。' : 'ログインしていないあいだは、この端末の中だけに置きます。'}書き出しファイルには入りません。</p>
     <div class="photoset">${list.map((src, i) => `<div class="pslot">
       <div class="pprev">${src ? `<img src="${src}" alt="写真${i + 1}">` : `<span>${i + 1}</span>`}</div>
       <label class="btn ghost small filebtn">${src ? '変える' : '選ぶ'}<input type="file" accept="image/*" data-photo="${i}" hidden></label>

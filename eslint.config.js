@@ -26,4 +26,9 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    // Vercel のサーバー関数（Node で動く）
+    files: ['api/**/*.js'],
+    languageOptions: { globals: globals.node },
+  },
 ])

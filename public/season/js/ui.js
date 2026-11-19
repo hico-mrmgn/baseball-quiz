@@ -30,6 +30,7 @@ export const icon = {
   swap: I('<path d="M7 7h13l-3-3M17 17H4l3 3"/>'),
   flag: I('<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>'),
   pen: I('<path d="M4 20l4-1 11-11-3-3L5 16z"/>'),
+  cloud: I('<path d="M7 18h10a4 4 0 0 0 .5-8 6 6 0 0 0-11.4 1.6A3.3 3.3 0 0 0 7 18z"/>'),
   ball: I('<circle cx="12" cy="12" r="9"/><path d="M6 5.5c2.5 3 2.5 10 0 13M18 5.5c-2.5 3-2.5 10 0 13"/>'),
 };
 
