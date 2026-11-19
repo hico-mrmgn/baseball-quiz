@@ -133,18 +133,24 @@ JSON の書き出し／読みこみで持ち運ぶ。
 
 ```
 public/season/
-├── index.html
+├── index.html           # 選手の画面
+├── admin/index.html     # 保護者の管理画面
 ├── css/app.css          # 見た目の約束（色の意味・カード・ボタン）
 ├── img/                 # 選手のスプライト
 └── js/
-    ├── main.js          # 画面の切りかえ
+    ├── main.js          # 選手の画面の切りかえ
+    ├── admin-main.js    # 管理画面の切りかえ
+    ├── admin.js         # 管理画面（ようす・選手・自主練・課題・試合・データ）
     ├── scenes.js        # 場面データ（23場面）
     ├── catalog.js       # 軸・課題と処方・ドリル・計測項目
     ├── sim.js           # シミュレーター
     ├── field.js         # グラウンドと選手の描画
-    ├── screens.js       # ホーム・成長・自主練・シーズン・保護者メニュー
+    ├── screens.js       # ホーム・成長・自主練・シーズン
+    ├── training.js      # 自主練のダッシュボード・目標・季節のセット・写真
+    ├── cloud.js         # ログインと同期（Supabase）
+    ├── account.js       # ログイン画面・アカウント・選手のログインID
     ├── growth.js        # レーダーと成績の計算
-    ├── store.js         # 保存と入出力
+    ├── store.js         # 保存と入出力・同期のときの混ぜ方
     ├── sound.js / ui.js
 ```
 
